@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flowchart C Interpreter (Akış Diyagramı) - C Programming Education</title>
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand">
+      <h1>Flowchart C Interpreter</h1>
+      <span class="badge">C Programming Lab</span>
+    </div>
+
+    <div class="header-actions">
+      <select id="sample-select" class="select-input">
+        <option value="" disabled selected>📂 Load Curriculum Example...</option>
+        <option value="rectangleArea">1. Rectangle Area (Sequence)</option>
+        <option value="evenOrOdd">2. Even / Odd (Decision)</option>
+        <option value="sum1ToN">3. Sum 1 to N (Loop)</option>
+      </select>
+
+      <button id="btn-save" class="btn" title="Export diagram to JSON">
+        💾 Save Flowchart
+      </button>
+
+      <button id="btn-load-trigger" class="btn" title="Import diagram from JSON">
+        📁 Load Flowchart
+      </button>
+      <input type="file" id="file-input-loader" accept=".json" style="display: none;" />
+
+      <button id="btn-clear-canvas" class="btn btn-danger" title="Clear all nodes">
+        🗑️ Clear
+      </button>
+    </div>
+  </header>
+
+  <!-- App Main Content Grid -->
+  <main class="app-container">
+    <!-- Left Sidebar: Palette -->
+    <aside class="palette-sidebar">
+      <div class="palette-section">
+        <h3>Flowchart Symbols</h3>
+        <div class="palette-items">
+          <div class="drag-item" draggable="true" data-node="start">
+            <span class="item-icon">🟢</span>
+            <div class="item-info">
+              <strong>Start</strong>
+              <span class="item-desc">Oval (main entry)</span>
+            </div>
+          </div>
+
+          <div class="drag-item" draggable="true" data-node="assignment">
+            <span class="item-icon">🟦</span>
+            <div class="item-info">
+              <strong>Assignment</strong>
+              <span class="item-desc">Rectangle (x = 5)</span>
+            </div>
+          </div>
+
+          <div class="drag-item" draggable="true" data-node="decision">
+            <span class="item-icon">🔶</span>
+            <div class="item-info">
+              <strong>Decision</strong>
+              <span class="item-desc">Diamond (if / else)</span>
+            </div>
+          </div>
+
+          <div class="drag-item" draggable="true" data-node="loop">
+            <span class="item-icon">🔷</span>
+            <div class="item-info">
+              <strong>Loop</strong>
+              <span class="item-desc">Hexagon (while / for)</span>
+            </div>
+          </div>
+
+          <div class="drag-item" draggable="true" data-node="input">
+            <span class="item-icon">🟪</span>
+            <div class="item-info">
+              <strong>Input</strong>
+              <span class="item-desc">Parallelogram (scanf)</span>
+            </div>
+          </div>
+
+          <div class="drag-item" draggable="true" data-node="output">
+            <span class="item-icon">🟧</span>
+            <div class="item-info">
+              <strong>Output</strong>
+              <span class="item-desc">Parallelogram (printf)</span>
+            </div>
+          </div>
+
+          <div class="drag-item" draggable="true" data-node="end">
+            <span class="item-icon">🔴</span>
+            <div class="item-info">
+              <strong>End</strong>
+              <span class="item-desc">Oval (return 0)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="palette-section">
+        <h3>Instructions</h3>
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+          Drag flowchart symbols onto the canvas and connect ports. Click <strong>Step</strong> or <strong>Play</strong> to watch memory change live!
+        </p>
+      </div>
+    </aside>
+
+    <!-- Center: Flowchart Canvas -->
+    <section class="canvas-wrapper">
+      <div id="drawflow"></div>
+
+      <div class="canvas-toolbar">
+        <button id="btn-zoom-in" class="btn btn-icon" title="Zoom In">➕</button>
+        <button id="btn-zoom-reset" class="btn btn-icon" title="Reset Zoom">🔍 100%</button>
+        <button id="btn-zoom-out" class="btn btn-icon" title="Zoom Out">➖</button>
+      </div>
+    </section>
+
+    <!-- Right: Execution Controls & Watchers -->
+    <aside class="side-panel">
+      <!-- Controls Section -->
+      <div class="panel-section">
+        <div class="section-header">
+          <h2>Execution Controls</h2>
+          <span id="status-badge" class="status-badge status-ready">Ready</span>
+        </div>
+
+        <div class="controls-grid">
+          <button id="btn-play" class="btn btn-success" title="Run continuously">
+            ▶ Play
+          </button>
+          <button id="btn-pause" class="btn" title="Pause execution" disabled>
+            ⏸ Pause
+          </button>
+          <button id="btn-step" class="btn btn-primary" title="Execute single node">
+            ⏭ Step
+          </button>
+          <button id="btn-reset" class="btn" title="Reset state">
+            🔄 Reset
+          </button>
+        </div>
+
+        <div class="control-speed-wrapper">
+          <span>Speed:</span>
+          <select id="speed-select" class="select-input">
+            <option value="1000">Slow (1.0s)</option>
+            <option value="500" selected>Normal (0.5s)</option>
+            <option value="200">Fast (0.2s)</option>
+            <option value="50">Turbo (0.05s)</option>
+          </select>
+        </div>
+
+        <!-- Input Prompt dialog if InputNode is reached interactively -->
+        <div id="input-prompt-container" class="input-prompt-bar hidden">
+          <div id="prompt-label" class="prompt-label">Enter value:</div>
+          <div class="prompt-input-group">
+            <input type="text" id="prompt-input" placeholder="Type value & hit Enter..." />
+            <button id="prompt-submit-btn" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variable Watcher Section -->
+      <div class="panel-section">
+        <div class="section-header">
+          <h2>Variable Watcher (Memory)</h2>
+        </div>
+
+        <div class="variables-table-container">
+          <table class="variables-table">
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>C Type</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="variables-tbody">
+              <tr>
+                <td colspan="3" class="empty-hint">No variables declared in memory yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Output Console Section -->
+      <div class="panel-section" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="section-header">
+          <h2>Output Console (printf)</h2>
+          <button id="btn-clear-console" class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Clear</button>
+        </div>
+
+        <div id="console-output" class="console-box" style="flex: 1;">
+          <span class="console-hint">Console output (printf) will appear here...</span>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
