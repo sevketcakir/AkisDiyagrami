@@ -153,13 +153,15 @@
         </div>
 
         <div class="control-speed-wrapper">
-          <span>Speed:</span>
-          <select id="speed-select" class="select-input">
-            <option value="1000">Slow (1.0s)</option>
-            <option value="500" selected>Normal (0.5s)</option>
-            <option value="200">Fast (0.2s)</option>
-            <option value="50">Turbo (0.05s)</option>
-          </select>
+          <div class="speed-header">
+            <span class="speed-title">⏱️ Step Delay:</span>
+            <span id="speed-value-badge" class="speed-badge">500 ms</span>
+          </div>
+          <div class="slider-container">
+            <span class="slider-min">50ms</span>
+            <input type="range" id="speed-slider" class="speed-slider" min="50" max="2000" step="50" value="500" title="Adjust step delay" />
+            <span class="slider-max">2.0s</span>
+          </div>
         </div>
 
         <!-- Input Prompt dialog if InputNode is reached interactively -->

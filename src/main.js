@@ -38,6 +38,8 @@ class App {
       stepBtn: document.getElementById('btn-step'),
       resetBtn: document.getElementById('btn-reset'),
       speedSelect: document.getElementById('speed-select'),
+      speedSlider: document.getElementById('speed-slider'),
+      speedValueBadge: document.getElementById('speed-value-badge'),
       statusBadge: document.getElementById('status-badge'),
       variablesTableBody: document.getElementById('variables-tbody'),
       consoleOutput: document.getElementById('console-output'),
@@ -161,6 +163,19 @@ class App {
       this.executeStep(false);
     };
     this.sidePanel.onReset = () => this.resetExecution();
+    this.sidePanel.onSpeedChange = (newSpeed) => {
+      // If currently playing, dynamically adjust the running interval immediately
+      if (this.playInterval) {
+        clearInterval(this.playInterval);
+        this.playInterval = setInterval(() => {
+          if (!this.interpreter || this.interpreter.context.isFinished) {
+            this.pausePlay();
+            return;
+          }
+          this.executeStep(true);
+        }, newSpeed);
+      }
+    };
   }
 
   loadSample(sampleKey) {

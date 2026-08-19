@@ -21,7 +21,7 @@ export class SidePanel {
    */
   constructor(elements) {
     this.elements = elements;
-    this.speed = parseInt(elements.speedSelect?.value || '500', 10);
+    this.speed = parseInt(elements.speedSlider?.value || elements.speedSelect?.value || '500', 10);
     this.status = 'READY'; // READY | RUNNING | PAUSED | STEPPING | FINISHED | ERROR | WAITING_INPUT
     this.prevVariables = {};
 
@@ -29,6 +29,7 @@ export class SidePanel {
     this.onPause = null;
     this.onStep = null;
     this.onReset = null;
+    this.onSpeedChange = null;
     this.onInputSubmit = null;
 
     this.bindEvents();
@@ -52,8 +53,27 @@ export class SidePanel {
       if (this.onReset) this.onReset();
     });
 
+    // Speed Slider
+    const handleSpeedChange = (val) => {
+      this.speed = parseInt(val, 10);
+      if (this.elements.speedValueBadge) {
+        if (this.speed >= 1000) {
+          this.elements.speedValueBadge.textContent = `${(this.speed / 1000).toFixed(1)} s`;
+        } else {
+          this.elements.speedValueBadge.textContent = `${this.speed} ms`;
+        }
+      }
+      if (this.onSpeedChange) {
+        this.onSpeedChange(this.speed);
+      }
+    };
+
+    this.elements.speedSlider?.addEventListener('input', (e) => {
+      handleSpeedChange(e.target.value);
+    });
+
     this.elements.speedSelect?.addEventListener('change', (e) => {
-      this.speed = parseInt(e.target.value, 10);
+      handleSpeedChange(e.target.value);
     });
 
     this.elements.clearConsoleBtn?.addEventListener('click', () => {
