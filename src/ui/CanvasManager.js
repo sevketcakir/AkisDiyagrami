@@ -124,7 +124,54 @@ function escapeHtml(str) {
 }
 
 /**
- * Builds clean Orthogonal (Manhattan 90-degree) step paths with rounded fillet corners.
+ * Generates an SVG path string connecting orthogonal points with smooth rounded fillet corners.
+ * @param {Array<{x: number, y: number}>} points
+ * @param {number} [radius=6]
+ * @returns {string} SVG Path 'd'
+ */
+export function createFilletedPath(points, radius = 6) {
+  if (!points || points.length === 0) return '';
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  if (points.length === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+
+  let d = `M ${points[0].x} ${points[0].y}`;
+
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const next = points[i + 1];
+
+    const vx1 = prev.x - curr.x;
+    const vy1 = prev.y - curr.y;
+    const len1 = Math.hypot(vx1, vy1);
+
+    const vx2 = next.x - curr.x;
+    const vy2 = next.y - curr.y;
+    const len2 = Math.hypot(vx2, vy2);
+
+    if (len1 === 0 || len2 === 0) {
+      d += ` L ${curr.x} ${curr.y}`;
+      continue;
+    }
+
+    const r = Math.min(radius, len1 / 2, len2 / 2);
+
+    const startX = curr.x + (vx1 / len1) * r;
+    const startY = curr.y + (vy1 / len1) * r;
+    const endX = curr.x + (vx2 / len2) * r;
+    const endY = curr.y + (vy2 / len2) * r;
+
+    d += ` L ${startX} ${startY} Q ${curr.x} ${curr.y} ${endX} ${endY}`;
+  }
+
+  d += ` L ${points[points.length - 1].x} ${points[points.length - 1].y}`;
+  return d;
+}
+
+/**
+ * Builds clean Orthogonal (Manhattan 90-degree) step paths with multi-corner routing and rounded corners.
+ * Handles loop body top entry, loop return under pass, and lateral branching cleanly without node collision.
+ *
  * @param {number} x1 - Source port X
  * @param {number} y1 - Source port Y
  * @param {number} x2 - Target port X
@@ -134,51 +181,79 @@ function escapeHtml(str) {
 export function buildOrthogonalPath(x1, y1, x2, y2) {
   const dx = x2 - x1;
   const dy = y2 - y1;
-  const r = 8; // Corner fillet radius
 
-  // 1. Straight vertical downward line
+  // 1. Straight vertical alignment (within 5px)
   if (Math.abs(dx) <= 5 && dy > 0) {
     return `M ${x1} ${y1} L ${x2} ${y2}`;
   }
 
-  // 2. Loopback returning upwards (bottom of body back to loop header)
-  if (dy < -5) {
+  // 2. Loop Body Output (exiting right to a target whose top is level or higher, e.g. sum1ToN)
+  // Routes right, steps UP above target block, goes right, and drops cleanly into top input port
+  if (dx > 20 && dy < 25) {
+    const clearTopY = y2 - 25; // 25px clearance above target block
+    const stepRightX = Math.round(x1 + Math.min(30, dx * 0.35));
+    return createFilletedPath([
+      { x: x1, y: y1 },
+      { x: stepRightX, y: y1 },
+      { x: stepRightX, y: clearTopY },
+      { x: x2, y: clearTopY },
+      { x: x2, y: y2 }
+    ]);
+  }
+
+  // 3. Return Wire going Left to Loop In (e.g. from process bottom (575, 425) to Loop In (450, 421))
+  // Drops down under the process block, travels left under the block, and steps up into Loop In port
+  if (dx < -20 && dy < 20) {
+    const clearBottomY = y1 + 22; // 22px clearance below process block
+    const approachX = Math.round(x2 + 25);
+    return createFilletedPath([
+      { x: x1, y: y1 },
+      { x: x1, y: clearBottomY },
+      { x: approachX, y: clearBottomY },
+      { x: approachX, y: y2 },
+      { x: x2, y: y2 }
+    ]);
+  }
+
+  // 4. Return wire going far upward (e.g. nested body bottom back up to top loop header)
+  if (dy < -20) {
+    const clearBottomY = y1 + 22;
     const gutterX = Math.max(x1, x2) + 40;
-    const dropY = y1 + 18;
-    return `M ${x1} ${y1} ` +
-           `L ${x1} ${dropY - r} ` +
-           `Q ${x1} ${dropY} ${x1 + r} ${dropY} ` +
-           `L ${gutterX - r} ${dropY} ` +
-           `Q ${gutterX} ${dropY} ${gutterX} ${dropY - r} ` +
-           `L ${gutterX} ${y2 + r} ` +
-           `Q ${gutterX} ${y2} ${gutterX - r} ${y2} ` +
-           `L ${x2} ${y2}`;
+    return createFilletedPath([
+      { x: x1, y: y1 },
+      { x: x1, y: clearBottomY },
+      { x: gutterX, y: clearBottomY },
+      { x: gutterX, y: y2 },
+      { x: x2, y: y2 }
+    ]);
   }
 
-  // 3. Forward flowing lateral connection (e.g. Decision Left/Right, Loop Body Right)
+  // 5. Exiting Right and flowing downwards (Decision False or Loop Body to lower block)
   if (dx > 20) {
-    // Exits horizontally to the Right
-    return `M ${x1} ${y1} ` +
-           `L ${x2 - r} ${y1} ` +
-           `Q ${x2} ${y1} ${x2} ${y1 + r} ` +
-           `L ${x2} ${y2}`;
-  } else if (dx < -20) {
-    // Exits horizontally to the Left
-    return `M ${x1} ${y1} ` +
-           `L ${x2 + r} ${y1} ` +
-           `Q ${x2} ${y1} ${x2} ${y1 + r} ` +
-           `L ${x2} ${y2}`;
+    return createFilletedPath([
+      { x: x1, y: y1 },
+      { x: x2, y: y1 },
+      { x: x2, y: y2 }
+    ]);
   }
 
-  // 4. Default Linear Forward Step (Bottom -> Top when slightly offset)
+  // 6. Exiting Left and flowing downwards (Decision True)
+  if (dx < -20) {
+    return createFilletedPath([
+      { x: x1, y: y1 },
+      { x: x2, y: y1 },
+      { x: x2, y: y2 }
+    ]);
+  }
+
+  // 7. General Forward Step (Bottom -> Top with lateral offset)
   const midY = Math.round(y1 + dy * 0.5);
-  const dirX = dx >= 0 ? 1 : -1;
-  return `M ${x1} ${y1} ` +
-         `L ${x1} ${midY - r} ` +
-         `Q ${x1} ${midY} ${x1 + dirX * r} ${midY} ` +
-         `L ${x2 - dirX * r} ${midY} ` +
-         `Q ${x2} ${midY} ${x2} ${midY + r} ` +
-         `L ${x2} ${y2}`;
+  return createFilletedPath([
+    { x: x1, y: y1 },
+    { x: x1, y: midY },
+    { x: x2, y: midY },
+    { x: x2, y: y2 }
+  ]);
 }
 
 /**

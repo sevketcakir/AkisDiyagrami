@@ -255,7 +255,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
-              pos_x: 480,
+              pos_x: 520,
               pos_y: 340
             },
             '6': {
@@ -268,7 +268,7 @@ export const SamplePrograms = {
               inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '7', output: 'input_1' }] } },
               pos_x: 250,
-              pos_y: 470
+              pos_y: 490
             },
             '7': {
               id: 7,
@@ -280,7 +280,7 @@ export const SamplePrograms = {
               inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
               outputs: {},
               pos_x: 250,
-              pos_y: 600
+              pos_y: 610
             }
           }
         }
