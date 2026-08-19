@@ -153,18 +153,13 @@ export class SidePanel {
       this.elements.pauseBtn.disabled = false;
       this.elements.stepBtn.disabled = true;
       this.elements.resetBtn.disabled = false;
-    } else if (status === 'FINISHED' || status === 'ERROR') {
-      this.elements.playBtn.disabled = true;
-      this.elements.pauseBtn.disabled = true;
-      this.elements.stepBtn.disabled = true;
-      this.elements.resetBtn.disabled = false;
     } else if (status === 'WAITING_INPUT') {
       this.elements.playBtn.disabled = true;
       this.elements.pauseBtn.disabled = true;
       this.elements.stepBtn.disabled = true;
       this.elements.resetBtn.disabled = false;
     } else {
-      // READY, PAUSED, STEPPING
+      // READY, PAUSED, STEPPING, FINISHED, ERROR (Allow immediate restart on Play/Step)
       this.elements.playBtn.disabled = false;
       this.elements.pauseBtn.disabled = true;
       this.elements.stepBtn.disabled = false;

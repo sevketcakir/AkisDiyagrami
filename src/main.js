@@ -229,8 +229,9 @@ class App {
   executeStep(isAutoPlay = false) {
     if (this.isWaitingForInput) return;
 
-    if (!this.interpreter || this.isGraphDirty || this.interpreter.context.isFinished) {
+    if (!this.interpreter || this.isGraphDirty || this.interpreter.context.isFinished || this.interpreter.context.error) {
       this.isGraphDirty = false;
+      this.resetExecution();
       const ok = this.compileGraph();
       if (!ok) return;
     }
@@ -271,8 +272,9 @@ class App {
   }
 
   startPlay() {
-    if (!this.interpreter || this.isGraphDirty || this.interpreter.context.isFinished) {
+    if (!this.interpreter || this.isGraphDirty || this.interpreter.context.isFinished || this.interpreter.context.error) {
       this.isGraphDirty = false;
+      this.resetExecution();
       const ok = this.compileGraph();
       if (!ok) return;
     }
