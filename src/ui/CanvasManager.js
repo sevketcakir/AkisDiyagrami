@@ -87,7 +87,7 @@ export function renderNodeHtml(type, customData = {}) {
     }
 
     case 'output': {
-      const expr = customData.expression ?? customData.text ?? '"Result: " + x';
+      const expr = customData.expression ?? customData.text ?? 'x';
       return `
         <div class="flowchart-node-content node-parallelogram shape-output">
           <svg class="shape-svg" viewBox="0 0 190 80" preserveAspectRatio="none">
@@ -201,37 +201,37 @@ export class CanvasManager {
 
     switch (type) {
       case 'start':
-        return this.editor.addNode('start', 0, 1, posX, posY, 'start', customData, html);
+        return this.editor.addNode('start', 0, 1, posX, posY, 'start', customData, html, false);
 
       case 'end':
-        return this.editor.addNode('end', 1, 0, posX, posY, 'end', customData, html);
+        return this.editor.addNode('end', 1, 0, posX, posY, 'end', customData, html, false);
 
       case 'assignment': {
         const expr = customData.expression ?? 'x = 0';
-        return this.editor.addNode('assignment', 1, 1, posX, posY, 'assignment', { expression: expr, ...customData }, html);
+        return this.editor.addNode('assignment', 1, 1, posX, posY, 'assignment', { expression: expr, ...customData }, html, false);
       }
 
       case 'decision': {
         const cond = customData.condition ?? 'x > 0';
         // 1 input, 2 outputs (output_1: True, output_2: False)
-        return this.editor.addNode('decision', 1, 2, posX, posY, 'decision', { condition: cond, ...customData }, html);
+        return this.editor.addNode('decision', 1, 2, posX, posY, 'decision', { condition: cond, ...customData }, html, false);
       }
 
       case 'loop': {
         const cond = customData.condition ?? 'i < 10';
         // 2 inputs (entry + loopback), 2 outputs (output_1: Body, output_2: Exit)
-        return this.editor.addNode('loop', 2, 2, posX, posY, 'loop', { condition: cond, ...customData }, html);
+        return this.editor.addNode('loop', 2, 2, posX, posY, 'loop', { condition: cond, ...customData }, html, false);
       }
 
       case 'input': {
         const varName = customData.variableName ?? 'x';
         const prompt = customData.prompt ?? `Enter ${varName}:`;
-        return this.editor.addNode('input', 1, 1, posX, posY, 'input', { variableName: varName, prompt, ...customData }, html);
+        return this.editor.addNode('input', 1, 1, posX, posY, 'input', { variableName: varName, prompt, ...customData }, html, false);
       }
 
       case 'output': {
-        const expr = customData.expression ?? '"Result: " + x';
-        return this.editor.addNode('output', 1, 1, posX, posY, 'output', { expression: expr, ...customData }, html);
+        const expr = customData.expression ?? 'x';
+        return this.editor.addNode('output', 1, 1, posX, posY, 'output', { expression: expr, ...customData }, html, false);
       }
 
       default:
@@ -304,46 +304,73 @@ export class CanvasManager {
   }
 
   /**
-   * Loads diagram data into canvas, ensuring complete HTML templates for each node.
+   * Loads diagram data into canvas, ensuring complete HTML templates and typenode=false for all nodes.
    * @param {Object} rawData
    */
   loadData(rawData) {
     this.clear();
+    if (!rawData) return;
 
-    // Deep clone to avoid mutating input reference
-    const data = JSON.parse(JSON.stringify(rawData));
-    const moduleData = data?.drawflow?.Home?.data || data?.data || {};
+    // Normalize raw data from any source format
+    const rawModuleData = rawData?.drawflow?.Home?.data || rawData?.data || rawData || {};
+    const sanitizedNodes = {};
 
-    // Ensure every node in the dataset has the complete HTML template
-    for (const [id, node] of Object.entries(moduleData)) {
-      const nodeType = (node.name || node.class || '').toLowerCase();
-      node.html = renderNodeHtml(nodeType, node.data || {});
+    for (const [id, node] of Object.entries(rawModuleData)) {
+      if (!node || typeof node !== 'object') continue;
+      const numId = parseInt(node.id || id, 10) || String(id);
+      const nodeType = (node.name || node.class || 'assignment').toLowerCase();
+      const nodeData = node.data || {};
+
+      sanitizedNodes[numId] = {
+        id: numId,
+        name: nodeType,
+        class: node.class || nodeType,
+        data: nodeData,
+        html: renderNodeHtml(nodeType, nodeData),
+        typenode: false, // Explicitly boolean false to prevent Drawflow render.version lookup
+        inputs: node.inputs || {},
+        outputs: node.outputs || {},
+        pos_x: Number(node.pos_x) || 100,
+        pos_y: Number(node.pos_y) || 100
+      };
     }
 
-    this.editor.import(data);
+    const canonicalData = {
+      drawflow: {
+        Home: {
+          data: sanitizedNodes
+        }
+      }
+    };
 
-    // Re-bind input values from loaded node data into the DOM inputs
+    // Import normalized dataset
+    this.editor.import(canonicalData, false);
+
+    // Refresh connections and bind input values into DOM inputs
     setTimeout(() => {
-      for (const [id, node] of Object.entries(moduleData)) {
+      for (const id of Object.keys(sanitizedNodes)) {
+        this.editor.updateConnectionNodes(`node-${id}`);
+
         const nodeEl = this.container.querySelector(`#node-${id}`);
         if (!nodeEl) continue;
 
+        const nodeObj = sanitizedNodes[id];
         const exprInput = nodeEl.querySelector('input[df-expression]');
-        if (exprInput && node.data?.expression !== undefined) {
-          exprInput.value = node.data.expression;
+        if (exprInput && nodeObj.data?.expression !== undefined) {
+          exprInput.value = nodeObj.data.expression;
         }
 
         const condInput = nodeEl.querySelector('input[df-condition]');
-        if (condInput && node.data?.condition !== undefined) {
-          condInput.value = node.data.condition;
+        if (condInput && nodeObj.data?.condition !== undefined) {
+          condInput.value = nodeObj.data.condition;
         }
 
         const varInput = nodeEl.querySelector('input[df-variableName]');
-        if (varInput && node.data?.variableName !== undefined) {
-          varInput.value = node.data.variableName;
+        if (varInput && nodeObj.data?.variableName !== undefined) {
+          varInput.value = nodeObj.data.variableName;
         }
       }
-    }, 50);
+    }, 40);
   }
 
   zoomIn() {
