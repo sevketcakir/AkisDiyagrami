@@ -193,11 +193,30 @@ export function buildOrthogonalPath(x1, y1, x2, y2) {
     return `M ${x1} ${y1} L ${x2} ${y2}`;
   }
 
-  // 2. Loop Body Output (exiting right to a target whose top is level or higher, e.g. sum1ToN)
+  // 2. Upward loopback / return line (dy <= -10)
+  // Drops down under source block, routes around side corridor (left or right), steps up above target, and drops into top port
+  if (dy <= -10) {
+    const clearBottomY = y1 + 25;
+    const clearTopY = y2 - 25;
+    // Route around the left corridor if source is to the left or dx < -20
+    const goLeft = dx < -20 || (Math.abs(dx) <= 20 && x1 < 300);
+    const corridorX = goLeft ? Math.min(x1, x2) - 50 : Math.max(x1, x2) + 50;
+
+    return createFilletedPath([
+      { x: x1, y: y1 },
+      { x: x1, y: clearBottomY },
+      { x: corridorX, y: clearBottomY },
+      { x: corridorX, y: clearTopY },
+      { x: x2, y: clearTopY },
+      { x: x2, y: y2 }
+    ]);
+  }
+
+  // 3. Loop Body Output (exiting right to a target whose top is level or higher, e.g. sum1ToN)
   // Routes right, steps UP above target block, goes right, and drops cleanly into top input port
-  if (dx > 20 && dy < 25) {
+  if (dx > 20 && dy < 30) {
     const clearTopY = y2 - 25; // 25px clearance above target block
-    const stepRightX = Math.round(x1 + Math.min(30, dx * 0.35));
+    const stepRightX = Math.round(x1 + Math.min(35, dx * 0.35));
     return createFilletedPath([
       { x: x1, y: y1 },
       { x: stepRightX, y: y1 },
@@ -207,29 +226,15 @@ export function buildOrthogonalPath(x1, y1, x2, y2) {
     ]);
   }
 
-  // 3. Return Wire going Left to Loop In (e.g. from process bottom (575, 425) to Loop In (450, 421))
-  // Drops down under the process block, travels left under the block, and steps up into Loop In port
-  if (dx < -20 && dy < 20) {
-    const clearBottomY = y1 + 22; // 22px clearance below process block
+  // 4. Return Wire going Left to Loop In port at horizontal level (e.g. from process bottom (575, 425) to Loop In (450, 421))
+  if (dx < -20 && dy < 30) {
+    const clearBottomY = y1 + 25;
     const approachX = Math.round(x2 + 25);
     return createFilletedPath([
       { x: x1, y: y1 },
       { x: x1, y: clearBottomY },
       { x: approachX, y: clearBottomY },
       { x: approachX, y: y2 },
-      { x: x2, y: y2 }
-    ]);
-  }
-
-  // 4. Return wire going far upward (e.g. nested body bottom back up to top loop header)
-  if (dy < -20) {
-    const clearBottomY = y1 + 22;
-    const gutterX = Math.max(x1, x2) + 40;
-    return createFilletedPath([
-      { x: x1, y: y1 },
-      { x: x1, y: clearBottomY },
-      { x: gutterX, y: clearBottomY },
-      { x: gutterX, y: y2 },
       { x: x2, y: y2 }
     ]);
   }
@@ -661,6 +666,61 @@ export class CanvasManager {
   }
 
   /**
+   * Sanitizes, repairs, and enforces strict bidirectional symmetry on all Drawflow node connections.
+   * Ensures that inputs and outputs have correctly named connection properties (input vs output).
+   * @param {Record<string, any>} rawNodes
+   */
+  static sanitizeConnections(rawNodes) {
+    // 1. Normalize outputs
+    for (const [sourceId, node] of Object.entries(rawNodes)) {
+      if (!node.outputs) node.outputs = {};
+      if (!node.inputs) node.inputs = {};
+
+      for (const [outPort, outObj] of Object.entries(node.outputs)) {
+        if (!outObj.connections) outObj.connections = [];
+        outObj.connections = outObj.connections.map(conn => {
+          const targetNode = String(conn.node);
+          const rawPort = conn.output || conn.input || 'input_1';
+          const targetPort = rawPort.startsWith('input_') ? rawPort : 'input_1';
+          return { node: targetNode, output: targetPort };
+        });
+      }
+
+      for (const [inPort, inObj] of Object.entries(node.inputs)) {
+        if (!inObj.connections) inObj.connections = [];
+        inObj.connections = inObj.connections.map(conn => {
+          const srcNode = String(conn.node);
+          const rawPort = conn.input || conn.output || 'output_1';
+          const srcPort = rawPort.startsWith('output_') ? rawPort : 'output_1';
+          return { node: srcNode, input: srcPort };
+        });
+      }
+    }
+
+    // 2. Ensure bidirectional symmetry: every output connection MUST exist in the target's inputs
+    for (const [sourceId, node] of Object.entries(rawNodes)) {
+      for (const [outPort, outObj] of Object.entries(node.outputs)) {
+        for (const conn of outObj.connections) {
+          const targetNode = rawNodes[conn.node];
+          if (targetNode) {
+            if (!targetNode.inputs) targetNode.inputs = {};
+            const targetPort = conn.output;
+            if (!targetNode.inputs[targetPort]) {
+              targetNode.inputs[targetPort] = { connections: [] };
+            }
+            const exists = targetNode.inputs[targetPort].connections.some(
+              c => String(c.node) === String(sourceId) && c.input === outPort
+            );
+            if (!exists) {
+              targetNode.inputs[targetPort].connections.push({ node: String(sourceId), input: outPort });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Loads diagram data into canvas, ensuring complete HTML templates and typenode=false for all nodes.
    * @param {Object} rawData
    */
@@ -684,12 +744,15 @@ export class CanvasManager {
         data: nodeData,
         html: renderNodeHtml(nodeType, nodeData),
         typenode: false,
-        inputs: node.inputs || {},
-        outputs: node.outputs || {},
+        inputs: JSON.parse(JSON.stringify(node.inputs || {})),
+        outputs: JSON.parse(JSON.stringify(node.outputs || {})),
         pos_x: Number(node.pos_x) || 100,
         pos_y: Number(node.pos_y) || 100
       };
     }
+
+    // Automatically sanitize and repair connection symmetry
+    CanvasManager.sanitizeConnections(sanitizedNodes);
 
     const canonicalData = {
       drawflow: {
@@ -702,7 +765,7 @@ export class CanvasManager {
     this.editor.import(canonicalData, false);
     this.injectArrowheadDefs();
 
-    setTimeout(() => {
+    const updateAllNodesAndInputs = () => {
       for (const id of Object.keys(sanitizedNodes)) {
         this.editor.updateConnectionNodes(`node-${id}`);
 
@@ -730,7 +793,11 @@ export class CanvasManager {
         }
       }
       this.classifyConnections();
-    }, 40);
+    };
+
+    requestAnimationFrame(() => updateAllNodesAndInputs());
+    setTimeout(() => updateAllNodesAndInputs(), 50);
+    setTimeout(() => updateAllNodesAndInputs(), 150);
   }
 
   /**

@@ -253,7 +253,7 @@ export const SamplePrograms = {
               class: 'output',
               html: renderNodeHtml('output', { expression: '"Max is C: " + c' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '5', output: 'output_2' }] } },
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '8', output: 'input_1' }] } },
               pos_x: 530,
               pos_y: 480
@@ -353,7 +353,7 @@ export const SamplePrograms = {
               html: renderNodeHtml('assignment', { expression: 'sum = sum + i' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_2' }] } },
               pos_x: 520,
               pos_y: 340
             },
@@ -456,7 +456,7 @@ export const SamplePrograms = {
               html: renderNodeHtml('assignment', { expression: 'fact = fact * i' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_2' }] } },
               pos_x: 520,
               pos_y: 340
             },
@@ -566,7 +566,7 @@ export const SamplePrograms = {
               inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
               outputs: {
                 output_1: { connections: [{ node: '6', output: 'input_1' }] }, // True (Left)
-                output_2: { connections: [{ node: '4', input: 'input_2' }] }   // False (Right loopback)
+                output_2: { connections: [{ node: '4', output: 'input_2' }] }  // False (Right loopback)
               },
               pos_x: 540,
               pos_y: 340
@@ -578,8 +578,8 @@ export const SamplePrograms = {
               class: 'assignment',
               html: renderNodeHtml('assignment', { expression: 'asal = false' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '5', output: 'input_1' }] } },
-              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_2' }] } },
               pos_x: 540,
               pos_y: 470
             },
@@ -758,7 +758,7 @@ export const SamplePrograms = {
               inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
               outputs: {
                 output_1: { connections: [{ node: '12', output: 'input_1' }] }, // True -> set false
-                output_2: { connections: [{ node: '6', input: 'input_2' }] }    // False -> continue inner loop
+                output_2: { connections: [{ node: '6', output: 'input_2' }] }    // False -> continue inner loop
               },
               pos_x: 820,
               pos_y: 460
@@ -770,8 +770,8 @@ export const SamplePrograms = {
               class: 'assignment',
               html: renderNodeHtml('assignment', { expression: 'asal = false' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '7', output: 'input_1' }] } },
-              outputs: { output_1: { connections: [{ node: '6', input: 'input_2' }] } },
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '6', output: 'input_2' }] } },
               pos_x: 820,
               pos_y: 590
             },
@@ -785,7 +785,7 @@ export const SamplePrograms = {
               inputs: { input_1: { connections: [{ node: '6', input: 'output_2' }] } },
               outputs: {
                 output_1: { connections: [{ node: '9', output: 'input_1' }] }, // True -> increment & print
-                output_2: { connections: [{ node: '4', input: 'input_2' }] }   // False -> outer loopback
+                output_2: { connections: [{ node: '4', output: 'input_2' }] }   // False -> outer loopback
               },
               pos_x: 540,
               pos_y: 600
@@ -810,7 +810,7 @@ export const SamplePrograms = {
               html: renderNodeHtml('output', { expression: '"Prime #" + adet + ": " + I' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '9', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_2' }] } },
               pos_x: 360,
               pos_y: 840
             },
@@ -833,7 +833,7 @@ export const SamplePrograms = {
               class: 'end',
               html: renderNodeHtml('end', {}),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '11', output: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '11', input: 'output_1' }] } },
               outputs: {},
               pos_x: 250,
               pos_y: 1000
@@ -925,7 +925,7 @@ export const SamplePrograms = {
               html: renderNodeHtml('assignment', { expression: 'next = a + b\na = b\nb = next' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_2' }] } },
               pos_x: 520,
               pos_y: 470
             },
@@ -1008,7 +1008,7 @@ export const SamplePrograms = {
               class: 'decision',
               html: renderNodeHtml('decision', { condition: 'a > b' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
               outputs: {
                 output_1: { connections: [{ node: '5', output: 'input_1' }] }, // True -> a = a - b
                 output_2: { connections: [{ node: '6', output: 'input_1' }] }  // False -> b = b - a
@@ -1023,8 +1023,8 @@ export const SamplePrograms = {
               class: 'assignment',
               html: renderNodeHtml('assignment', { expression: 'a = a - b' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '4', output: 'input_1' }] } },
-              outputs: { output_1: { connections: [{ node: '3', input: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
               pos_x: 10,
               pos_y: 500
             },
@@ -1035,8 +1035,8 @@ export const SamplePrograms = {
               class: 'assignment',
               html: renderNodeHtml('assignment', { expression: 'b = b - a' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '4', output: 'output_2' }] } },
-              outputs: { output_1: { connections: [{ node: '3', input: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
               pos_x: 200,
               pos_y: 500
             },
@@ -1047,7 +1047,7 @@ export const SamplePrograms = {
               class: 'output',
               html: renderNodeHtml('output', { expression: '"GCD (EBOB): " + a' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '3', output: 'output_2' }] } },
+              inputs: { input_1: { connections: [{ node: '3', input: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '8', output: 'input_1' }] } },
               pos_x: 430,
               pos_y: 380
@@ -1059,7 +1059,7 @@ export const SamplePrograms = {
               class: 'end',
               html: renderNodeHtml('end', {}),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '7', output: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_1' }] } },
               outputs: {},
               pos_x: 250,
               pos_y: 620
@@ -1130,8 +1130,8 @@ export const SamplePrograms = {
               class: 'assignment',
               html: renderNodeHtml('assignment', { expression: 'temp = b\nb = a % b\na = temp' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '3', output: 'input_1' }] } },
-              outputs: { output_1: { connections: [{ node: '3', input: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
               pos_x: 80,
               pos_y: 380
             },
@@ -1142,7 +1142,7 @@ export const SamplePrograms = {
               class: 'output',
               html: renderNodeHtml('output', { expression: '"GCD (EBOB): " + a' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '3', output: 'output_2' }] } },
+              inputs: { input_1: { connections: [{ node: '3', input: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
               pos_x: 430,
               pos_y: 380
@@ -1154,7 +1154,7 @@ export const SamplePrograms = {
               class: 'end',
               html: renderNodeHtml('end', {}),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '5', output: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
               outputs: {},
               pos_x: 250,
               pos_y: 530

@@ -32,8 +32,8 @@ describe('Orthogonal Routing', () => {
     // Process bottom out (575, 425) -> Loop in (450, 421)
     const path = buildOrthogonalPath(575, 425, 450, 421);
     expect(path).toContain('M 575 425');
-    // Clears below bottom of process at 425 + 22 = 447
-    expect(path).toContain('447');
+    // Clears below bottom of process at 425 + 25 = 450
+    expect(path).toContain('450');
     expect(path).toContain('450 421');
   });
 
@@ -41,7 +41,7 @@ describe('Orthogonal Routing', () => {
     // Return upward: source (540, 500) -> target (380, 250)
     const pathLoopback = buildOrthogonalPath(540, 500, 380, 250);
     expect(pathLoopback).toContain('M 540 500');
-    expect(pathLoopback).toContain('405'); // Approach X corridor
+    expect(pathLoopback).toContain('330'); // Corridor X
     expect(pathLoopback).toContain('380 250');
   });
 });
