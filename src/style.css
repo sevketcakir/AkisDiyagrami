@@ -614,10 +614,10 @@ body {
 /* Port Labels */
 .port-label {
   position: absolute;
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-size: 0.62rem;
+  font-weight: 600;
   background: rgba(15, 23, 42, 0.95);
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 3px;
   z-index: 5;
   pointer-events: none;
@@ -625,11 +625,11 @@ body {
   white-space: nowrap;
 }
 
-.port-label-true { left: -36px; top: 50%; transform: translateY(-50%); color: #4ade80; }
-.port-label-false { right: -36px; top: 50%; transform: translateY(-50%); color: #f87171; }
-.port-label-body { right: -32px; top: 12px; color: #22d3ee; }
-.port-label-loopback { right: -42px; bottom: 12px; color: #c084fc; }
-.port-label-exit { bottom: -18px; left: 50%; transform: translateX(-50%); color: #fbbf24; }
+.port-label-true { left: -34px; top: 50%; transform: translateY(-50%); color: #4ade80; }
+.port-label-false { right: -34px; top: 50%; transform: translateY(-50%); color: #f87171; }
+.port-label-body { right: -28px; top: 10px; color: #22d3ee; }
+.port-label-loopback { right: -32px; bottom: 10px; color: #c084fc; }
+.port-label-exit { bottom: -16px; left: 50%; transform: translateX(-50%); color: #fbbf24; }
 
 /* Active Glowing Node during Execution */
 .drawflow-node.active-executing-node .svg-shape-path {
@@ -674,35 +674,36 @@ body {
 .drawflow .drawflow-node .input,
 .drawflow .drawflow-node .output {
   position: absolute !important;
-  width: 14px;
-  height: 14px;
-  background: #64748b;
-  border: 2px solid #0f172a;
+  width: 10px;
+  height: 10px;
+  background: #1e293b;
+  border: 2px solid #64748b;
   border-radius: 50%;
   pointer-events: all;
   cursor: crosshair;
   z-index: 10;
-  transition: transform 0.15s ease, background 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
   margin: 0 !important;
 }
 
 .drawflow .drawflow-node .input:hover,
 .drawflow .drawflow-node .output:hover {
   background: var(--primary);
-  transform: scale(1.3);
+  border-color: #ffffff;
+  transform: scale(1.35);
 }
 
 /* Default Linear Nodes: Input at Top-Center (North), Output at Bottom-Center (South) */
 .drawflow .drawflow-node .input.input_1 {
-  top: -7px !important;
-  left: calc(50% - 7px) !important;
+  top: -5px !important;
+  left: calc(50% - 5px) !important;
   right: auto !important;
   bottom: auto !important;
 }
 
 .drawflow .drawflow-node .output.output_1 {
-  bottom: -7px !important;
-  left: calc(50% - 7px) !important;
+  bottom: -5px !important;
+  left: calc(50% - 5px) !important;
   right: auto !important;
   top: auto !important;
 }
@@ -712,24 +713,26 @@ body {
    - Output 1 (True / West): Left Tip
    - Output 2 (False / East): Right Tip */
 .drawflow .drawflow-node.decision .input.input_1 {
-  top: -7px !important;
-  left: calc(50% - 7px) !important;
+  top: -5px !important;
+  left: calc(50% - 5px) !important;
   right: auto !important;
   bottom: auto !important;
 }
 .drawflow .drawflow-node.decision .output.output_1 {
-  left: -7px !important;
-  top: calc(50% - 7px) !important;
+  left: -5px !important;
+  top: calc(50% - 5px) !important;
   bottom: auto !important;
   right: auto !important;
-  background: #22c55e;
+  background: #065f46;
+  border-color: #22c55e;
 }
 .drawflow .drawflow-node.decision .output.output_2 {
-  right: -7px !important;
-  top: calc(50% - 7px) !important;
+  right: -5px !important;
+  top: calc(50% - 5px) !important;
   bottom: auto !important;
   left: auto !important;
-  background: #ef4444;
+  background: #881337;
+  border-color: #f43f5e;
 }
 
 /* Loop Node (Hexagon):
@@ -738,46 +741,51 @@ body {
    - Output 1 (Body / East): Upper Right Edge (branches to loop body on right)
    - Output 2 (Exit / South): Bottom Edge (continues straight down) */
 .drawflow .drawflow-node.loop .input.input_1 {
-  top: -7px !important;
-  left: calc(50% - 7px) !important;
+  top: -5px !important;
+  left: calc(50% - 5px) !important;
   right: auto !important;
   bottom: auto !important;
 }
 .drawflow .drawflow-node.loop .input.input_2 {
-  right: -7px !important;
-  bottom: 16px !important;
+  right: -5px !important;
+  bottom: 14px !important;
   left: auto !important;
   top: auto !important;
-  background: #a78bfa;
+  background: #581c87;
+  border-color: #a855f7;
 }
 .drawflow .drawflow-node.loop .output.output_1 {
-  right: -7px !important;
-  top: 16px !important;
+  right: -5px !important;
+  top: 14px !important;
   bottom: auto !important;
   left: auto !important;
-  background: #06b6d4;
+  background: #164e63;
+  border-color: #06b6d4;
 }
 .drawflow .drawflow-node.loop .output.output_2 {
-  bottom: -7px !important;
-  left: calc(50% - 7px) !important;
+  bottom: -5px !important;
+  left: calc(50% - 5px) !important;
   right: auto !important;
   top: auto !important;
-  background: #f59e0b;
+  background: #78350f;
+  border-color: #f59e0b;
 }
 
 /* Connection Lines with SVG Directional Arrowheads */
 .drawflow .connection .main-path {
-  stroke: #94a3b8;
+  stroke: #64748b;
   stroke-width: 2.5px;
   marker-end: url(#flowchart-arrow);
+  transition: stroke 0.15s ease;
 }
 
 .drawflow .connection:hover .main-path {
-  stroke: var(--primary);
+  stroke: #38bdf8;
   stroke-width: 3px;
+  marker-end: url(#flowchart-arrow-selected);
 }
 
 .drawflow .connection.selected .main-path {
-  stroke: var(--primary);
+  stroke: #38bdf8;
   marker-end: url(#flowchart-arrow-selected);
 }

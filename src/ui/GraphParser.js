@@ -81,7 +81,7 @@ export class GraphParser {
             evaluator
           });
         } else if (name.includes('input')) {
-          const variableName = nodeData.variableName ?? nodeData.text ?? 'x';
+          const variableName = String(nodeData.variableName ?? nodeData.variablename ?? nodeData.variable ?? nodeData.name ?? nodeData.text ?? 'x').trim();
           const prompt = nodeData.prompt ?? `Enter ${variableName}:`;
           nodeInstance = new InputNode(id, {
             variableName,
@@ -89,7 +89,7 @@ export class GraphParser {
             nextNodeId
           });
         } else if (name.includes('output')) {
-          const expression = nodeData.expression ?? nodeData.text ?? 'x';
+          const expression = String(nodeData.expression ?? nodeData.text ?? 'x').trim();
           nodeInstance = new OutputNode(id, {
             expression,
             nextNodeId,

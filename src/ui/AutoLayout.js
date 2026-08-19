@@ -1,25 +1,25 @@
 /**
  * @class AutoLayout
- * Deterministic, paper-standard vertical flowchart layout engine.
- * Arranges nodes along the central vertical axis with symmetric decision branches
- * and right-aligned loop iterations.
+ * Professional, paper-standard vertical flowchart auto-layout engine.
+ * Computes non-overlapping (X, Y) coordinates with symmetric branching,
+ * wide column clearance, and nested loop hierarchy.
  */
 export class AutoLayout {
   /**
    * Computes clean (X, Y) positions for all nodes in a flowchart.
    * @param {Object} drawflowData
    * @param {Object} [options]
-   * @param {number} [options.startX=280]
+   * @param {number} [options.startX=260]
    * @param {number} [options.startY=40]
-   * @param {number} [options.verticalSpacing=115]
-   * @param {number} [options.branchSpacing=200]
+   * @param {number} [options.verticalSpacing=130]
+   * @param {number} [options.branchSpacing=280]
    * @returns {Object} Updated drawflowData with optimized pos_x and pos_y
    */
   static layout(drawflowData, options = {}) {
-    const startX = options.startX ?? 280;
+    const startX = options.startX ?? 260;
     const startY = options.startY ?? 40;
-    const vSpacing = options.verticalSpacing ?? 115;
-    const branchSpacing = options.branchSpacing ?? 200;
+    const vSpacing = options.verticalSpacing ?? 130;
+    const branchSpacing = options.branchSpacing ?? 280;
 
     const data = JSON.parse(JSON.stringify(drawflowData));
     const moduleData = data?.drawflow?.Home?.data || data?.data || data || {};
@@ -48,7 +48,14 @@ export class AutoLayout {
       return node?.outputs?.[portName]?.connections?.[0]?.node || null;
     };
 
-    const layoutSubtree = (nodeId, x, y) => {
+    /**
+     * Recursively computes positions for a subtree.
+     * @param {string} nodeId - Current node ID
+     * @param {number} x - X coordinate for this node
+     * @param {number} y - Y coordinate for this node
+     * @returns {number} Maximum Y coordinate reached in this branch
+     */
+    const layoutNode = (nodeId, x, y) => {
       if (!nodeId || visited.has(String(nodeId))) return y;
 
       const idStr = String(nodeId);
@@ -72,51 +79,53 @@ export class AutoLayout {
         let falseBranchEndY = nextY;
 
         if (trueTargetId && !visited.has(String(trueTargetId))) {
-          trueBranchEndY = layoutSubtree(trueTargetId, x - branchSpacing, nextY);
+          trueBranchEndY = layoutNode(trueTargetId, x - branchSpacing, nextY);
         }
 
         if (falseTargetId && !visited.has(String(falseTargetId))) {
-          falseBranchEndY = layoutSubtree(falseTargetId, x + branchSpacing, nextY);
+          falseBranchEndY = layoutNode(falseTargetId, x + branchSpacing, nextY);
         }
 
-        // Return the max Y reached by either branch
         return Math.max(trueBranchEndY, falseBranchEndY);
       } else if (nodeType.includes('loop')) {
         // Loop Hexagon:
         // Body branch -> Right (x + branchSpacing, y)
-        // Exit branch -> Down (x, y + vSpacing)
+        // Exit branch -> Down (x, below entire body)
         const bodyTargetId = getTargetId(node, 'output_1');
         const exitTargetId = getTargetId(node, 'output_2');
 
+        let maxBodyY = y;
         if (bodyTargetId && !visited.has(String(bodyTargetId))) {
-          layoutSubtree(bodyTargetId, x + branchSpacing, y);
+          maxBodyY = layoutNode(bodyTargetId, x + branchSpacing, y);
         }
+
+        // Place Exit node strictly below the deepest body instruction to prevent overlaps
+        const exitY = Math.max(y + vSpacing, maxBodyY + vSpacing);
 
         if (exitTargetId && !visited.has(String(exitTargetId))) {
-          return layoutSubtree(exitTargetId, x, y + vSpacing);
+          return layoutNode(exitTargetId, x, exitY);
         }
 
-        return y + vSpacing;
+        return exitY;
       } else if (nodeType.includes('end')) {
-        // End node
         return y;
       } else {
         // Linear nodes (Start, Assignment, Input, Output)
         const nextId = getTargetId(node, 'output_1');
         if (nextId && !visited.has(String(nextId))) {
-          return layoutSubtree(nextId, x, y + vSpacing);
+          return layoutNode(nextId, x, y + vSpacing);
         }
         return y;
       }
     };
 
-    layoutSubtree(startId, startX, startY);
+    layoutNode(startId, startX, startY);
 
-    // Place any remaining unvisited / orphan nodes in an aligned right column
+    // Place any remaining unvisited / orphan nodes in an aligned far-right column
     let orphanY = startY;
     for (const id of nodeIds) {
       if (!visited.has(id)) {
-        positions.set(id, { x: startX + branchSpacing * 2.5, y: orphanY });
+        positions.set(id, { x: startX + branchSpacing * 2.6, y: orphanY });
         orphanY += vSpacing;
       }
     }

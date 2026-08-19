@@ -6,8 +6,8 @@ import { AutoLayout } from './AutoLayout.js';
  * Generates paper-standard flowchart node HTML using embedded SVG shapes.
  * - Start / End: Oval (Capsule)
  * - Assignment / Process: Rectangle
- * - Decision: Diamond (Top In, Bottom True, Right False)
- * - Loop: Hexagon (Top In, Left Loopback In, Right Body Out, Bottom Exit Out)
+ * - Decision: Diamond (Top In, Left True, Right False)
+ * - Loop: Hexagon (Top In, Upper Right Body Out, Lower Right In Return, Bottom Exit Out)
  * - Input: Parallelogram (scanf)
  * - Output: Document symbol (printf) with generous bottom clearance
  *
@@ -81,7 +81,7 @@ export function renderNodeHtml(type, customData = {}) {
     }
 
     case 'input': {
-      const varName = customData.variableName ?? customData.text ?? 'x';
+      const varName = customData.variableName ?? customData.variablename ?? customData.variable ?? customData.name ?? customData.text ?? 'x';
       return `
         <div class="flowchart-node-content node-parallelogram shape-input">
           <svg class="shape-svg" viewBox="0 0 190 80" preserveAspectRatio="none">
@@ -89,7 +89,7 @@ export function renderNodeHtml(type, customData = {}) {
           </svg>
           <div class="node-inner-content">
             <div class="node-header">Input (scanf)</div>
-            <input type="text" df-variableName value="${escapeHtml(varName)}" placeholder="Variable (e.g. x)" />
+            <input type="text" df-variablename value="${escapeHtml(varName)}" placeholder="Variable (e.g. N)" />
           </div>
         </div>
       `;
@@ -155,17 +155,17 @@ export class CanvasManager {
       const deltaX = end_pos_x - start_pos_x;
       const deltaY = end_pos_y - start_pos_y;
 
-      // 1. Perfectly vertical straight line
+      // 1. Straight vertical downward line
       if (Math.abs(deltaX) <= 6 && deltaY > 0) {
         return `M ${start_pos_x} ${start_pos_y} L ${end_pos_x} ${end_pos_y}`;
       }
 
       // 2. Loopback connection returning upwards (e.g. bottom of body back to loop header)
       if (deltaY < -10) {
-        const loopOffset = Math.max(50, Math.abs(deltaX) * 0.45);
-        const p1x = start_pos_x + (deltaX > 0 ? loopOffset : -loopOffset);
-        const p1y = start_pos_y + 35;
-        const p2x = end_pos_x + 50;
+        const loopOffset = Math.max(45, Math.abs(deltaX) * 0.4);
+        const p1x = start_pos_x + (deltaX >= 0 ? loopOffset : -loopOffset);
+        const p1y = start_pos_y + 30;
+        const p2x = end_pos_x + 45;
         const p2y = end_pos_y;
         return `M ${start_pos_x} ${start_pos_y} C ${p1x} ${p1y} ${p2x} ${p2y} ${end_pos_x} ${end_pos_y}`;
       }
@@ -174,13 +174,13 @@ export class CanvasManager {
       let start_dx = 0;
       let start_dy = 0;
 
-      if (deltaX > 25) {
+      if (deltaX > 20) {
         // Exits horizontally to the Right (e.g. Decision False, Loop Body)
-        start_dx = Math.max(40, deltaX * 0.5);
+        start_dx = Math.max(35, deltaX * 0.45);
         start_dy = 0;
-      } else if (deltaX < -25) {
+      } else if (deltaX < -20) {
         // Exits horizontally to the Left (e.g. Decision True)
-        start_dx = -Math.max(40, Math.abs(deltaX) * 0.5);
+        start_dx = -Math.max(35, Math.abs(deltaX) * 0.45);
         start_dy = 0;
       } else {
         // Exits vertically Downwards from bottom port
@@ -190,7 +190,7 @@ export class CanvasManager {
 
       // Enters vertically from the Top into destination
       const end_dx = 0;
-      const end_dy = -Math.max(25, deltaY * 0.45);
+      const end_dy = -Math.max(25, Math.abs(deltaY) * 0.45);
 
       const hx1 = start_pos_x + start_dx;
       const hy1 = start_pos_y + start_dy;
@@ -202,7 +202,7 @@ export class CanvasManager {
   }
 
   /**
-   * Injects SVG arrowhead marker definitions so all connection lines have directional arrows.
+   * Injects sleek SVG arrowhead marker definitions for clean connector arrows.
    */
   injectArrowheadDefs() {
     const precanvas = this.container.querySelector('.drawflow');
@@ -217,14 +217,14 @@ export class CanvasManager {
 
     svgDefs.innerHTML = `
       <defs>
-        <marker id="flowchart-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+        <marker id="flowchart-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#64748b" />
         </marker>
-        <marker id="flowchart-arrow-selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+        <marker id="flowchart-arrow-selected" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#38bdf8" />
         </marker>
-        <marker id="flowchart-arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+        <marker id="flowchart-arrow-active" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#22c55e" />
         </marker>
       </defs>
     `;
@@ -235,31 +235,34 @@ export class CanvasManager {
     // 1. Synchronize input field changes directly into nodeData
     this.container.addEventListener('input', (e) => {
       const target = e.target;
-      if (!target.hasAttribute('df-expression') &&
-          !target.hasAttribute('df-condition') &&
-          !target.hasAttribute('df-variableName') &&
-          !target.hasAttribute('df-prompt')) {
-        return;
-      }
+      if (!target || target.tagName !== 'INPUT') return;
 
       const nodeElement = target.closest('.drawflow-node');
       if (!nodeElement) return;
 
       const nodeId = nodeElement.id.replace('node-', '');
       const nodeData = this.editor.getNodeFromId(nodeId);
-      if (nodeData) {
-        if (!nodeData.data) nodeData.data = {};
-        if (target.hasAttribute('df-expression')) {
-          nodeData.data.expression = target.value;
-        }
-        if (target.hasAttribute('df-condition')) {
-          nodeData.data.condition = target.value;
-        }
-        if (target.hasAttribute('df-variableName')) {
-          nodeData.data.variableName = target.value;
-        }
-        if (target.hasAttribute('df-prompt')) {
-          nodeData.data.prompt = target.value;
+      if (!nodeData) return;
+      if (!nodeData.data) nodeData.data = {};
+
+      for (const attr of target.attributes) {
+        const name = attr.name.toLowerCase();
+        if (name.startsWith('df-')) {
+          const key = name.slice(3);
+          nodeData.data[key] = target.value;
+          if (key === 'variablename' || key === 'variable') {
+            nodeData.data.variableName = target.value;
+            nodeData.data.variablename = target.value;
+          }
+          if (key === 'expression') {
+            nodeData.data.expression = target.value;
+          }
+          if (key === 'condition') {
+            nodeData.data.condition = target.value;
+          }
+          if (key === 'prompt') {
+            nodeData.data.prompt = target.value;
+          }
         }
       }
     });
@@ -304,20 +307,20 @@ export class CanvasManager {
 
       case 'decision': {
         const cond = customData.condition ?? 'x > 0';
-        // 1 input (Top), 2 outputs (output_1: True at Bottom, output_2: False on Right)
+        // 1 input (Top), 2 outputs (output_1: True on Left, output_2: False on Right)
         return this.editor.addNode('decision', 1, 2, posX, posY, 'decision', { condition: cond, ...customData }, html, false);
       }
 
       case 'loop': {
         const cond = customData.condition ?? 'I = 1, N, 1';
-        // 2 inputs (input_1: Top Entry, input_2: Left Loopback), 2 outputs (output_1: Right Body, output_2: Bottom Exit)
+        // 2 inputs (input_1: Top Entry, input_2: Lower Right Loop Return), 2 outputs (output_1: Upper Right Body, output_2: Bottom Exit)
         return this.editor.addNode('loop', 2, 2, posX, posY, 'loop', { condition: cond, ...customData }, html, false);
       }
 
       case 'input': {
-        const varName = customData.variableName ?? 'x';
+        const varName = customData.variableName ?? customData.variablename ?? customData.variable ?? 'x';
         const prompt = customData.prompt ?? `Enter ${varName}:`;
-        return this.editor.addNode('input', 1, 1, posX, posY, 'input', { variableName: varName, prompt, ...customData }, html, false);
+        return this.editor.addNode('input', 1, 1, posX, posY, 'input', { variableName: varName, variablename: varName, prompt, ...customData }, html, false);
       }
 
       case 'output': {
@@ -381,14 +384,25 @@ export class CanvasManager {
       if (!nodeData) continue;
 
       if (!nodeData.data) nodeData.data = {};
-      if (input.hasAttribute('df-expression')) {
-        nodeData.data.expression = input.value;
-      } else if (input.hasAttribute('df-condition')) {
-        nodeData.data.condition = input.value;
-      } else if (input.hasAttribute('df-variableName')) {
-        nodeData.data.variableName = input.value;
-      } else if (input.hasAttribute('df-prompt')) {
-        nodeData.data.prompt = input.value;
+      for (const attr of input.attributes) {
+        const name = attr.name.toLowerCase();
+        if (name.startsWith('df-')) {
+          const key = name.slice(3);
+          nodeData.data[key] = input.value;
+          if (key === 'variablename' || key === 'variable') {
+            nodeData.data.variableName = input.value;
+            nodeData.data.variablename = input.value;
+          }
+          if (key === 'expression') {
+            nodeData.data.expression = input.value;
+          }
+          if (key === 'condition') {
+            nodeData.data.condition = input.value;
+          }
+          if (key === 'prompt') {
+            nodeData.data.prompt = input.value;
+          }
+        }
       }
     }
 
@@ -455,9 +469,10 @@ export class CanvasManager {
           condInput.value = nodeObj.data.condition;
         }
 
-        const varInput = nodeEl.querySelector('input[df-variableName]');
-        if (varInput && nodeObj.data?.variableName !== undefined) {
-          varInput.value = nodeObj.data.variableName;
+        const varInput = nodeEl.querySelector('input[df-variablename], input[df-variableName]');
+        const varVal = nodeObj.data?.variableName ?? nodeObj.data?.variablename;
+        if (varInput && varVal !== undefined) {
+          varInput.value = varVal;
         }
       }
     }, 40);
