@@ -124,8 +124,66 @@ function escapeHtml(str) {
 }
 
 /**
+ * Builds clean Orthogonal (Manhattan 90-degree) step paths with rounded fillet corners.
+ * @param {number} x1 - Source port X
+ * @param {number} y1 - Source port Y
+ * @param {number} x2 - Target port X
+ * @param {number} y2 - Target port Y
+ * @returns {string} SVG Path 'd' attribute
+ */
+export function buildOrthogonalPath(x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const r = 8; // Corner fillet radius
+
+  // 1. Straight vertical downward line
+  if (Math.abs(dx) <= 5 && dy > 0) {
+    return `M ${x1} ${y1} L ${x2} ${y2}`;
+  }
+
+  // 2. Loopback returning upwards (bottom of body back to loop header)
+  if (dy < -5) {
+    const gutterX = Math.max(x1, x2) + 40;
+    const dropY = y1 + 18;
+    return `M ${x1} ${y1} ` +
+           `L ${x1} ${dropY - r} ` +
+           `Q ${x1} ${dropY} ${x1 + r} ${dropY} ` +
+           `L ${gutterX - r} ${dropY} ` +
+           `Q ${gutterX} ${dropY} ${gutterX} ${dropY - r} ` +
+           `L ${gutterX} ${y2 + r} ` +
+           `Q ${gutterX} ${y2} ${gutterX - r} ${y2} ` +
+           `L ${x2} ${y2}`;
+  }
+
+  // 3. Forward flowing lateral connection (e.g. Decision Left/Right, Loop Body Right)
+  if (dx > 20) {
+    // Exits horizontally to the Right
+    return `M ${x1} ${y1} ` +
+           `L ${x2 - r} ${y1} ` +
+           `Q ${x2} ${y1} ${x2} ${y1 + r} ` +
+           `L ${x2} ${y2}`;
+  } else if (dx < -20) {
+    // Exits horizontally to the Left
+    return `M ${x1} ${y1} ` +
+           `L ${x2 + r} ${y1} ` +
+           `Q ${x2} ${y1} ${x2} ${y1 + r} ` +
+           `L ${x2} ${y2}`;
+  }
+
+  // 4. Default Linear Forward Step (Bottom -> Top when slightly offset)
+  const midY = Math.round(y1 + dy * 0.5);
+  const dirX = dx >= 0 ? 1 : -1;
+  return `M ${x1} ${y1} ` +
+         `L ${x1} ${midY - r} ` +
+         `Q ${x1} ${midY} ${x1 + dirX * r} ${midY} ` +
+         `L ${x2 - dirX * r} ${midY} ` +
+         `Q ${x2} ${midY} ${x2} ${midY + r} ` +
+         `L ${x2} ${y2}`;
+}
+
+/**
  * @class CanvasManager
- * Manages the Drawflow visual canvas, vertical flowchart node shapes, and connection rules.
+ * Manages the Drawflow visual canvas, orthogonal flowchart node shapes, and connection rules.
  */
 export class CanvasManager {
   /**
@@ -136,73 +194,30 @@ export class CanvasManager {
     this.editor = new Drawflow(this.container);
     this.editor.reroute = false;
     this.activeNodeId = null;
+    this.activeConnection = null;
+    this.onDataChange = null;
 
     this.init();
   }
 
   init() {
     this.editor.start();
-    this.setupVerticalCurvature();
+    this.setupOrthogonalRouting();
     this.injectArrowheadDefs();
     this.setupEvents();
   }
 
   /**
-   * Sets up natural flowchart connection curves respecting port exit directions (Bottom, Right, Left).
+   * Sets up paper-standard orthogonal (Manhattan 90-degree) connection lines.
    */
-  setupVerticalCurvature() {
+  setupOrthogonalRouting() {
     this.editor.createCurvature = (start_pos_x, start_pos_y, end_pos_x, end_pos_y) => {
-      const deltaX = end_pos_x - start_pos_x;
-      const deltaY = end_pos_y - start_pos_y;
-
-      // 1. Straight vertical downward line
-      if (Math.abs(deltaX) <= 6 && deltaY > 0) {
-        return `M ${start_pos_x} ${start_pos_y} L ${end_pos_x} ${end_pos_y}`;
-      }
-
-      // 2. Loopback connection returning upwards (e.g. bottom of body back to loop header)
-      if (deltaY < -10) {
-        const loopOffset = Math.max(45, Math.abs(deltaX) * 0.4);
-        const p1x = start_pos_x + (deltaX >= 0 ? loopOffset : -loopOffset);
-        const p1y = start_pos_y + 30;
-        const p2x = end_pos_x + 45;
-        const p2y = end_pos_y;
-        return `M ${start_pos_x} ${start_pos_y} C ${p1x} ${p1y} ${p2x} ${p2y} ${end_pos_x} ${end_pos_y}`;
-      }
-
-      // 3. Forward flowing connections:
-      let start_dx = 0;
-      let start_dy = 0;
-
-      if (deltaX > 20) {
-        // Exits horizontally to the Right (e.g. Decision False, Loop Body)
-        start_dx = Math.max(35, deltaX * 0.45);
-        start_dy = 0;
-      } else if (deltaX < -20) {
-        // Exits horizontally to the Left (e.g. Decision True)
-        start_dx = -Math.max(35, Math.abs(deltaX) * 0.45);
-        start_dy = 0;
-      } else {
-        // Exits vertically Downwards from bottom port
-        start_dx = 0;
-        start_dy = Math.max(25, deltaY * 0.45);
-      }
-
-      // Enters vertically from the Top into destination
-      const end_dx = 0;
-      const end_dy = -Math.max(25, Math.abs(deltaY) * 0.45);
-
-      const hx1 = start_pos_x + start_dx;
-      const hy1 = start_pos_y + start_dy;
-      const hx2 = end_pos_x + end_dx;
-      const hy2 = end_pos_y + end_dy;
-
-      return `M ${start_pos_x} ${start_pos_y} C ${hx1} ${hy1} ${hx2} ${hy2} ${end_pos_x} ${end_pos_y}`;
+      return buildOrthogonalPath(start_pos_x, start_pos_y, end_pos_x, end_pos_y);
     };
   }
 
   /**
-   * Injects sleek SVG arrowhead marker definitions for clean connector arrows.
+   * Injects color-coded SVG arrowhead marker definitions.
    */
   injectArrowheadDefs() {
     const precanvas = this.container.querySelector('.drawflow');
@@ -217,18 +232,84 @@ export class CanvasManager {
 
     svgDefs.innerHTML = `
       <defs>
-        <marker id="flowchart-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M 1 1 L 9 5 L 1 9 z" fill="#64748b" />
-        </marker>
-        <marker id="flowchart-arrow-selected" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <!-- Default Linear Arrow -->
+        <marker id="flowchart-arrow-default" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
           <path d="M 1 1 L 9 5 L 1 9 z" fill="#38bdf8" />
         </marker>
-        <marker id="flowchart-arrow-active" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <!-- True Branch Arrow (Green) -->
+        <marker id="flowchart-arrow-true" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
           <path d="M 1 1 L 9 5 L 1 9 z" fill="#22c55e" />
+        </marker>
+        <!-- False Branch Arrow (Red) -->
+        <marker id="flowchart-arrow-false" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#f43f5e" />
+        </marker>
+        <!-- Loop Body Arrow (Cyan) -->
+        <marker id="flowchart-arrow-body" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#06b6d4" />
+        </marker>
+        <!-- Loopback Return Arrow (Purple) -->
+        <marker id="flowchart-arrow-loopback" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#a855f7" />
+        </marker>
+        <!-- Active Executing Glow Arrow (Gold) -->
+        <marker id="flowchart-arrow-active" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 1 1 L 9 5 L 1 9 z" fill="#eab308" />
         </marker>
       </defs>
     `;
     precanvas.prepend(svgDefs);
+  }
+
+  /**
+   * Applies semantic color classes (conn-true, conn-false, conn-body, conn-loopback, conn-linear) to connection SVGs.
+   */
+  classifyConnections() {
+    const rawData = this.editor.drawflow.drawflow[this.editor.module]?.data || {};
+    const conns = this.container.querySelectorAll('.drawflow .connection');
+
+    for (const conn of conns) {
+      const classes = Array.from(conn.classList);
+      const outNodeClass = classes.find(c => c.startsWith('node_out_node-'));
+      const inNodeClass = classes.find(c => c.startsWith('node_in_node-'));
+      const outPortClass = classes.find(c => c.startsWith('output_'));
+      const inPortClass = classes.find(c => c.startsWith('input_'));
+
+      if (!outNodeClass) continue;
+      const sourceId = outNodeClass.replace('node_out_node-', '');
+      const sourceNode = rawData[sourceId];
+      const sourceType = (sourceNode?.name || sourceNode?.class || '').toLowerCase();
+
+      conn.classList.remove('conn-true', 'conn-false', 'conn-body', 'conn-loopback', 'conn-linear');
+
+      if (sourceType.includes('decision')) {
+        if (outPortClass === 'output_1') {
+          conn.classList.add('conn-true');
+        } else if (outPortClass === 'output_2') {
+          conn.classList.add('conn-false');
+        }
+      } else if (sourceType.includes('loop')) {
+        if (outPortClass === 'output_1') {
+          conn.classList.add('conn-body');
+        }
+      }
+
+      if (inNodeClass) {
+        const targetId = inNodeClass.replace('node_in_node-', '');
+        const targetNode = rawData[targetId];
+        const targetType = (targetNode?.name || targetNode?.class || '').toLowerCase();
+        if (targetType.includes('loop') && inPortClass === 'input_2') {
+          conn.classList.add('conn-loopback');
+        }
+      }
+
+      if (!conn.classList.contains('conn-true') &&
+          !conn.classList.contains('conn-false') &&
+          !conn.classList.contains('conn-body') &&
+          !conn.classList.contains('conn-loopback')) {
+        conn.classList.add('conn-linear');
+      }
+    }
   }
 
   setupEvents() {
@@ -282,12 +363,25 @@ export class CanvasManager {
           this.editor.removeSingleConnection(output_id, oldConn.node, output_class, oldConn.output);
         }
       }
+
+      this.classifyConnections();
       this.onDataChange?.();
     });
 
-    this.editor.on('connectionRemoved', () => this.onDataChange?.());
-    this.editor.on('nodeCreated', () => this.onDataChange?.());
-    this.editor.on('nodeRemoved', () => this.onDataChange?.());
+    this.editor.on('connectionRemoved', () => {
+      this.classifyConnections();
+      this.onDataChange?.();
+    });
+
+    this.editor.on('nodeCreated', () => {
+      this.classifyConnections();
+      this.onDataChange?.();
+    });
+
+    this.editor.on('nodeRemoved', () => {
+      this.classifyConnections();
+      this.onDataChange?.();
+    });
   }
 
   /**
@@ -300,44 +394,52 @@ export class CanvasManager {
   addNode(type, posX, posY, customData = {}) {
     const html = renderNodeHtml(type, customData);
 
+    let id = null;
     switch (type) {
       case 'start':
-        return this.editor.addNode('start', 0, 1, posX, posY, 'start', customData, html, false);
+        id = this.editor.addNode('start', 0, 1, posX, posY, 'start', customData, html, false);
+        break;
 
       case 'end':
-        return this.editor.addNode('end', 1, 0, posX, posY, 'end', customData, html, false);
+        id = this.editor.addNode('end', 1, 0, posX, posY, 'end', customData, html, false);
+        break;
 
       case 'assignment': {
         const expr = customData.expression ?? 'x = 0';
-        return this.editor.addNode('assignment', 1, 1, posX, posY, 'assignment', { expression: expr, ...customData }, html, false);
+        id = this.editor.addNode('assignment', 1, 1, posX, posY, 'assignment', { expression: expr, ...customData }, html, false);
+        break;
       }
 
       case 'decision': {
         const cond = customData.condition ?? 'x > 0';
-        // 1 input (Top), 2 outputs (output_1: True on Left, output_2: False on Right)
-        return this.editor.addNode('decision', 1, 2, posX, posY, 'decision', { condition: cond, ...customData }, html, false);
+        id = this.editor.addNode('decision', 1, 2, posX, posY, 'decision', { condition: cond, ...customData }, html, false);
+        break;
       }
 
       case 'loop': {
         const cond = customData.condition ?? 'I = 1, N, 1';
-        // 2 inputs (input_1: Top Entry, input_2: Lower Right Loop Return), 2 outputs (output_1: Upper Right Body, output_2: Bottom Exit)
-        return this.editor.addNode('loop', 2, 2, posX, posY, 'loop', { condition: cond, ...customData }, html, false);
+        id = this.editor.addNode('loop', 2, 2, posX, posY, 'loop', { condition: cond, ...customData }, html, false);
+        break;
       }
 
       case 'input': {
         const varName = customData.variableName ?? customData.variablename ?? customData.variable ?? 'x';
-        const prompt = customData.prompt ?? `Enter ${varName}:`;
-        return this.editor.addNode('input', 1, 1, posX, posY, 'input', { variableName: varName, variablename: varName, prompt, ...customData }, html, false);
+        id = this.editor.addNode('input', 1, 1, posX, posY, 'input', { variableName: varName, variablename: varName, ...customData }, html, false);
+        break;
       }
 
       case 'output': {
         const expr = customData.expression ?? 'x';
-        return this.editor.addNode('output', 1, 1, posX, posY, 'output', { expression: expr, ...customData }, html, false);
+        id = this.editor.addNode('output', 1, 1, posX, posY, 'output', { expression: expr, ...customData }, html, false);
+        break;
       }
 
       default:
         console.warn(`Unknown node type to add: ${type}`);
     }
+
+    setTimeout(() => this.classifyConnections(), 20);
+    return id;
   }
 
   /**
@@ -362,10 +464,40 @@ export class CanvasManager {
   }
 
   /**
+   * Highlights the active connection path currently being traversed during execution.
+   * @param {string|null} fromNodeId
+   * @param {string|null} toNodeId
+   */
+  highlightActiveConnection(fromNodeId, toNodeId) {
+    this.clearActiveConnection();
+    if (!fromNodeId || !toNodeId) return;
+
+    const selector = `.connection.node_out_node-${fromNodeId}.node_in_node-${toNodeId}`;
+    const conn = this.container.querySelector(selector);
+    if (conn) {
+      conn.classList.add('active-flow-path');
+      this.activeConnection = conn;
+    }
+  }
+
+  /**
+   * Clears any active connection highlight.
+   */
+  clearActiveConnection() {
+    if (this.activeConnection) {
+      this.activeConnection.classList.remove('active-flow-path');
+      this.activeConnection = null;
+    }
+    const allActive = this.container.querySelectorAll('.connection.active-flow-path');
+    allActive.forEach(c => c.classList.remove('active-flow-path'));
+  }
+
+  /**
    * Clears any active highlight.
    */
   clearHighlight() {
     this.highlightActiveNode(null);
+    this.clearActiveConnection();
   }
 
   /**
@@ -498,6 +630,7 @@ export class CanvasManager {
           varInput.value = varVal;
         }
       }
+      this.classifyConnections();
     }, 40);
   }
 

@@ -861,21 +861,73 @@ body {
   border-color: #f59e0b;
 }
 
-/* Connection Lines with SVG Directional Arrowheads */
+/* =========================================================
+   ORTHOGONAL FLOWCHART CONNECTIONS & SEMANTIC WIRE COLORS
+   ========================================================= */
+
 .drawflow .connection .main-path {
-  stroke: #64748b;
+  stroke: #38bdf8;
   stroke-width: 2.5px;
-  marker-end: url(#flowchart-arrow);
-  transition: stroke 0.15s ease;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  marker-end: url(#flowchart-arrow-default);
+  transition: stroke 0.15s ease, stroke-width 0.15s ease;
 }
 
-.drawflow .connection:hover .main-path {
+/* Linear Default Connections */
+.drawflow .connection.conn-linear .main-path {
   stroke: #38bdf8;
-  stroke-width: 3px;
-  marker-end: url(#flowchart-arrow-selected);
+  marker-end: url(#flowchart-arrow-default);
+}
+
+/* True Branch (Emerald Green) */
+.drawflow .connection.conn-true .main-path {
+  stroke: #22c55e;
+  marker-end: url(#flowchart-arrow-true);
+}
+
+/* False Branch (Rose Red) */
+.drawflow .connection.conn-false .main-path {
+  stroke: #f43f5e;
+  marker-end: url(#flowchart-arrow-false);
+}
+
+/* Loop Body Branch (Electric Cyan) */
+.drawflow .connection.conn-body .main-path {
+  stroke: #06b6d4;
+  marker-end: url(#flowchart-arrow-body);
+}
+
+/* Loopback Return Wire (Purple) */
+.drawflow .connection.conn-loopback .main-path {
+  stroke: #a855f7;
+  marker-end: url(#flowchart-arrow-loopback);
+}
+
+/* Hover & Selection */
+.drawflow .connection:hover .main-path {
+  stroke-width: 3.5px;
+  filter: drop-shadow(0 0 5px currentColor);
 }
 
 .drawflow .connection.selected .main-path {
-  stroke: #38bdf8;
-  marker-end: url(#flowchart-arrow-selected);
+  stroke-width: 3.5px;
+  stroke: #facc15 !important;
+  marker-end: url(#flowchart-arrow-active) !important;
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.8));
+}
+
+/* Active Flow Path during Execution (Marching Ants Pulse) */
+.drawflow .connection.active-flow-path .main-path {
+  stroke: #eab308 !important;
+  stroke-width: 4px !important;
+  stroke-dasharray: 8 4;
+  animation: marchingAntsFlow 0.5s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.95)) !important;
+  marker-end: url(#flowchart-arrow-active) !important;
+}
+
+@keyframes marchingAntsFlow {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
 }

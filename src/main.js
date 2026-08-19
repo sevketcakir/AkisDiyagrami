@@ -262,9 +262,10 @@ class App {
       this.canvasManager.clearHighlight();
     } else {
       this.sidePanel.setStatus(isAutoPlay ? 'RUNNING' : 'STEPPING');
-      // Highlight the next node that will be executed
+      // Highlight the next node and the active connection path between them
       if (snapshot.nextNodeId) {
         this.canvasManager.highlightActiveNode(snapshot.nextNodeId);
+        this.canvasManager.highlightActiveConnection(currentId, snapshot.nextNodeId);
       }
     }
   }
