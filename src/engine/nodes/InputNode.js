@@ -29,7 +29,10 @@ export class InputNode extends FlowchartNode {
     if (context.inputQueue && context.inputQueue.length > 0) {
       rawValue = context.inputQueue.shift();
     } else if (typeof context.inputProvider === 'function') {
-      rawValue = context.inputProvider(this.prompt, this.variableName);
+      const promptText = this.prompt && !this.prompt.startsWith('Enter ')
+        ? this.prompt
+        : `Enter value for ${this.variableName}:`;
+      rawValue = context.inputProvider(promptText, this.variableName);
     } else {
       rawValue = '0';
     }

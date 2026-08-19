@@ -21,6 +21,16 @@ class App {
   init() {
     const drawflowContainer = document.getElementById('drawflow');
     this.canvasManager = new CanvasManager(drawflowContainer);
+    this.isGraphDirty = false;
+
+    this.canvasManager.onDataChange = () => {
+      this.isGraphDirty = true;
+      if (this.interpreter && !this.playInterval) {
+        this.interpreter = null;
+        this.canvasManager.clearHighlight();
+        this.sidePanel.setStatus('READY');
+      }
+    };
 
     this.sidePanel = new SidePanel({
       playBtn: document.getElementById('btn-play'),
@@ -209,7 +219,8 @@ class App {
   executeStep(isAutoPlay = false) {
     if (this.isWaitingForInput) return;
 
-    if (!this.interpreter || this.interpreter.context.isFinished) {
+    if (!this.interpreter || this.isGraphDirty || this.interpreter.context.isFinished) {
+      this.isGraphDirty = false;
       const ok = this.compileGraph();
       if (!ok) return;
     }
@@ -249,7 +260,8 @@ class App {
   }
 
   startPlay() {
-    if (!this.interpreter || this.interpreter.context.isFinished) {
+    if (!this.interpreter || this.isGraphDirty || this.interpreter.context.isFinished) {
+      this.isGraphDirty = false;
       const ok = this.compileGraph();
       if (!ok) return;
     }

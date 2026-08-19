@@ -265,6 +265,8 @@ export class CanvasManager {
           }
         }
       }
+
+      this.onDataChange?.();
     });
 
     // 2. Enforce connection rules:
@@ -280,7 +282,12 @@ export class CanvasManager {
           this.editor.removeSingleConnection(output_id, oldConn.node, output_class, oldConn.output);
         }
       }
+      this.onDataChange?.();
     });
+
+    this.editor.on('connectionRemoved', () => this.onDataChange?.());
+    this.editor.on('nodeCreated', () => this.onDataChange?.());
+    this.editor.on('nodeRemoved', () => this.onDataChange?.());
   }
 
   /**

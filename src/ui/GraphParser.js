@@ -82,7 +82,7 @@ export class GraphParser {
           });
         } else if (name.includes('input')) {
           const variableName = String(nodeData.variableName ?? nodeData.variablename ?? nodeData.variable ?? nodeData.name ?? nodeData.text ?? 'x').trim();
-          const prompt = nodeData.prompt ?? `Enter ${variableName}:`;
+          const prompt = `Enter value for ${variableName}:`;
           nodeInstance = new InputNode(id, {
             variableName,
             prompt,
