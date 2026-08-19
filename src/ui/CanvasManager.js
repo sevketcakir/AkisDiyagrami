@@ -3,6 +3,13 @@ import 'drawflow/dist/drawflow.min.css';
 
 /**
  * Generates paper-standard flowchart node HTML using embedded SVG shapes.
+ * - Start / End: Oval (Capsule)
+ * - Assignment / Process: Rectangle
+ * - Decision: Diamond
+ * - Loop: Hexagon (I = 1, N, 1)
+ * - Input: Parallelogram (scanf)
+ * - Output: Document symbol (printf)
+ *
  * @param {string} type
  * @param {Object} [customData]
  * @returns {string}
@@ -55,15 +62,15 @@ export function renderNodeHtml(type, customData = {}) {
     }
 
     case 'loop': {
-      const cond = customData.condition ?? customData.text ?? 'i < 10';
+      const cond = customData.condition ?? customData.text ?? 'I = 1, N, 1';
       return `
         <div class="flowchart-node-content node-hexagon">
           <svg class="shape-svg" viewBox="0 0 200 95" preserveAspectRatio="none">
             <polygon points="28,5 172,5 195,47 172,90 28,90 5,47" class="svg-shape-path svg-loop" />
           </svg>
           <div class="node-inner-content">
-            <div class="node-header">Loop (While)</div>
-            <input type="text" df-condition value="${escapeHtml(cond)}" placeholder="e.g. i <= 10" />
+            <div class="node-header">Loop (Hexagon)</div>
+            <input type="text" df-condition value="${escapeHtml(cond)}" placeholder="e.g. I = 1, N, 1" />
           </div>
           <div class="port-label port-label-body">Body</div>
           <div class="port-label port-label-exit">Exit</div>
@@ -89,9 +96,9 @@ export function renderNodeHtml(type, customData = {}) {
     case 'output': {
       const expr = customData.expression ?? customData.text ?? 'x';
       return `
-        <div class="flowchart-node-content node-parallelogram shape-output">
-          <svg class="shape-svg" viewBox="0 0 190 80" preserveAspectRatio="none">
-            <polygon points="26,5 185,5 164,75 5,75" class="svg-shape-path svg-output" />
+        <div class="flowchart-node-content node-document shape-output">
+          <svg class="shape-svg" viewBox="0 0 190 85" preserveAspectRatio="none">
+            <path d="M 5,5 L 185,5 L 185,62 C 145,82 135,82 95,62 C 55,42 45,42 5,62 Z" class="svg-shape-path svg-document" />
           </svg>
           <div class="node-inner-content">
             <div class="node-header">Output (printf)</div>
@@ -218,7 +225,7 @@ export class CanvasManager {
       }
 
       case 'loop': {
-        const cond = customData.condition ?? 'i < 10';
+        const cond = customData.condition ?? 'I = 1, N, 1';
         // 2 inputs (entry + loopback), 2 outputs (output_1: Body, output_2: Exit)
         return this.editor.addNode('loop', 2, 2, posX, posY, 'loop', { condition: cond, ...customData }, html, false);
       }

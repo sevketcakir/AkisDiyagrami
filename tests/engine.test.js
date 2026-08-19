@@ -211,6 +211,44 @@ describe('Loop Iteration with LoopNode', () => {
     expect(interpreter.context.output).toEqual(['6']);
     expect(interpreter.context.isFinished).toBe(true);
   });
+
+  it('should execute standard engineering loop syntax I = 1, N, 1', () => {
+    const evaluator = SafeEvaluator.hook;
+
+    // Flow:
+    // start -> init_N (N = 4) -> init_sum (sum = 0) -> loop (i = 1, N, 1)
+    // loop body -> add_sum (sum = sum + i) -> loop
+    // loop exit -> out_sum (print sum) -> end
+
+    const start = new StartNode('start', 'init_N');
+    const initN = new AssignmentNode('init_N', { expression: 'N = 4', nextNodeId: 'init_sum', evaluator });
+    const initSum = new AssignmentNode('init_sum', { expression: 'sum = 0', nextNodeId: 'loop_header', evaluator });
+    const loop = new LoopNode('loop_header', {
+      condition: 'i = 1, N, 1',
+      bodyNodeId: 'add_sum',
+      exitNodeId: 'out_sum',
+      evaluator
+    });
+    const addSum = new AssignmentNode('add_sum', { expression: 'sum = sum + i', nextNodeId: 'loop_header', evaluator });
+    const outSum = new OutputNode('out_sum', { expression: 'sum', nextNodeId: 'end', evaluator });
+    const end = new EndNode('end');
+
+    const interpreter = new FlowchartInterpreter({
+      nodes: { start, initN, initSum, loop, addSum, outSum, end },
+      evaluator
+    });
+
+    let safetyCount = 0;
+    while (!interpreter.context.isFinished && safetyCount < 100) {
+      interpreter.step();
+      safetyCount++;
+    }
+
+    expect(interpreter.context.variables.sum).toBe(10); // 1 + 2 + 3 + 4 = 10
+    expect(interpreter.context.variables.i).toBe(5);
+    expect(interpreter.context.output).toEqual(['10']);
+    expect(interpreter.context.isFinished).toBe(true);
+  });
 });
 
 describe('InputNode handling', () => {

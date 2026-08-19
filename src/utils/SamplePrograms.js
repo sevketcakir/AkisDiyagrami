@@ -186,7 +186,7 @@ export const SamplePrograms = {
 
   sum1ToN: {
     name: '3. Sum of 1 to N (Loop / Iteration)',
-    description: 'Computes sum = 1 + 2 + ... + N using a loop.',
+    description: 'Computes sum = 1 + 2 + ... + N using a loop (i = 1, N, 1).',
     data: {
       drawflow: {
         Home: {
@@ -229,85 +229,61 @@ export const SamplePrograms = {
             },
             '4': {
               id: 4,
-              name: 'assignment',
-              data: { expression: 'i = 1' },
-              class: 'assignment',
-              html: renderNodeHtml('assignment', { expression: 'i = 1' }),
-              typenode: false,
-              inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '5', output: 'input_1' }] } },
-              pos_x: 250,
-              pos_y: 360
-            },
-            '5': {
-              id: 5,
               name: 'loop',
-              data: { condition: 'i <= N' },
+              data: { condition: 'i = 1, N, 1' },
               class: 'loop',
-              html: renderNodeHtml('loop', { condition: 'i <= N' }),
+              html: renderNodeHtml('loop', { condition: 'i = 1, N, 1' }),
               typenode: false,
               inputs: {
                 input_1: {
                   connections: [
-                    { node: '4', input: 'output_1' },
-                    { node: '7', input: 'output_1' }
+                    { node: '3', input: 'output_1' },
+                    { node: '5', input: 'output_1' }
                   ]
                 }
               },
               outputs: {
-                output_1: { connections: [{ node: '6', output: 'input_1' }] }, // Body
-                output_2: { connections: [{ node: '8', output: 'input_1' }] }  // Exit
+                output_1: { connections: [{ node: '5', output: 'input_1' }] }, // Body
+                output_2: { connections: [{ node: '6', output: 'input_1' }] }  // Exit
               },
               pos_x: 250,
-              pos_y: 470
+              pos_y: 370
             },
-            '6': {
-              id: 6,
+            '5': {
+              id: 5,
               name: 'assignment',
               data: { expression: 'sum = sum + i' },
               class: 'assignment',
               html: renderNodeHtml('assignment', { expression: 'sum = sum + i' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '7', output: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', input: 'output_1' }] } },
               pos_x: 90,
-              pos_y: 600
+              pos_y: 520
             },
-            '7': {
-              id: 7,
-              name: 'assignment',
-              data: { expression: 'i = i + 1' },
-              class: 'assignment',
-              html: renderNodeHtml('assignment', { expression: 'i = i + 1' }),
-              typenode: false,
-              inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '5', output: 'input_1' }] } },
-              pos_x: 90,
-              pos_y: 710
-            },
-            '8': {
-              id: 8,
+            '6': {
+              id: 6,
               name: 'output',
               data: { expression: '"Total sum is: " + sum' },
               class: 'output',
               html: renderNodeHtml('output', { expression: '"Total sum is: " + sum' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '5', input: 'output_2' }] } },
-              outputs: { output_1: { connections: [{ node: '9', output: 'input_1' }] } },
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '7', output: 'input_1' }] } },
               pos_x: 420,
-              pos_y: 600
+              pos_y: 520
             },
-            '9': {
-              id: 9,
+            '7': {
+              id: 7,
               name: 'end',
               data: {},
               class: 'end',
               html: renderNodeHtml('end', {}),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '8', input: 'output_1' }] } },
+              inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
               outputs: {},
               pos_x: 420,
-              pos_y: 710
+              pos_y: 640
             }
           }
         }

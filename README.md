@@ -43,10 +43,10 @@ Students can build algorithms visually using standard paper-compatible flowchart
 | :--- | :--- | :--- | :--- |
 | **Start / End** | Oval / Capsule | `int main() { ... }` / `return 0;` | Entry and exit points of the flowchart |
 | **Assignment** | Rectangle | `x = 10;`, `sum = sum + i;` | Variable mutation and calculations |
-| **Decision** | Diamond | `if (x > 0) { ... } else { ... }` | Conditional branching based on boolean expressions |
-| **Loop** | Hexagon | `while (i < n) { ... }`, `for (...)` | Iteration header controlling loop cycles |
-| **Input** | Parallelogram | `scanf("%d", &x);` | Prompts student or reads input stream |
-| **Output** | Parallelogram | `printf("Result: %d\n", sum);` | Writes formatted data to output console |
+| **Decision** | Diamond | `if (x > 0) { ... } else { ... }` | Conditional branching with True / False ports |
+| **Loop** | Hexagon | `for (i = 1; i <= N; i++)` (`I = 1, N, 1`) | Iteration header with Body and Exit ports |
+| **Input** | Parallelogram | `scanf("%d", &x);` | Interactive user input |
+| **Output** | Document (curved bottom) | `printf("Result: %d\n", sum);` | Writes formatted data to output console |
 
 ---
 

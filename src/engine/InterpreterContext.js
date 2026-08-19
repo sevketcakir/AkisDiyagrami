@@ -19,6 +19,7 @@ export class InterpreterContext {
     this.error = null;
     this.stepCount = 0;
     this.history = [];
+    this.loopStates = {};
   }
 
   /**
@@ -33,6 +34,7 @@ export class InterpreterContext {
     this.error = null;
     this.stepCount = 0;
     this.history = [];
+    this.loopStates = {};
   }
 
   /**

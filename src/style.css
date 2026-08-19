@@ -582,7 +582,7 @@ body {
   color: #22d3ee;
 }
 
-/* 5. Parallelogram for Input / Output */
+/* 5. Parallelogram for Input */
 .node-parallelogram {
   width: 190px;
   height: 80px;
@@ -590,6 +590,17 @@ body {
 
 .shape-input .node-header {
   color: #c084fc;
+}
+
+/* 6. Document Symbol for Output */
+.node-document {
+  width: 190px;
+  height: 85px;
+}
+
+.svg-document {
+  stroke: #f97316;
+  fill: #1e293b;
 }
 
 .shape-output .node-header {
