@@ -990,6 +990,23 @@ body {
   to { stroke-dashoffset: 0; }
 }
 
+/* Offending Error Node Highlight */
+.drawflow .drawflow-node.error-executing-node {
+  outline: 3px solid #ef4444 !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.85) !important;
+  animation: nodeErrorPulse 0.8s ease-in-out infinite alternate !important;
+}
+
+@keyframes nodeErrorPulse {
+  from {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  }
+  to {
+    box-shadow: 0 0 22px rgba(239, 68, 68, 1);
+  }
+}
+
 /* =========================================================
    HELP & GUIDE MODAL DIALOG
    ========================================================= */

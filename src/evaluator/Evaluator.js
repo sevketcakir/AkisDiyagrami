@@ -110,6 +110,10 @@ export class SafeEvaluator {
             if (right === 0) {
               throw new Error('Division by zero.');
             }
+            // Enforce C-style integer division: if both operands are integers, truncate towards zero
+            if (typeof left === 'number' && typeof right === 'number' && Number.isInteger(left) && Number.isInteger(right)) {
+              return Math.trunc(left / right);
+            }
             return left / right;
           case '%':
             if (right === 0) {

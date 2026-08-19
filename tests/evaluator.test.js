@@ -10,6 +10,16 @@ describe('SafeEvaluator', () => {
     expect(SafeEvaluator.evaluate('10 % 3')).toBe(1);
   });
 
+  it('should enforce C-style integer division for integer operands', () => {
+    // 5 / 2 in C evaluates to 2 (truncated towards zero)
+    expect(SafeEvaluator.evaluate('5 / 2')).toBe(2);
+    expect(SafeEvaluator.evaluate('7 / 3')).toBe(2);
+    expect(SafeEvaluator.evaluate('-7 / 3')).toBe(-2);
+    expect(SafeEvaluator.evaluate('1 / 2')).toBe(0);
+    // Floating-point operands should preserve decimals
+    expect(SafeEvaluator.evaluate('5.5 / 2')).toBe(2.75);
+  });
+
   it('should evaluate comparisons and booleans', () => {
     expect(SafeEvaluator.evaluate('5 > 3')).toBe(true);
     expect(SafeEvaluator.evaluate('10 <= 10')).toBe(true);

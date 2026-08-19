@@ -245,5 +245,18 @@ export default {
     ctrlSpeed: '<strong>Step Delay Slider</strong>: Adjusts delay dynamically from 0 ms (Instant batch) to 2000 ms.',
     ctrlAutoLayout: '<strong>Auto-Layout</strong>: Neatly re-aligns all flowchart nodes and routes clean 90° Manhattan wires.',
     ctrlSaveLoad: '<strong>Save & Load</strong>: Export diagrams as .json files or reload previously saved flowcharts.'
+  },
+  errors: {
+    emptyCanvas: 'The flowchart canvas is empty. Drag symbols from the left palette to build a program.',
+    noStartNode: 'No Start node found. Every flowchart must begin with a Start (Oval) node.',
+    startNotConnected: 'Start node [{{id}}] is not connected to any subsequent node. Drag an arrow from Start to your first step.',
+    noPathToEnd: 'No valid execution path found from Start to End. Please ensure your nodes are connected.',
+    missingTrueConnection: 'Decision node [{{id}}] is missing a "True (True)" outgoing connection.',
+    missingFalseConnection: 'Decision node [{{id}}] is missing a "False (False)" outgoing connection.',
+    missingLoopBodyConnection: 'Loop node [{{id}}] is missing a "Body" outgoing connection.',
+    missingLoopExitConnection: 'Loop node [{{id}}] is missing an "Exit" outgoing connection.',
+    missingOutgoingConnection: '{{type}} node [{{id}}] has no outgoing connection.',
+    divisionByZero: 'Division by zero error.',
+    unreachableNode: 'Node [{{id}}] ({{type}}) is not reachable from the Start node.'
   }
 };

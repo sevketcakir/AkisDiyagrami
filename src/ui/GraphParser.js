@@ -8,31 +8,39 @@ import {
   OutputNode
 } from '../engine/index.js';
 import { SafeEvaluator } from '../evaluator/Evaluator.js';
+import { I18n } from '../i18n/I18n.js';
 
 /**
  * @class GraphParser
  * Translates visual Drawflow canvas graphs into executable FlowchartNode instances,
- * performing full graph topology validation and reachability path search.
+ * performing full graph topology validation, port connection checks, and reachability path search.
  */
 export class GraphParser {
   /**
    * Parses Drawflow export JSON object into an array or map of FlowchartNode objects.
    * @param {Object} drawflowData - Exported JSON from drawflow.export()
    * @param {Function} [evaluator] - Evaluator hook (defaults to SafeEvaluator.hook)
-   * @returns {{ nodes: Map<string, import('../engine/nodes/FlowchartNode.js').FlowchartNode>, startNodeId: string|null, errors: string[], warnings: string[] }}
+   * @returns {{
+   *   nodes: Map<string, import('../engine/nodes/FlowchartNode.js').FlowchartNode>,
+   *   startNodeId: string|null,
+   *   errors: string[],
+   *   warnings: string[],
+   *   errorNodeId: string|null
+   * }}
    */
   static parseDrawflow(drawflowData, evaluator = SafeEvaluator.hook) {
     const nodes = new Map();
     const errors = [];
     const warnings = [];
+    let errorNodeId = null;
     let startNodeId = null;
 
     const moduleData = drawflowData?.drawflow?.Home?.data || drawflowData?.data || drawflowData || {};
 
     const nodeEntries = Object.entries(moduleData);
     if (nodeEntries.length === 0) {
-      errors.push('The flowchart canvas is empty. Drag symbols from the left palette to build a program.');
-      return { nodes, startNodeId: null, errors, warnings };
+      errors.push(I18n.t('errors.emptyCanvas'));
+      return { nodes, startNodeId: null, errors, warnings, errorNodeId: null };
     }
 
     // Pass 1: Instantiate all node objects
@@ -73,7 +81,7 @@ export class GraphParser {
             evaluator
           });
         } else if (name.includes('loop')) {
-          const condition = nodeData.condition ?? nodeData.text ?? 'i < 10';
+          const condition = nodeData.condition ?? nodeData.text ?? 'i = 1, 10, 1';
           nodeInstance = new LoopNode(id, {
             condition,
             bodyNodeId: nextNodeId,    // output_1 is Loop Body
@@ -97,6 +105,7 @@ export class GraphParser {
           });
         } else {
           errors.push(`Unknown node type "${name}" with ID ${id}.`);
+          if (!errorNodeId) errorNodeId = id;
         }
 
         if (nodeInstance) {
@@ -104,6 +113,7 @@ export class GraphParser {
         }
       } catch (err) {
         errors.push(`Error parsing node ${id}: ${err.message}`);
+        if (!errorNodeId) errorNodeId = id;
       }
     }
 
@@ -118,8 +128,8 @@ export class GraphParser {
     }
 
     if (!startNodeId) {
-      errors.push('No Start node found. Every flowchart must begin with a Start (Oval) node.');
-      return { nodes, startNodeId: null, errors, warnings };
+      errors.push(I18n.t('errors.noStartNode'));
+      return { nodes, startNodeId: null, errors, warnings, errorNodeId: null };
     }
 
     // Pass 3: Identify End node(s)
@@ -135,33 +145,39 @@ export class GraphParser {
       warnings.push('No End node found. Flowcharts should terminate at an End (Oval) node.');
     }
 
-    // Pass 4: Graph Reachability Search (BFS from Start to End)
-    const { reachableNodeIds, isEndReachable, pathWarnings } = GraphParser.searchPath(nodes, startNodeId);
+    // Pass 4: Graph Reachability & Port Connectivity Validation
+    const { reachableNodeIds, isEndReachable, pathErrors, pathWarnings, firstErrorNodeId } = GraphParser.searchPath(nodes, startNodeId);
+    errors.push(...pathErrors);
     warnings.push(...pathWarnings);
-
-    if (hasEndNode && !isEndReachable) {
-      errors.push('No valid execution path found from Start to End. Please ensure your nodes are connected.');
+    if (!errorNodeId && firstErrorNodeId) {
+      errorNodeId = firstErrorNodeId;
     }
 
-    // Check for single start node with no outgoing connections
-    const startNode = nodes.get(startNodeId);
-    if (startNode && !startNode.nextNodeId && nodes.size > 1) {
-      errors.push('Start node is not connected to any subsequent node. Drag an arrow from Start to your first step.');
+    if (hasEndNode && !isEndReachable && pathErrors.length === 0) {
+      errors.push(I18n.t('errors.noPathToEnd'));
     }
 
-    return { nodes, startNodeId, errors, warnings };
+    return { nodes, startNodeId, errors, warnings, errorNodeId };
   }
 
   /**
-   * Performs BFS traversal from StartNode to verify connectivity and find reachability to EndNode.
+   * Performs BFS traversal from StartNode to verify connectivity, detect dangling ports, and find reachability to EndNode.
    * @param {Map<string, import('../engine/nodes/FlowchartNode.js').FlowchartNode>} nodes
    * @param {string} startNodeId
-   * @returns {{ reachableNodeIds: Set<string>, isEndReachable: boolean, pathWarnings: string[] }}
+   * @returns {{
+   *   reachableNodeIds: Set<string>,
+   *   isEndReachable: boolean,
+   *   pathErrors: string[],
+   *   pathWarnings: string[],
+   *   firstErrorNodeId: string|null
+   * }}
    */
   static searchPath(nodes, startNodeId) {
     const reachableNodeIds = new Set();
+    const pathErrors = [];
     const pathWarnings = [];
     const queue = [startNodeId];
+    let firstErrorNodeId = null;
     let isEndReachable = false;
 
     while (queue.length > 0) {
@@ -180,26 +196,30 @@ export class GraphParser {
       if (node.type === 'decision') {
         const decisionNode = /** @type {DecisionNode} */ (node);
         if (!decisionNode.trueNodeId) {
-          pathWarnings.push(`Decision node [${node.id}] is missing a "True (T)" connection.`);
+          pathErrors.push(I18n.t('errors.missingTrueConnection', { id: node.id }));
+          if (!firstErrorNodeId) firstErrorNodeId = node.id;
         } else if (!reachableNodeIds.has(decisionNode.trueNodeId)) {
           queue.push(decisionNode.trueNodeId);
         }
 
         if (!decisionNode.falseNodeId) {
-          pathWarnings.push(`Decision node [${node.id}] is missing a "False (F)" connection.`);
+          pathErrors.push(I18n.t('errors.missingFalseConnection', { id: node.id }));
+          if (!firstErrorNodeId) firstErrorNodeId = node.id;
         } else if (!reachableNodeIds.has(decisionNode.falseNodeId)) {
           queue.push(decisionNode.falseNodeId);
         }
       } else if (node.type === 'loop') {
         const loopNode = /** @type {LoopNode} */ (node);
         if (!loopNode.bodyNodeId) {
-          pathWarnings.push(`Loop node [${node.id}] is missing a "Body" connection.`);
+          pathErrors.push(I18n.t('errors.missingLoopBodyConnection', { id: node.id }));
+          if (!firstErrorNodeId) firstErrorNodeId = node.id;
         } else if (!reachableNodeIds.has(loopNode.bodyNodeId)) {
           queue.push(loopNode.bodyNodeId);
         }
 
         if (!loopNode.exitNodeId) {
-          pathWarnings.push(`Loop node [${node.id}] is missing an "Exit" connection.`);
+          pathErrors.push(I18n.t('errors.missingLoopExitConnection', { id: node.id }));
+          if (!firstErrorNodeId) firstErrorNodeId = node.id;
         } else if (!reachableNodeIds.has(loopNode.exitNodeId)) {
           queue.push(loopNode.exitNodeId);
         }
@@ -208,8 +228,14 @@ export class GraphParser {
           if (!reachableNodeIds.has(node.nextNodeId)) {
             queue.push(node.nextNodeId);
           }
-        } else if (node.type !== 'start' || nodes.size > 1) {
-          pathWarnings.push(`Node [${node.id}] (${node.type}) has no outgoing connection.`);
+        } else if (node.type === 'start') {
+          if (nodes.size > 1) {
+            pathErrors.push(I18n.t('errors.startNotConnected', { id: node.id }));
+            if (!firstErrorNodeId) firstErrorNodeId = node.id;
+          }
+        } else {
+          pathErrors.push(I18n.t('errors.missingOutgoingConnection', { id: node.id, type: node.type }));
+          if (!firstErrorNodeId) firstErrorNodeId = node.id;
         }
       }
     }
@@ -217,10 +243,10 @@ export class GraphParser {
     // Check for unreachable orphaned nodes
     for (const [id, node] of nodes.entries()) {
       if (!reachableNodeIds.has(id)) {
-        pathWarnings.push(`Node [${id}] (${node.type}) is not reachable from the Start node.`);
+        pathWarnings.push(I18n.t('errors.unreachableNode', { id, type: node.type }));
       }
     }
 
-    return { reachableNodeIds, isEndReachable, pathWarnings };
+    return { reachableNodeIds, isEndReachable, pathErrors, pathWarnings, firstErrorNodeId };
   }
 }

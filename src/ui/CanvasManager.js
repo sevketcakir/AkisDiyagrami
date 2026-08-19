@@ -566,6 +566,36 @@ export class CanvasManager {
   }
 
   /**
+   * Highlights a node with an error state (e.g. missing connection or syntax error).
+   * @param {string|null} nodeId
+   */
+  highlightErrorNode(nodeId) {
+    this.clearErrorHighlight();
+    if (!nodeId) return;
+
+    this.errorNodeId = String(nodeId);
+    const element = this.container.querySelector(`#node-${this.errorNodeId}`);
+    if (element) {
+      element.classList.add('error-executing-node');
+    }
+  }
+
+  /**
+   * Clears any error node highlight.
+   */
+  clearErrorHighlight() {
+    if (this.errorNodeId) {
+      const element = this.container.querySelector(`#node-${this.errorNodeId}`);
+      if (element) {
+        element.classList.remove('error-executing-node');
+      }
+      this.errorNodeId = null;
+    }
+    const allErrors = this.container.querySelectorAll('.error-executing-node');
+    allErrors.forEach(el => el.classList.remove('error-executing-node'));
+  }
+
+  /**
    * Highlights the active connection path currently being traversed during execution.
    * @param {string|null} fromNodeId
    * @param {string|null} toNodeId
@@ -595,10 +625,11 @@ export class CanvasManager {
   }
 
   /**
-   * Clears any active highlight.
+   * Clears any active highlight and error highlight.
    */
   clearHighlight() {
     this.highlightActiveNode(null);
+    this.clearErrorHighlight();
     this.clearActiveConnection();
   }
 

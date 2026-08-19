@@ -245,5 +245,18 @@ export default {
     ctrlSpeed: '<strong>Adım Gecikmesi (Slider)</strong>: 0 ms (Anında) ile 2000 ms arasında gecikmeyi dinamik olarak değiştirir.',
     ctrlAutoLayout: '<strong>Otomatik Düzenle (Auto-Layout)</strong>: Düğümleri otomatik hizalar, temiz dikey Manhattan 90° bağlantı hatları çizer.',
     ctrlSaveLoad: '<strong>Kaydet & Yükle</strong>: Hazırladığınız akış şemasını .json formatında dışa aktarabilir veya daha önce kaydettiğiniz dosyayı yükleyebilirsiniz.'
+  },
+  errors: {
+    emptyCanvas: 'Akış diyagramı tuvali boş. Lütfen soldaki paletten blokları tuvale sürükleyin.',
+    noStartNode: 'Başla (Start) düğümü bulunamadı. Akış mutlaka bir Başla (Oval) bloğu ile başlamalıdır.',
+    startNotConnected: 'Başla bloğunun [{{id}}] çıkış oku bağlı değil. Lütfen bir sonraki adıma ok çekin.',
+    noPathToEnd: 'Başla düğümünden Bitiş düğümüne geçerli bir akış yolu bulunamadı. Lütfen blokları bağlayın.',
+    missingTrueConnection: 'Karar (If) bloğunun [{{id}}] "Doğru (True)" çıkışı herhangi bir bloğa bağlı değil.',
+    missingFalseConnection: 'Karar (If) bloğunun [{{id}}] "Yanlış (False)" çıkışı herhangi bir bloğa bağlı değil.',
+    missingLoopBodyConnection: 'Döngü (Loop) bloğunun [{{id}}] "Gövde (Body)" çıkışı herhangi bir bloğa bağlı değil.',
+    missingLoopExitConnection: 'Döngü (Loop) bloğunun [{{id}}] "Çıkış (Exit)" çıkışı herhangi bir bloğa bağlı değil.',
+    missingOutgoingConnection: '{{type}} bloğunun [{{id}}] çıkış oku herhangi bir bloğa bağlı değil.',
+    divisionByZero: 'Sıfıra bölme hatası (Division by zero).',
+    unreachableNode: '[{{id}}] numaralı blok ({{type}}) Başla bloğundan ulaşılamıyor.'
   }
 };

@@ -78,7 +78,7 @@ describe('GraphParser', () => {
     };
     const { errors } = GraphParser.parseDrawflow(data);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0]).toContain('No Start node found');
+    expect(errors[0]).toMatch(/(Start|Başla)/);
   });
 
   it('should detect when there is no path from Start to End', () => {
@@ -94,7 +94,7 @@ describe('GraphParser', () => {
     };
     const { errors } = GraphParser.parseDrawflow(data);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some(e => e.includes('No valid execution path') || e.includes('not connected'))).toBe(true);
+    expect(errors.some(e => e.includes('bağlı değil') || e.includes('not connected') || e.includes('yolu bulunamadı') || e.includes('No valid execution path'))).toBe(true);
   });
 
   it('should execute evenOrOdd sample program correctly', () => {
@@ -172,5 +172,58 @@ describe('GraphParser', () => {
 
     expect(interpreter.context.variables.N).toBe(42);
     expect(interpreter.context.variables.x).toBeUndefined();
+  });
+
+  it('should detect dangling ports and missing connections on Decision nodes', () => {
+    const dataMissingFalse = {
+      drawflow: {
+        Home: {
+          data: {
+            '1': { id: 1, name: 'start', outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } } },
+            '2': {
+              id: 2,
+              name: 'decision',
+              data: { condition: 'x > 0' },
+              outputs: {
+                output_1: { connections: [{ node: '3', output: 'input_1' }] }
+                // output_2 (False branch) is missing / unconnected
+              }
+            },
+            '3': { id: 3, name: 'end', outputs: {} }
+          }
+        }
+      }
+    };
+
+    const { errors, errorNodeId } = GraphParser.parseDrawflow(dataMissingFalse);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.some(e => e.includes('False') || e.includes('Yanlış'))).toBe(true);
+    expect(errorNodeId).toBe('2');
+  });
+
+  it('should detect dangling ports and missing connections on Loop nodes', () => {
+    const dataMissingExit = {
+      drawflow: {
+        Home: {
+          data: {
+            '1': { id: 1, name: 'start', outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } } },
+            '2': {
+              id: 2,
+              name: 'loop',
+              data: { condition: 'i = 1, 10, 1' },
+              outputs: {
+                output_1: { connections: [{ node: '2', output: 'input_2' }] }
+                // output_2 (Exit branch) is missing / unconnected
+              }
+            }
+          }
+        }
+      }
+    };
+
+    const { errors, errorNodeId } = GraphParser.parseDrawflow(dataMissingExit);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.some(e => e.includes('Exit') || e.includes('Çıkış'))).toBe(true);
+    expect(errorNodeId).toBe('2');
   });
 });

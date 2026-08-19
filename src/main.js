@@ -296,15 +296,18 @@ class App {
   compileGraph() {
     const rawData = this.canvasManager.exportData();
 
-    const { nodes, startNodeId, errors, warnings } = GraphParser.parseDrawflow(rawData, SafeEvaluator.hook);
+    const { nodes, startNodeId, errors, warnings, errorNodeId } = GraphParser.parseDrawflow(rawData, SafeEvaluator.hook);
 
     if (errors.length > 0) {
       this.sidePanel.setStatus('ERROR', errors[0]);
+      if (errorNodeId) {
+        this.canvasManager.highlightErrorNode(errorNodeId);
+      }
       return false;
     }
 
     if (!startNodeId) {
-      this.sidePanel.setStatus('ERROR', 'No Start node found. Please add a Start (Oval) node.');
+      this.sidePanel.setStatus('ERROR', I18n.t('errors.noStartNode'));
       return false;
     }
 
@@ -360,6 +363,7 @@ class App {
 
     if (snapshot.error) {
       this.sidePanel.setStatus('ERROR', snapshot.error);
+      this.canvasManager.highlightErrorNode(currentId);
       this.pausePlay();
       return;
     }
@@ -404,6 +408,7 @@ class App {
         let count = 0;
         const maxPerFrame = 500;
         while (!this.interpreter.context.isFinished && count < maxPerFrame && !this.isWaitingForInput) {
+          const currentId = this.interpreter.context.currentNodeId;
           const snapshot = this.interpreter.step();
           count++;
 
@@ -412,6 +417,7 @@ class App {
             this.sidePanel.updateConsole(snapshot.output);
             if (snapshot.error) {
               this.sidePanel.setStatus('ERROR', snapshot.error);
+              this.canvasManager.highlightErrorNode(currentId);
             } else {
               this.sidePanel.setStatus('FINISHED');
             }
@@ -461,12 +467,15 @@ class App {
 
   resetExecution() {
     this.pausePlay();
+    this.isWaitingForInput = false;
+    this.sidePanel.hideInputPrompt();
     this.canvasManager.clearHighlight();
     const ok = this.compileGraph();
     this.sidePanel.updateVariables({});
     this.sidePanel.updateConsole([]);
 
     if (ok && this.interpreter && this.interpreter.startNodeId) {
+      this.interpreter.reset();
       this.canvasManager.highlightActiveNode(this.interpreter.startNodeId);
       this.sidePanel.setStatus('READY');
     }

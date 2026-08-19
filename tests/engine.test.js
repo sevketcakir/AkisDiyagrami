@@ -33,14 +33,24 @@ describe('InterpreterContext', () => {
     expect(context.output).toEqual(['Hello C']);
   });
 
-  it('should reset properly', () => {
+  it('should reset properly and prevent state pollution', () => {
     const context = new InterpreterContext({ variables: { a: 10 } });
     context.writeOutput('test');
+    context.loopStates = { loop1: { current: 5 } };
+    context.recordSnapshot();
+    context.stepCount = 12;
+    context.isFinished = true;
+    context.error = 'Some error';
+
     context.reset('start_1');
     expect(context.variables).toEqual({});
     expect(context.output).toEqual([]);
     expect(context.currentNodeId).toBe('start_1');
     expect(context.isFinished).toBe(false);
+    expect(context.error).toBeNull();
+    expect(context.stepCount).toBe(0);
+    expect(context.history).toEqual([]);
+    expect(context.loopStates).toEqual({});
   });
 });
 
