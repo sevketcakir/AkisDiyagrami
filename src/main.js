@@ -13,6 +13,7 @@ class App {
     this.sidePanel = null;
     this.interpreter = null;
     this.playInterval = null;
+    this.playAnimationId = null;
     this.isWaitingForInput = false;
 
     this.init();
@@ -163,17 +164,11 @@ class App {
       this.executeStep(false);
     };
     this.sidePanel.onReset = () => this.resetExecution();
-    this.sidePanel.onSpeedChange = (newSpeed) => {
-      // If currently playing, dynamically adjust the running interval immediately
-      if (this.playInterval) {
-        clearInterval(this.playInterval);
-        this.playInterval = setInterval(() => {
-          if (!this.interpreter || this.interpreter.context.isFinished) {
-            this.pausePlay();
-            return;
-          }
-          this.executeStep(true);
-        }, newSpeed);
+    this.sidePanel.onSpeedChange = () => {
+      // If currently playing, seamlessly switch to new speed immediately
+      if (this.playInterval || this.playAnimationId) {
+        this.pausePlay();
+        this.startPlay();
       }
     };
   }
@@ -282,21 +277,72 @@ class App {
     }
 
     this.sidePanel.setStatus('RUNNING');
-    if (this.playInterval) clearInterval(this.playInterval);
+    if (this.playInterval) {
+      clearInterval(this.playInterval);
+      this.playInterval = null;
+    }
+    if (this.playAnimationId) {
+      cancelAnimationFrame(this.playAnimationId);
+      this.playAnimationId = null;
+    }
 
-    this.playInterval = setInterval(() => {
-      if (!this.interpreter || this.interpreter.context.isFinished) {
-        this.pausePlay();
-        return;
-      }
-      this.executeStep(true);
-    }, this.sidePanel.speed);
+    const speed = this.sidePanel.speed;
+
+    if (speed === 0) {
+      // Instant 0ms execution: batch steps per animation frame
+      const runInstant = () => {
+        let count = 0;
+        const maxPerFrame = 500;
+        while (!this.interpreter.context.isFinished && count < maxPerFrame && !this.isWaitingForInput) {
+          const snapshot = this.interpreter.step();
+          count++;
+
+          if (snapshot.error || snapshot.isFinished) {
+            this.sidePanel.updateVariables(snapshot.variables);
+            this.sidePanel.updateConsole(snapshot.output);
+            if (snapshot.error) {
+              this.sidePanel.setStatus('ERROR', snapshot.error);
+            } else {
+              this.sidePanel.setStatus('FINISHED');
+            }
+            this.pausePlay();
+            this.canvasManager.clearHighlight();
+            return;
+          }
+        }
+
+        // Update UI after batch
+        this.sidePanel.updateVariables(this.interpreter.context.variables);
+        this.sidePanel.updateConsole(this.interpreter.context.output);
+
+        if (!this.interpreter.context.isFinished && !this.isWaitingForInput) {
+          this.playAnimationId = requestAnimationFrame(runInstant);
+        } else {
+          this.pausePlay();
+          this.canvasManager.clearHighlight();
+        }
+      };
+
+      runInstant();
+    } else {
+      this.playInterval = setInterval(() => {
+        if (!this.interpreter || this.interpreter.context.isFinished) {
+          this.pausePlay();
+          return;
+        }
+        this.executeStep(true);
+      }, speed);
+    }
   }
 
   pausePlay() {
     if (this.playInterval) {
       clearInterval(this.playInterval);
       this.playInterval = null;
+    }
+    if (this.playAnimationId) {
+      cancelAnimationFrame(this.playAnimationId);
+      this.playAnimationId = null;
     }
     if (this.interpreter && !this.interpreter.context.isFinished) {
       this.sidePanel.setStatus('PAUSED');

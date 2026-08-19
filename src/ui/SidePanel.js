@@ -57,7 +57,9 @@ export class SidePanel {
     const handleSpeedChange = (val) => {
       this.speed = parseInt(val, 10);
       if (this.elements.speedValueBadge) {
-        if (this.speed >= 1000) {
+        if (this.speed === 0) {
+          this.elements.speedValueBadge.textContent = '0 ms (Instant)';
+        } else if (this.speed >= 1000) {
           this.elements.speedValueBadge.textContent = `${(this.speed / 1000).toFixed(1)} s`;
         } else {
           this.elements.speedValueBadge.textContent = `${this.speed} ms`;
