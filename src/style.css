@@ -127,6 +127,40 @@ body {
   background-color: #b91c1c;
 }
 
+/* Language Switcher */
+.lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  background-color: #0f172a;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.btn-lang {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-lang:hover {
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.btn-lang.active {
+  background-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 .select-input {
   background-color: #0f172a;
   border: 1px solid var(--border-color);

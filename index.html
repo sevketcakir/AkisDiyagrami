@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flowchart C Interpreter (Akış Diyagramı) - C Programming Education</title>
+  <title>C Akış Diyagramı Yorumlayıcısı - C Programlama Eğitimi</title>
   <link rel="stylesheet" href="/src/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,41 +13,47 @@
   <!-- App Header -->
   <header class="app-header">
     <div class="brand">
-      <h1>Flowchart C Interpreter</h1>
-      <span class="badge">C Programming Lab</span>
+      <h1 data-i18n="brand.title">C Akış Diyagramı</h1>
+      <span class="badge" data-i18n="brand.badge">C Programlama Laboratuvarı</span>
     </div>
 
     <div class="header-actions">
       <select id="sample-select" class="select-input">
-        <option value="" disabled selected>📂 Load Curriculum Example...</option>
-        <option value="rectangleArea">1. Rectangle Area (Sequence)</option>
-        <option value="evenOrOdd">2. Even / Odd (If-Else)</option>
-        <option value="maxOfThree">3. Maximum of 3 Numbers (Nested If)</option>
-        <option value="sum1ToN">4. Sum of 1 to N (Accumulator Loop)</option>
-        <option value="factorial">5. Factorial of N (Multiplication Loop)</option>
-        <option value="isPrimeCheck">6. Prime Test (Is N Prime?)</option>
-        <option value="allPrimesUpToN">7. All Primes Up to N (Nested Loops)</option>
-        <option value="fibonacci">8. Fibonacci Sequence (N Terms)</option>
-        <option value="gcdEuclideanSubtraction">9. Euclid's GCD (Subtraction Method)</option>
-        <option value="gcdEuclidean">10. Euclid's GCD (Modulo Division Method)</option>
+        <option value="" disabled selected data-i18n="header.sampleSelectDefault">📂 Müfredat Örnekleri Yükle...</option>
+        <option value="rectangleArea" data-i18n="samples.rectangleArea">1. Dikdörtgen Alanı (Sıralı Akış)</option>
+        <option value="evenOrOdd" data-i18n="samples.evenOrOdd">2. Tek / Çift Sayı (If-Else Koşulu)</option>
+        <option value="maxOfThree" data-i18n="samples.maxOfThree">3. Üç Sayının En Büyüğü (İç İçe Koşul)</option>
+        <option value="sum1ToN" data-i18n="samples.sum1ToN">4. 1'den N'e Toplam (Sayaç Döngüsü)</option>
+        <option value="factorial" data-i18n="samples.factorial">5. N Faktöriyel (Çarpımsal Döngü)</option>
+        <option value="isPrimeCheck" data-i18n="samples.isPrimeCheck">6. Asal Sayı Testi (N Asal mı?)</option>
+        <option value="allPrimesUpToN" data-i18n="samples.allPrimesUpToN">7. N'e Kadar Olan Asal Sayılar (İç İçe Döngü)</option>
+        <option value="fibonacci" data-i18n="samples.fibonacci">8. Fibonacci Dizisi (İlk N Terim)</option>
+        <option value="gcdEuclideanSubtraction" data-i18n="samples.gcdEuclideanSubtraction">9. Öklid EBOB (Çıkarma Yöntemi)</option>
+        <option value="gcdEuclidean" data-i18n="samples.gcdEuclidean">10. Öklid EBOB (Kalanlı Bölme Modulo)</option>
       </select>
 
-      <button id="btn-auto-layout" class="btn" title="Auto-align and tidy flowchart blocks">
-        ✨ Auto-Layout
+      <button id="btn-auto-layout" class="btn" data-i18n="header.autoLayout" data-i18n-title="header.autoLayoutTitle" title="Akış diyagramı bloklarını otomatik ve simetrik hizalar">
+        ✨ Otomatik Düzenle
       </button>
 
-      <button id="btn-save" class="btn" title="Export diagram to JSON">
-        💾 Save Flowchart
+      <button id="btn-save" class="btn" data-i18n="header.save" data-i18n-title="header.saveTitle" title="Diyagramı JSON dosyası olarak dışa aktar">
+        💾 Kaydet
       </button>
 
-      <button id="btn-load-trigger" class="btn" title="Import diagram from JSON">
-        📁 Load Flowchart
+      <button id="btn-load-trigger" class="btn" data-i18n="header.load" data-i18n-title="header.loadTitle" title="JSON dosyasından diyagram içe aktar">
+        📁 Yükle
       </button>
       <input type="file" id="file-input-loader" accept=".json" style="display: none;" />
 
-      <button id="btn-clear-canvas" class="btn btn-danger" title="Clear all nodes">
-        🗑️ Clear
+      <button id="btn-clear-canvas" class="btn btn-danger" data-i18n="header.clear" data-i18n-title="header.clearTitle" title="Tüm düğümleri temizle">
+        🗑️ Temizle
       </button>
+
+      <!-- Language Switcher -->
+      <div class="lang-switcher" role="group" aria-label="Language Selector">
+        <button id="btn-lang-tr" class="btn-lang active" title="Türkçe">🇹🇷 TR</button>
+        <button id="btn-lang-en" class="btn-lang" title="English">🇬🇧 EN</button>
+      </div>
     </div>
   </header>
 
@@ -56,70 +62,70 @@
     <!-- Left Sidebar: Palette -->
     <aside class="palette-sidebar">
       <div class="palette-section">
-        <h3>Flowchart Symbols</h3>
+        <h3 data-i18n="palette.title">Akış Diyagramı Blokları</h3>
         <div class="palette-items">
           <div class="drag-item" draggable="true" data-node="start">
             <span class="item-icon">🟢</span>
             <div class="item-info">
-              <strong>Start</strong>
-              <span class="item-desc">Oval (main entry)</span>
+              <strong data-i18n="palette.startTitle">Başla</strong>
+              <span class="item-desc" data-i18n="palette.startDesc">Oval (main başlangıcı)</span>
             </div>
           </div>
 
           <div class="drag-item" draggable="true" data-node="assignment">
             <span class="item-icon">🟦</span>
             <div class="item-info">
-              <strong>Assignment</strong>
-              <span class="item-desc">Rectangle (x = 5)</span>
+              <strong data-i18n="palette.assignmentTitle">İşlem / Atama</strong>
+              <span class="item-desc" data-i18n="palette.assignmentDesc">Dikdörtgen (x = 5)</span>
             </div>
           </div>
 
           <div class="drag-item" draggable="true" data-node="decision">
             <span class="item-icon">🔶</span>
             <div class="item-info">
-              <strong>Decision</strong>
-              <span class="item-desc">Diamond (if / else)</span>
+              <strong data-i18n="palette.decisionTitle">Karar / Koşul</strong>
+              <span class="item-desc" data-i18n="palette.decisionDesc">Baklava (if / else)</span>
             </div>
           </div>
 
           <div class="drag-item" draggable="true" data-node="loop">
             <span class="item-icon">🔷</span>
             <div class="item-info">
-              <strong>Loop</strong>
-              <span class="item-desc">Hexagon (I = 1, N, 1)</span>
+              <strong data-i18n="palette.loopTitle">Döngü</strong>
+              <span class="item-desc" data-i18n="palette.loopDesc">Altıgen (i = 1, N, 1)</span>
             </div>
           </div>
 
           <div class="drag-item" draggable="true" data-node="input">
             <span class="item-icon">🟪</span>
             <div class="item-info">
-              <strong>Input</strong>
-              <span class="item-desc">Parallelogram (scanf)</span>
+              <strong data-i18n="palette.inputTitle">Girdi (scanf)</strong>
+              <span class="item-desc" data-i18n="palette.inputDesc">Paralelkenar (veri girişi)</span>
             </div>
           </div>
 
           <div class="drag-item" draggable="true" data-node="output">
             <span class="item-icon">📄</span>
             <div class="item-info">
-              <strong>Output</strong>
-              <span class="item-desc">Document (printf)</span>
+              <strong data-i18n="palette.outputTitle">Çıktı (printf)</strong>
+              <span class="item-desc" data-i18n="palette.outputDesc">Belge (ekrana yazdırma)</span>
             </div>
           </div>
 
           <div class="drag-item" draggable="true" data-node="end">
             <span class="item-icon">🔴</span>
             <div class="item-info">
-              <strong>End</strong>
-              <span class="item-desc">Oval (return 0)</span>
+              <strong data-i18n="palette.endTitle">Bitiş</strong>
+              <span class="item-desc" data-i18n="palette.endDesc">Oval (return 0;)</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="palette-section">
-        <h3>Instructions</h3>
-        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
-          Drag flowchart symbols onto the canvas and connect ports. Click <strong>Step</strong> or <strong>Play</strong> to watch memory change live!
+        <h3 data-i18n="palette.instructionsTitle">Kullanım Talimatı</h3>
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;" data-i18n-html="palette.instructionsText">
+          Soldaki blokları tuvale sürükleyin ve portları oklarla bağlayın. Bellek ve değişken değişimlerini canlı izlemek için <strong>Adımla</strong> veya <strong>Çalıştır</strong> düğmesine basın!
         </p>
       </div>
     </aside>
@@ -129,9 +135,9 @@
       <div id="drawflow"></div>
 
       <div class="canvas-toolbar">
-        <button id="btn-zoom-in" class="btn btn-icon" title="Zoom In">➕</button>
-        <button id="btn-zoom-reset" class="btn btn-icon" title="Reset Zoom">🔍 100%</button>
-        <button id="btn-zoom-out" class="btn btn-icon" title="Zoom Out">➖</button>
+        <button id="btn-zoom-in" class="btn btn-icon" data-i18n-title="zoom.in" title="Yakınlaştır">➕</button>
+        <button id="btn-zoom-reset" class="btn btn-icon" data-i18n-title="zoom.reset" title="Sıfırla">🔍 100%</button>
+        <button id="btn-zoom-out" class="btn btn-icon" data-i18n-title="zoom.out" title="Uzaklaştır">➖</button>
       </div>
     </section>
 
@@ -140,43 +146,43 @@
       <!-- Controls Section -->
       <div class="panel-section">
         <div class="section-header">
-          <h2>Execution Controls</h2>
-          <span id="status-badge" class="status-badge status-ready">Ready</span>
+          <h2 data-i18n="controls.title">Çalıştırma Kontrolleri</h2>
+          <span id="status-badge" class="status-badge status-ready" data-i18n="status.ready">Hazır</span>
         </div>
 
         <div class="controls-grid">
-          <button id="btn-play" class="btn btn-success" title="Run continuously">
-            ▶ Play
+          <button id="btn-play" class="btn btn-success" data-i18n="controls.play" data-i18n-title="controls.playTitle" title="Diyagramı sürekli çalıştır">
+            ▶ Çalıştır
           </button>
-          <button id="btn-pause" class="btn" title="Pause execution" disabled>
-            ⏸ Pause
+          <button id="btn-pause" class="btn" data-i18n="controls.pause" data-i18n-title="controls.pauseTitle" title="Çalıştırmayı duraklat" disabled>
+            ⏸ Duraklat
           </button>
-          <button id="btn-step" class="btn btn-primary" title="Execute single node">
-            ⏭ Step
+          <button id="btn-step" class="btn btn-primary" data-i18n="controls.step" data-i18n-title="controls.stepTitle" title="Tek bir adımı çalıştır">
+            ⏭ Adımla
           </button>
-          <button id="btn-reset" class="btn" title="Reset state">
-            🔄 Reset
+          <button id="btn-reset" class="btn" data-i18n="controls.reset" data-i18n-title="controls.resetTitle" title="Başlangıç durumuna sıfırla">
+            🔄 Sıfırla
           </button>
         </div>
 
         <div class="control-speed-wrapper">
           <div class="speed-header">
-            <span class="speed-title">⏱️ Step Delay:</span>
+            <span class="speed-title" data-i18n="controls.delayTitle">⏱️ Adım Gecikmesi:</span>
             <span id="speed-value-badge" class="speed-badge">50 ms</span>
           </div>
           <div class="slider-container">
             <span class="slider-min">0ms</span>
-            <input type="range" id="speed-slider" class="speed-slider" min="0" max="2000" step="50" value="50" title="Adjust step delay" />
+            <input type="range" id="speed-slider" class="speed-slider" min="0" max="2000" step="50" value="50" title="Adım gecikmesini ayarla" />
             <span class="slider-max">2.0s</span>
           </div>
         </div>
 
         <!-- Input Prompt dialog if InputNode is reached interactively -->
         <div id="input-prompt-container" class="input-prompt-bar hidden">
-          <div id="prompt-label" class="prompt-label">Enter value:</div>
+          <div id="prompt-label" class="prompt-label" data-i18n="controls.promptTitle">Girdi Giriniz:</div>
           <div class="prompt-input-group">
-            <input type="text" id="prompt-input" placeholder="Type value & hit Enter..." />
-            <button id="prompt-submit-btn" class="btn btn-primary">Submit</button>
+            <input type="text" id="prompt-input" data-i18n-placeholder="controls.promptPlaceholder" placeholder="Değer yazıp Enter tuşuna basın..." />
+            <button id="prompt-submit-btn" class="btn btn-primary" data-i18n="controls.promptSubmit">Gönder</button>
           </div>
         </div>
       </div>
@@ -184,21 +190,21 @@
       <!-- Variable Watcher Section -->
       <div class="panel-section">
         <div class="section-header">
-          <h2>Variable Watcher (Memory)</h2>
+          <h2 data-i18n="variables.title">Değişken Takipçisi (Bellek)</h2>
         </div>
 
         <div class="variables-table-container">
           <table class="variables-table">
             <thead>
               <tr>
-                <th>Variable</th>
-                <th>C Type</th>
-                <th>Value</th>
+                <th data-i18n="variables.colVariable">Değişken</th>
+                <th data-i18n="variables.colType">C Tipi</th>
+                <th data-i18n="variables.colValue">Değer</th>
               </tr>
             </thead>
             <tbody id="variables-tbody">
               <tr>
-                <td colspan="3" class="empty-hint">No variables declared in memory yet</td>
+                <td colspan="3" class="empty-hint" data-i18n="variables.emptyHint">Bellekte henüz tanımlı değişken yok</td>
               </tr>
             </tbody>
           </table>
@@ -208,12 +214,12 @@
       <!-- Output Console Section -->
       <div class="panel-section" style="flex: 1; display: flex; flex-direction: column;">
         <div class="section-header">
-          <h2>Output Console (printf)</h2>
-          <button id="btn-clear-console" class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Clear</button>
+          <h2 data-i18n="console.title">Konsol Çıktısı (printf)</h2>
+          <button id="btn-clear-console" class="btn" data-i18n="console.clear" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Temizle</button>
         </div>
 
         <div id="console-output" class="console-box" style="flex: 1;">
-          <span class="console-hint">Console output (printf) will appear here...</span>
+          <span class="console-hint" data-i18n="console.emptyHint">Konsol çıktıları (printf) burada görüntülenecektir...</span>
         </div>
       </div>
     </aside>

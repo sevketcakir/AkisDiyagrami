@@ -1,6 +1,7 @@
 import Drawflow from 'drawflow';
 import 'drawflow/dist/drawflow.min.css';
 import { AutoLayout } from './AutoLayout.js';
+import { I18n } from '../i18n/I18n.js';
 
 /**
  * Generates paper-standard flowchart node HTML using embedded SVG shapes.
@@ -20,16 +21,16 @@ export function renderNodeHtml(type, customData = {}) {
     case 'start':
       return `
         <div class="flowchart-node-content shape-oval shape-start">
-          <div class="node-title">START</div>
-          <div class="node-subtitle">int main()</div>
+          <div class="node-title">${I18n.t('nodes.startTitle')}</div>
+          <div class="node-subtitle">${I18n.t('nodes.startSubtitle')}</div>
         </div>
       `;
 
     case 'end':
       return `
         <div class="flowchart-node-content shape-oval shape-end">
-          <div class="node-title">END</div>
-          <div class="node-subtitle">return 0;</div>
+          <div class="node-title">${I18n.t('nodes.endTitle')}</div>
+          <div class="node-subtitle">${I18n.t('nodes.endSubtitle')}</div>
         </div>
       `;
 
@@ -39,9 +40,9 @@ export function renderNodeHtml(type, customData = {}) {
       const rows = Math.min(4, Math.max(1, lines));
       return `
         <div class="flowchart-node-content shape-rectangle">
-          <div class="node-header">Process / Assignment</div>
+          <div class="node-header">${I18n.t('nodes.processHeader')}</div>
           <div class="node-body">
-            <textarea df-expression class="node-textarea" rows="${rows}" placeholder="e.g. a = 5&#10;b = 10" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
+            <textarea df-expression class="node-textarea" rows="${rows}" placeholder="${I18n.t('nodes.processPlaceholder')}" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
           </div>
         </div>
       `;
@@ -55,11 +56,11 @@ export function renderNodeHtml(type, customData = {}) {
             <polygon points="95,5 185,55 95,105 5,55" class="svg-shape-path svg-decision" />
           </svg>
           <div class="node-inner-content">
-            <div class="node-header">Decision (If)</div>
-            <textarea df-condition class="node-textarea" rows="1" placeholder="e.g. score >= 50" title="${escapeHtml(cond)}">${escapeHtml(cond)}</textarea>
+            <div class="node-header">${I18n.t('nodes.decisionHeader')}</div>
+            <textarea df-condition class="node-textarea" rows="1" placeholder="${I18n.t('nodes.decisionPlaceholder')}" title="${escapeHtml(cond)}">${escapeHtml(cond)}</textarea>
           </div>
-          <div class="port-label port-label-true">True (← T)</div>
-          <div class="port-label port-label-false">False (F →)</div>
+          <div class="port-label port-label-true">${I18n.t('nodes.portTrue')}</div>
+          <div class="port-label port-label-false">${I18n.t('nodes.portFalse')}</div>
         </div>
       `;
     }
@@ -72,12 +73,12 @@ export function renderNodeHtml(type, customData = {}) {
             <polygon points="28,5 172,5 195,47 172,90 28,90 5,47" class="svg-shape-path svg-loop" />
           </svg>
           <div class="node-inner-content">
-            <div class="node-header">Loop (Hexagon)</div>
-            <textarea df-condition class="node-textarea" rows="1" placeholder="e.g. I = 1, N, 1" title="${escapeHtml(cond)}">${escapeHtml(cond)}</textarea>
+            <div class="node-header">${I18n.t('nodes.loopHeader')}</div>
+            <textarea df-condition class="node-textarea" rows="1" placeholder="${I18n.t('nodes.loopPlaceholder')}" title="${escapeHtml(cond)}">${escapeHtml(cond)}</textarea>
           </div>
-          <div class="port-label port-label-body">Body (→)</div>
-          <div class="port-label port-label-loopback">In (←)</div>
-          <div class="port-label port-label-exit">Exit (↓)</div>
+          <div class="port-label port-label-body">${I18n.t('nodes.portBody')}</div>
+          <div class="port-label port-label-loopback">${I18n.t('nodes.portIn')}</div>
+          <div class="port-label port-label-exit">${I18n.t('nodes.portExit')}</div>
         </div>
       `;
     }
@@ -92,8 +93,8 @@ export function renderNodeHtml(type, customData = {}) {
             <polygon points="26,5 185,5 164,75 5,75" class="svg-shape-path svg-input" />
           </svg>
           <div class="node-inner-content">
-            <div class="node-header">Input (scanf)</div>
-            <textarea df-variablename class="node-textarea" rows="${rows}" placeholder="e.g. a, b, c" title="${escapeHtml(varName)}">${escapeHtml(varName)}</textarea>
+            <div class="node-header">${I18n.t('nodes.inputHeader')}</div>
+            <textarea df-variablename class="node-textarea" rows="${rows}" placeholder="${I18n.t('nodes.inputPlaceholder')}" title="${escapeHtml(varName)}">${escapeHtml(varName)}</textarea>
           </div>
         </div>
       `;
@@ -109,8 +110,8 @@ export function renderNodeHtml(type, customData = {}) {
             <path d="M 5,5 L 195,5 L 195,74 C 155,98 145,98 100,74 C 55,50 45,50 5,74 Z" class="svg-shape-path svg-document" />
           </svg>
           <div class="node-inner-content">
-            <div class="node-header">Output (printf)</div>
-            <textarea df-expression class="node-textarea" rows="${rows}" placeholder="Expression to print" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
+            <div class="node-header">${I18n.t('nodes.outputHeader')}</div>
+            <textarea df-expression class="node-textarea" rows="${rows}" placeholder="${I18n.t('nodes.outputPlaceholder')}" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
           </div>
         </div>
       `;
@@ -819,5 +820,65 @@ export class CanvasManager {
 
   zoomReset() {
     this.editor.zoom_reset();
+  }
+
+  /**
+   * Refreshes all rendered node titles, headers, port labels, and placeholders to match active language.
+   */
+  refreshNodeLabels() {
+    const nodeElements = this.container.querySelectorAll('.drawflow-node');
+    nodeElements.forEach((nodeEl) => {
+      const numId = nodeEl.id.replace('node-', '');
+      const rawData = this.getNodeData(numId);
+      const nodeType = (rawData?.name || rawData?.class || '').toLowerCase();
+
+      // Headers
+      const header = nodeEl.querySelector('.node-header');
+      if (header) {
+        if (nodeType === 'assignment') header.textContent = I18n.t('nodes.processHeader');
+        else if (nodeType === 'decision') header.textContent = I18n.t('nodes.decisionHeader');
+        else if (nodeType === 'loop') header.textContent = I18n.t('nodes.loopHeader');
+        else if (nodeType === 'input') header.textContent = I18n.t('nodes.inputHeader');
+        else if (nodeType === 'output') header.textContent = I18n.t('nodes.outputHeader');
+      }
+
+      // Start & End Titles
+      const startTitle = nodeEl.querySelector('.shape-start .node-title');
+      if (startTitle) startTitle.textContent = I18n.t('nodes.startTitle');
+      const startSub = nodeEl.querySelector('.shape-start .node-subtitle');
+      if (startSub) startSub.textContent = I18n.t('nodes.startSubtitle');
+
+      const endTitle = nodeEl.querySelector('.shape-end .node-title');
+      if (endTitle) endTitle.textContent = I18n.t('nodes.endTitle');
+      const endSub = nodeEl.querySelector('.shape-end .node-subtitle');
+      if (endSub) endSub.textContent = I18n.t('nodes.endSubtitle');
+
+      // Port labels
+      const truePort = nodeEl.querySelector('.port-label-true');
+      if (truePort) truePort.textContent = I18n.t('nodes.portTrue');
+      const falsePort = nodeEl.querySelector('.port-label-false');
+      if (falsePort) falsePort.textContent = I18n.t('nodes.portFalse');
+
+      const bodyPort = nodeEl.querySelector('.port-label-body');
+      if (bodyPort) bodyPort.textContent = I18n.t('nodes.portBody');
+      const inPort = nodeEl.querySelector('.port-label-loopback');
+      if (inPort) inPort.textContent = I18n.t('nodes.portIn');
+      const exitPort = nodeEl.querySelector('.port-label-exit');
+      if (exitPort) exitPort.textContent = I18n.t('nodes.portExit');
+
+      // Placeholders
+      const exprTa = nodeEl.querySelector('textarea[df-expression]');
+      if (exprTa) {
+        exprTa.placeholder = nodeType === 'assignment' ? I18n.t('nodes.processPlaceholder') : I18n.t('nodes.outputPlaceholder');
+      }
+      const condTa = nodeEl.querySelector('textarea[df-condition]');
+      if (condTa) {
+        condTa.placeholder = nodeType === 'decision' ? I18n.t('nodes.decisionPlaceholder') : I18n.t('nodes.loopPlaceholder');
+      }
+      const inputTa = nodeEl.querySelector('textarea[df-variablename]');
+      if (inputTa) {
+        inputTa.placeholder = I18n.t('nodes.inputPlaceholder');
+      }
+    });
   }
 }

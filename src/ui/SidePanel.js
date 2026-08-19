@@ -1,3 +1,5 @@
+import { I18n } from '../i18n/I18n.js';
+
 /**
  * @class SidePanel
  * Manages execution controls, variable watcher table, output console, and runtime prompts.
@@ -10,6 +12,8 @@ export class SidePanel {
    * @param {HTMLElement} elements.stepBtn
    * @param {HTMLElement} elements.resetBtn
    * @param {HTMLSelectElement} elements.speedSelect
+   * @param {HTMLElement} elements.speedSlider
+   * @param {HTMLElement} elements.speedValueBadge
    * @param {HTMLElement} elements.statusBadge
    * @param {HTMLElement} elements.variablesTableBody
    * @param {HTMLElement} elements.consoleOutput
@@ -23,7 +27,9 @@ export class SidePanel {
     this.elements = elements;
     this.speed = parseInt(elements.speedSlider?.value || elements.speedSelect?.value || '50', 10);
     this.status = 'READY'; // READY | RUNNING | PAUSED | STEPPING | FINISHED | ERROR | WAITING_INPUT
+    this.currentCustomMessage = null;
     this.prevVariables = {};
+    this.currentVariables = {};
 
     this.onPlay = null;
     this.onPause = null;
@@ -56,15 +62,7 @@ export class SidePanel {
     // Speed Slider
     const handleSpeedChange = (val) => {
       this.speed = parseInt(val, 10);
-      if (this.elements.speedValueBadge) {
-        if (this.speed === 0) {
-          this.elements.speedValueBadge.textContent = '0 ms (Instant)';
-        } else if (this.speed >= 1000) {
-          this.elements.speedValueBadge.textContent = `${(this.speed / 1000).toFixed(1)} s`;
-        } else {
-          this.elements.speedValueBadge.textContent = `${this.speed} ms`;
-        }
-      }
+      this.updateSpeedBadge();
       if (this.onSpeedChange) {
         this.onSpeedChange(this.speed);
       }
@@ -93,6 +91,18 @@ export class SidePanel {
     });
   }
 
+  updateSpeedBadge() {
+    if (this.elements.speedValueBadge) {
+      if (this.speed === 0) {
+        this.elements.speedValueBadge.textContent = I18n.t('controls.delayInstant');
+      } else if (this.speed >= 1000) {
+        this.elements.speedValueBadge.textContent = `${(this.speed / 1000).toFixed(1)} s`;
+      } else {
+        this.elements.speedValueBadge.textContent = `${this.speed} ms`;
+      }
+    }
+  }
+
   submitUserInput() {
     const val = this.elements.promptInput.value;
     this.hideInputPrompt();
@@ -110,7 +120,7 @@ export class SidePanel {
   requestUserInput(promptText, varName) {
     return new Promise((resolve) => {
       this.setStatus('WAITING_INPUT');
-      this.elements.promptLabel.textContent = promptText || `Enter value for ${varName}:`;
+      this.elements.promptLabel.textContent = promptText || `${I18n.t('controls.promptTitle')} ${varName}:`;
       this.elements.promptInput.value = '';
       this.elements.inputPromptContainer.classList.remove('hidden');
       this.elements.promptInput.focus();
@@ -132,18 +142,19 @@ export class SidePanel {
    */
   setStatus(status, customMessage = null) {
     this.status = status;
+    this.currentCustomMessage = customMessage;
     const badge = this.elements.statusBadge;
     if (!badge) return;
 
     badge.className = 'status-badge status-' + status.toLowerCase();
     const textMap = {
-      READY: 'Ready',
-      RUNNING: 'Running...',
-      PAUSED: 'Paused',
-      STEPPING: 'Stepping...',
-      FINISHED: 'Finished (return 0)',
-      ERROR: 'Runtime Error',
-      WAITING_INPUT: 'Waiting for Input'
+      READY: I18n.t('status.ready'),
+      RUNNING: I18n.t('status.running'),
+      PAUSED: I18n.t('status.paused'),
+      STEPPING: I18n.t('status.stepping'),
+      FINISHED: I18n.t('status.finished'),
+      ERROR: I18n.t('status.error'),
+      WAITING_INPUT: I18n.t('status.waitingInput')
     };
     badge.textContent = customMessage || textMap[status] || status;
 
@@ -172,12 +183,13 @@ export class SidePanel {
    * @param {Record<string, any>} variables
    */
   updateVariables(variables = {}) {
+    this.currentVariables = variables;
     const tbody = this.elements.variablesTableBody;
     if (!tbody) return;
 
     const keys = Object.keys(variables);
     if (keys.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" class="empty-hint">No variables declared in memory yet</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" class="empty-hint">${I18n.t('variables.emptyHint')}</td></tr>`;
       this.prevVariables = {};
       return;
     }
@@ -218,7 +230,7 @@ export class SidePanel {
     if (!this.elements.consoleOutput) return;
 
     if (outputLines.length === 0) {
-      this.elements.consoleOutput.innerHTML = `<span class="console-hint">Console output (printf) will appear here...</span>`;
+      this.elements.consoleOutput.innerHTML = `<span class="console-hint">${I18n.t('console.emptyHint')}</span>`;
       return;
     }
 
@@ -232,7 +244,25 @@ export class SidePanel {
 
   clearConsole() {
     if (this.elements.consoleOutput) {
-      this.elements.consoleOutput.innerHTML = `<span class="console-hint">Console cleared.</span>`;
+      this.elements.consoleOutput.innerHTML = `<span class="console-hint">${I18n.t('console.emptyHint')}</span>`;
+    }
+  }
+
+  /**
+   * Refreshes all side panel labels when the language switches.
+   */
+  refreshLocalization() {
+    this.setStatus(this.status, this.currentCustomMessage);
+    this.updateSpeedBadge();
+    if (Object.keys(this.currentVariables).length === 0) {
+      const tbody = this.elements.variablesTableBody;
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="3" class="empty-hint">${I18n.t('variables.emptyHint')}</td></tr>`;
+      }
+    }
+    const consoleHint = this.elements.consoleOutput?.querySelector('.console-hint');
+    if (consoleHint) {
+      consoleHint.textContent = I18n.t('console.emptyHint');
     }
   }
 }

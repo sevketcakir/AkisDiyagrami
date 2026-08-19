@@ -6,6 +6,7 @@ import { InterpreterContext } from './engine/InterpreterContext.js';
 import { FileHandler } from './utils/FileHandler.js';
 import { SamplePrograms } from './utils/SamplePrograms.js';
 import { SafeEvaluator } from './evaluator/Evaluator.js';
+import { I18n } from './i18n/I18n.js';
 
 class App {
   constructor() {
@@ -20,6 +21,9 @@ class App {
   }
 
   init() {
+    // Apply active language to DOM immediately
+    I18n.updateDOM();
+
     const drawflowContainer = document.getElementById('drawflow');
     this.canvasManager = new CanvasManager(drawflowContainer);
     this.isGraphDirty = false;
@@ -54,6 +58,7 @@ class App {
     this.bindSidebarDrag();
     this.bindHeaderActions();
     this.bindExecutionEvents();
+    this.setupLanguageSwitcher();
 
     // Check for auto-saved diagram or load default curriculum example
     const saved = FileHandler.loadFromLocalStorage();
@@ -62,6 +67,49 @@ class App {
       setTimeout(() => this.resetExecution(), 120);
     } else {
       this.loadSample('rectangleArea');
+    }
+  }
+
+  setupLanguageSwitcher() {
+    const updateSwitcherUI = (lang) => {
+      const btnTr = document.getElementById('btn-lang-tr');
+      const btnEn = document.getElementById('btn-lang-en');
+      if (btnTr && btnEn) {
+        btnTr.classList.toggle('active', lang === 'tr');
+        btnEn.classList.toggle('active', lang === 'en');
+      }
+      this.populateSampleDropdown();
+      this.canvasManager.refreshNodeLabels();
+      this.sidePanel.refreshLocalization();
+    };
+
+    I18n.onLanguageChange((lang) => {
+      updateSwitcherUI(lang);
+    });
+
+    updateSwitcherUI(I18n.getLanguage());
+  }
+
+  populateSampleDropdown() {
+    const sampleSelect = document.getElementById('sample-select');
+    if (!sampleSelect) return;
+
+    const currentVal = sampleSelect.value;
+    sampleSelect.innerHTML = '';
+
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.disabled = true;
+    if (!currentVal) defaultOpt.selected = true;
+    defaultOpt.textContent = I18n.t('header.sampleSelectDefault');
+    sampleSelect.appendChild(defaultOpt);
+
+    for (const [key, sample] of Object.entries(SamplePrograms)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      if (key === currentVal) opt.selected = true;
+      opt.textContent = sample.name;
+      sampleSelect.appendChild(opt);
     }
   }
 
@@ -92,6 +140,15 @@ class App {
   }
 
   bindHeaderActions() {
+    // Language Switcher Buttons
+    document.getElementById('btn-lang-tr')?.addEventListener('click', () => {
+      I18n.setLanguage('tr');
+    });
+
+    document.getElementById('btn-lang-en')?.addEventListener('click', () => {
+      I18n.setLanguage('en');
+    });
+
     // Sample select dropdown
     const sampleSelect = document.getElementById('sample-select');
     sampleSelect.addEventListener('change', (e) => {
@@ -137,7 +194,7 @@ class App {
 
     // Clear Canvas
     document.getElementById('btn-clear-canvas').addEventListener('click', () => {
-      if (confirm('Clear the flowchart canvas?')) {
+      if (confirm(I18n.t('header.clearConfirm'))) {
         FileHandler.clearLocalStorage();
         this.canvasManager.clear();
         this.resetExecution();

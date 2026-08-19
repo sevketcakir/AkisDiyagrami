@@ -1,4 +1,5 @@
 import { renderNodeHtml } from '../ui/CanvasManager.js';
+import { I18n } from '../i18n/I18n.js';
 
 /**
  * Pre-built educational flowchart programs for C programming students,
@@ -6,8 +7,8 @@ import { renderNodeHtml } from '../ui/CanvasManager.js';
  */
 export const SamplePrograms = {
   rectangleArea: {
-    name: '1. Rectangle Area (Sequential Flow)',
-    description: 'Calculates the area of a rectangle given width and height using a compact process block.',
+    get name() { return I18n.t('samples.rectangleArea'); },
+    get description() { return I18n.t('sampleDescriptions.rectangleArea'); },
     data: {
       drawflow: {
         Home: {
@@ -67,8 +68,8 @@ export const SamplePrograms = {
   },
 
   evenOrOdd: {
-    name: '2. Even or Odd Number (If-Else Decision)',
-    description: 'Checks whether a user input number is Even or Odd using modulo arithmetic.',
+    get name() { return I18n.t('samples.evenOrOdd'); },
+    get description() { return I18n.t('sampleDescriptions.evenOrOdd'); },
     data: {
       drawflow: {
         Home: {
@@ -162,8 +163,8 @@ export const SamplePrograms = {
   },
 
   maxOfThree: {
-    name: '3. Maximum of Three Numbers (Nested Decision)',
-    description: 'Compares three input numbers using a compact multi-variable input node.',
+    get name() { return I18n.t('samples.maxOfThree'); },
+    get description() { return I18n.t('sampleDescriptions.maxOfThree'); },
     data: {
       drawflow: {
         Home: {
@@ -285,8 +286,8 @@ export const SamplePrograms = {
   },
 
   sum1ToN: {
-    name: '4. Sum of 1 to N (Accumulator Loop)',
-    description: 'Computes sum = 1 + 2 + ... + N using a parametric loop.',
+    get name() { return I18n.t('samples.sum1ToN'); },
+    get description() { return I18n.t('sampleDescriptions.sum1ToN'); },
     data: {
       drawflow: {
         Home: {
@@ -388,8 +389,8 @@ export const SamplePrograms = {
   },
 
   factorial: {
-    name: '5. Factorial of N (Multiplicative Loop)',
-    description: 'Calculates N! = 1 * 2 * ... * N using iterative multiplication.',
+    get name() { return I18n.t('samples.factorial'); },
+    get description() { return I18n.t('sampleDescriptions.factorial'); },
     data: {
       drawflow: {
         Home: {
@@ -491,8 +492,8 @@ export const SamplePrograms = {
   },
 
   isPrimeCheck: {
-    name: '6. Prime Number Test (Is N Prime?)',
-    description: 'Tests if an input number N is prime by testing divisibility with a loop.',
+    get name() { return I18n.t('samples.isPrimeCheck'); },
+    get description() { return I18n.t('sampleDescriptions.isPrimeCheck'); },
     data: {
       drawflow: {
         Home: {
@@ -648,8 +649,8 @@ export const SamplePrograms = {
   },
 
   allPrimesUpToN: {
-    name: '7. List All Primes Up to N (Nested Loops)',
-    description: 'Finds and prints all prime numbers from 2 up to N using nested loops.',
+    get name() { return I18n.t('samples.allPrimesUpToN'); },
+    get description() { return I18n.t('sampleDescriptions.allPrimesUpToN'); },
     data: {
       drawflow: {
         Home: {
@@ -845,8 +846,8 @@ export const SamplePrograms = {
   },
 
   fibonacci: {
-    name: '8. Fibonacci Sequence (First N Terms)',
-    description: 'Generates the first N numbers in the Fibonacci sequence using compact assignment blocks.',
+    get name() { return I18n.t('samples.fibonacci'); },
+    get description() { return I18n.t('sampleDescriptions.fibonacci'); },
     data: {
       drawflow: {
         Home: {
@@ -948,8 +949,8 @@ export const SamplePrograms = {
   },
 
   gcdEuclideanSubtraction: {
-    name: "9. Euclid's GCD (Subtraction Method)",
-    description: 'Computes GCD(a, b) using original Euclidean repeated subtraction (if a > b then a = a - b else b = b - a).',
+    get name() { return I18n.t('samples.gcdEuclideanSubtraction'); },
+    get description() { return I18n.t('sampleDescriptions.gcdEuclideanSubtraction'); },
     data: {
       drawflow: {
         Home: {
@@ -1071,8 +1072,8 @@ export const SamplePrograms = {
   },
 
   gcdEuclidean: {
-    name: "10. Euclid's GCD (Modulo Division Method)",
-    description: 'Computes GCD(a, b) using Euclidean division remainder algorithm.',
+    get name() { return I18n.t('samples.gcdEuclidean'); },
+    get description() { return I18n.t('sampleDescriptions.gcdEuclidean'); },
     data: {
       drawflow: {
         Home: {
