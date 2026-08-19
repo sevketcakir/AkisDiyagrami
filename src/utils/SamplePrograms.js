@@ -6,7 +6,7 @@ import { renderNodeHtml } from '../ui/CanvasManager.js';
  */
 export const SamplePrograms = {
   rectangleArea: {
-    name: '1. Rectangle Area (Linear Sequence)',
+    name: '1. Rectangle Area (Sequential Flow)',
     description: 'Calculates the area of a rectangle given width and height.',
     data: {
       drawflow: {
@@ -63,9 +63,9 @@ export const SamplePrograms = {
             '5': {
               id: 5,
               name: 'output',
-              data: { expression: '"Area is: " + area' },
+              data: { expression: '"Rectangle Area: " + area' },
               class: 'output',
-              html: renderNodeHtml('output', { expression: '"Area is: " + area' }),
+              html: renderNodeHtml('output', { expression: '"Rectangle Area: " + area' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
@@ -91,8 +91,8 @@ export const SamplePrograms = {
   },
 
   evenOrOdd: {
-    name: '2. Even or Odd Number (Decision / If-Else)',
-    description: 'Checks if a number is even or odd using modulo operation (num % 2 == 0).',
+    name: '2. Even or Odd Number (If-Else Decision)',
+    description: 'Checks whether a user input number is Even or Odd using modulo arithmetic.',
     data: {
       drawflow: {
         Home: {
@@ -112,9 +112,9 @@ export const SamplePrograms = {
             '2': {
               id: 2,
               name: 'input',
-              data: { variableName: 'num', prompt: 'Enter an integer:' },
+              data: { variableName: 'number', variablename: 'number' },
               class: 'input',
-              html: renderNodeHtml('input', { variableName: 'num' }),
+              html: renderNodeHtml('input', { variableName: 'number' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
@@ -124,13 +124,13 @@ export const SamplePrograms = {
             '3': {
               id: 3,
               name: 'decision',
-              data: { condition: 'num % 2 == 0' },
+              data: { condition: 'number % 2 == 0' },
               class: 'decision',
-              html: renderNodeHtml('decision', { condition: 'num % 2 == 0' }),
+              html: renderNodeHtml('decision', { condition: 'number % 2 == 0' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
               outputs: {
-                output_1: { connections: [{ node: '4', output: 'input_1' }] }, // True (Bottom)
+                output_1: { connections: [{ node: '4', output: 'input_1' }] }, // True (Left)
                 output_2: { connections: [{ node: '5', output: 'input_1' }] }  // False (Right)
               },
               pos_x: 250,
@@ -145,8 +145,8 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
-              pos_x: 60,
-              pos_y: 390
+              pos_x: 90,
+              pos_y: 400
             },
             '5': {
               id: 5,
@@ -157,8 +157,8 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '3', input: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
-              pos_x: 440,
-              pos_y: 390
+              pos_x: 410,
+              pos_y: 400
             },
             '6': {
               id: 6,
@@ -177,7 +177,154 @@ export const SamplePrograms = {
               },
               outputs: {},
               pos_x: 250,
-              pos_y: 530
+              pos_y: 540
+            }
+          }
+        }
+      }
+    }
+  },
+
+  maxOfThree: {
+    name: '3. Maximum of Three Numbers (Nested Decision)',
+    description: 'Compares three input numbers and prints the greatest one.',
+    data: {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              data: {},
+              class: 'start',
+              html: renderNodeHtml('start', {}),
+              typenode: false,
+              inputs: {},
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 30
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'a', variablename: 'a' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 120
+            },
+            '3': {
+              id: 3,
+              name: 'input',
+              data: { variableName: 'b', variablename: 'b' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 210
+            },
+            '4': {
+              id: 4,
+              name: 'input',
+              data: { variableName: 'c', variablename: 'c' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'c' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '5', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 300
+            },
+            '5': {
+              id: 5,
+              name: 'decision',
+              data: { condition: 'a >= b && a >= c' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'a >= b && a >= c' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
+              outputs: {
+                output_1: { connections: [{ node: '6', output: 'input_1' }] },
+                output_2: { connections: [{ node: '7', output: 'input_1' }] }
+              },
+              pos_x: 250,
+              pos_y: 390
+            },
+            '6': {
+              id: 6,
+              name: 'output',
+              data: { expression: '"Max is A: " + a' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"Max is A: " + a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '10', output: 'input_1' }] } },
+              pos_x: 60,
+              pos_y: 510
+            },
+            '7': {
+              id: 7,
+              name: 'decision',
+              data: { condition: 'b >= c' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'b >= c' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_2' }] } },
+              outputs: {
+                output_1: { connections: [{ node: '8', output: 'input_1' }] },
+                output_2: { connections: [{ node: '9', output: 'input_1' }] }
+              },
+              pos_x: 440,
+              pos_y: 510
+            },
+            '8': {
+              id: 8,
+              name: 'output',
+              data: { expression: '"Max is B: " + b' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"Max is B: " + b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '10', output: 'input_1' }] } },
+              pos_x: 320,
+              pos_y: 630
+            },
+            '9': {
+              id: 9,
+              name: 'output',
+              data: { expression: '"Max is C: " + c' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"Max is C: " + c' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '10', output: 'input_1' }] } },
+              pos_x: 540,
+              pos_y: 630
+            },
+            '10': {
+              id: 10,
+              name: 'end',
+              data: {},
+              class: 'end',
+              html: renderNodeHtml('end', {}),
+              typenode: false,
+              inputs: {
+                input_1: {
+                  connections: [
+                    { node: '6', input: 'output_1' },
+                    { node: '8', input: 'output_1' },
+                    { node: '9', input: 'output_1' }
+                  ]
+                }
+              },
+              outputs: {},
+              pos_x: 250,
+              pos_y: 770
             }
           }
         }
@@ -186,8 +333,8 @@ export const SamplePrograms = {
   },
 
   sum1ToN: {
-    name: '3. Sum of 1 to N (Loop / Iteration)',
-    description: 'Computes sum = 1 + 2 + ... + N using a loop (i = 1, N, 1).',
+    name: '4. Sum of 1 to N (Accumulator Loop)',
+    description: 'Computes sum = 1 + 2 + ... + N using a parametric loop.',
     data: {
       drawflow: {
         Home: {
@@ -206,10 +353,10 @@ export const SamplePrograms = {
             },
             '2': {
               id: 2,
-              name: 'assignment',
-              data: { expression: 'N = 5' },
-              class: 'assignment',
-              html: renderNodeHtml('assignment', { expression: 'N = 5' }),
+              name: 'input',
+              data: { variableName: 'N', variablename: 'N' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'N' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
@@ -240,8 +387,8 @@ export const SamplePrograms = {
                 input_2: { connections: [{ node: '5', input: 'output_1' }] }
               },
               outputs: {
-                output_1: { connections: [{ node: '5', output: 'input_1' }] }, // Body (Right)
-                output_2: { connections: [{ node: '6', output: 'input_1' }] }  // Exit (Bottom)
+                output_1: { connections: [{ node: '5', output: 'input_1' }] },
+                output_2: { connections: [{ node: '6', output: 'input_1' }] }
               },
               pos_x: 250,
               pos_y: 340
@@ -281,6 +428,721 @@ export const SamplePrograms = {
               outputs: {},
               pos_x: 250,
               pos_y: 610
+            }
+          }
+        }
+      }
+    }
+  },
+
+  factorial: {
+    name: '5. Factorial of N (Multiplicative Loop)',
+    description: 'Calculates N! = 1 * 2 * ... * N using iterative multiplication.',
+    data: {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              data: {},
+              class: 'start',
+              html: renderNodeHtml('start', {}),
+              typenode: false,
+              inputs: {},
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 40
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'N', variablename: 'N' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'N' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 140
+            },
+            '3': {
+              id: 3,
+              name: 'assignment',
+              data: { expression: 'fact = 1' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'fact = 1' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 240
+            },
+            '4': {
+              id: 4,
+              name: 'loop',
+              data: { condition: 'i = 1, N, 1' },
+              class: 'loop',
+              html: renderNodeHtml('loop', { condition: 'i = 1, N, 1' }),
+              typenode: false,
+              inputs: {
+                input_1: { connections: [{ node: '3', input: 'output_1' }] },
+                input_2: { connections: [{ node: '5', input: 'output_1' }] }
+              },
+              outputs: {
+                output_1: { connections: [{ node: '5', output: 'input_1' }] },
+                output_2: { connections: [{ node: '6', output: 'input_1' }] }
+              },
+              pos_x: 250,
+              pos_y: 340
+            },
+            '5': {
+              id: 5,
+              name: 'assignment',
+              data: { expression: 'fact = fact * i' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'fact = fact * i' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              pos_x: 520,
+              pos_y: 340
+            },
+            '6': {
+              id: 6,
+              name: 'output',
+              data: { expression: '"Factorial: " + fact' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"Factorial: " + fact' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '7', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 490
+            },
+            '7': {
+              id: 7,
+              name: 'end',
+              data: {},
+              class: 'end',
+              html: renderNodeHtml('end', {}),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
+              outputs: {},
+              pos_x: 250,
+              pos_y: 610
+            }
+          }
+        }
+      }
+    }
+  },
+
+  isPrimeCheck: {
+    name: '6. Prime Number Test (Is N Prime?)',
+    description: 'Tests if an input number N is prime by testing divisibility with a loop.',
+    data: {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              data: {},
+              class: 'start',
+              html: renderNodeHtml('start', {}),
+              typenode: false,
+              inputs: {},
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 40
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'N', variablename: 'N' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'N' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 140
+            },
+            '3': {
+              id: 3,
+              name: 'assignment',
+              data: { expression: 'asal = true' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'asal = true' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 240
+            },
+            '4': {
+              id: 4,
+              name: 'loop',
+              data: { condition: 'i = 2, N - 1, 1' },
+              class: 'loop',
+              html: renderNodeHtml('loop', { condition: 'i = 2, N - 1, 1' }),
+              typenode: false,
+              inputs: {
+                input_1: { connections: [{ node: '3', input: 'output_1' }] },
+                input_2: {
+                  connections: [
+                    { node: '6', input: 'output_1' },
+                    { node: '5', input: 'output_2' }
+                  ]
+                }
+              },
+              outputs: {
+                output_1: { connections: [{ node: '5', output: 'input_1' }] },
+                output_2: { connections: [{ node: '7', output: 'input_1' }] }
+              },
+              pos_x: 250,
+              pos_y: 340
+            },
+            '5': {
+              id: 5,
+              name: 'decision',
+              data: { condition: 'N % i == 0' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'N % i == 0' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
+              outputs: {
+                output_1: { connections: [{ node: '6', output: 'input_1' }] }, // True (Left)
+                output_2: { connections: [{ node: '4', input: 'input_2' }] }   // False (Right loopback)
+              },
+              pos_x: 540,
+              pos_y: 340
+            },
+            '6': {
+              id: 6,
+              name: 'assignment',
+              data: { expression: 'asal = false' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'asal = false' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              pos_x: 540,
+              pos_y: 470
+            },
+            '7': {
+              id: 7,
+              name: 'decision',
+              data: { condition: 'asal && N >= 2' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'asal && N >= 2' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
+              outputs: {
+                output_1: { connections: [{ node: '8', output: 'input_1' }] },
+                output_2: { connections: [{ node: '9', output: 'input_1' }] }
+              },
+              pos_x: 250,
+              pos_y: 520
+            },
+            '8': {
+              id: 8,
+              name: 'output',
+              data: { expression: 'N + " is a PRIME number!"' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: 'N + " is a PRIME number!"' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '10', output: 'input_1' }] } },
+              pos_x: 80,
+              pos_y: 650
+            },
+            '9': {
+              id: 9,
+              name: 'output',
+              data: { expression: 'N + " is NOT a prime number."' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: 'N + " is NOT a prime number."' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '10', output: 'input_1' }] } },
+              pos_x: 420,
+              pos_y: 650
+            },
+            '10': {
+              id: 10,
+              name: 'end',
+              data: {},
+              class: 'end',
+              html: renderNodeHtml('end', {}),
+              typenode: false,
+              inputs: {
+                input_1: {
+                  connections: [
+                    { node: '8', input: 'output_1' },
+                    { node: '9', input: 'output_1' }
+                  ]
+                }
+              },
+              outputs: {},
+              pos_x: 250,
+              pos_y: 780
+            }
+          }
+        }
+      }
+    }
+  },
+
+  allPrimesUpToN: {
+    name: '7. List All Primes Up to N (Nested Loops)',
+    description: 'Finds and prints all prime numbers from 2 up to N using nested loops.',
+    data: {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              data: {},
+              class: 'start',
+              html: renderNodeHtml('start', {}),
+              typenode: false,
+              inputs: {},
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 40
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'N', variablename: 'N' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'N' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 140
+            },
+            '3': {
+              id: 3,
+              name: 'assignment',
+              data: { expression: 'adet = 0' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'adet = 0' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 240
+            },
+            '4': {
+              id: 4,
+              name: 'loop',
+              data: { condition: 'I = 2, N, 1' },
+              class: 'loop',
+              html: renderNodeHtml('loop', { condition: 'I = 2, N, 1' }),
+              typenode: false,
+              inputs: {
+                input_1: { connections: [{ node: '3', input: 'output_1' }] },
+                input_2: {
+                  connections: [
+                    { node: '10', input: 'output_1' },
+                    { node: '8', input: 'output_2' }
+                  ]
+                }
+              },
+              outputs: {
+                output_1: { connections: [{ node: '5', output: 'input_1' }] },
+                output_2: { connections: [{ node: '11', output: 'input_1' }] }
+              },
+              pos_x: 250,
+              pos_y: 340
+            },
+            '5': {
+              id: 5,
+              name: 'assignment',
+              data: { expression: 'asal = true' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'asal = true' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
+              pos_x: 540,
+              pos_y: 340
+            },
+            '6': {
+              id: 6,
+              name: 'loop',
+              data: { condition: 'J = 2, I - 1, 1' },
+              class: 'loop',
+              html: renderNodeHtml('loop', { condition: 'J = 2, I - 1, 1' }),
+              typenode: false,
+              inputs: {
+                input_1: { connections: [{ node: '5', input: 'output_1' }] },
+                input_2: {
+                  connections: [
+                    { node: '7', input: 'output_2' },
+                    { node: '12', input: 'output_1' }
+                  ]
+                }
+              },
+              outputs: {
+                output_1: { connections: [{ node: '7', output: 'input_1' }] },
+                output_2: { connections: [{ node: '8', output: 'input_1' }] }
+              },
+              pos_x: 540,
+              pos_y: 470
+            },
+            '7': {
+              id: 7,
+              name: 'decision',
+              data: { condition: 'I % J == 0' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'I % J == 0' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
+              outputs: {
+                output_1: { connections: [{ node: '12', output: 'input_1' }] }, // True -> set false
+                output_2: { connections: [{ node: '6', input: 'input_2' }] }    // False -> continue inner loop
+              },
+              pos_x: 820,
+              pos_y: 470
+            },
+            '12': {
+              id: 12,
+              name: 'assignment',
+              data: { expression: 'asal = false' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'asal = false' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '6', input: 'input_2' }] } },
+              pos_x: 820,
+              pos_y: 600
+            },
+            '8': {
+              id: 8,
+              name: 'decision',
+              data: { condition: 'asal' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'asal' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '6', input: 'output_2' }] } },
+              outputs: {
+                output_1: { connections: [{ node: '9', output: 'input_1' }] }, // True -> increment & print
+                output_2: { connections: [{ node: '4', input: 'input_2' }] }   // False -> outer loopback
+              },
+              pos_x: 540,
+              pos_y: 620
+            },
+            '9': {
+              id: 9,
+              name: 'assignment',
+              data: { expression: 'adet = adet + 1' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'adet = adet + 1' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '8', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '10', output: 'input_1' }] } },
+              pos_x: 360,
+              pos_y: 740
+            },
+            '10': {
+              id: 10,
+              name: 'output',
+              data: { expression: '"Prime #" + adet + ": " + I' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"Prime #" + adet + ": " + I' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '9', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              pos_x: 360,
+              pos_y: 860
+            },
+            '11': {
+              id: 11,
+              name: 'end',
+              data: {},
+              class: 'end',
+              html: renderNodeHtml('end', {}),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
+              outputs: {},
+              pos_x: 250,
+              pos_y: 990
+            }
+          }
+        }
+      }
+    }
+  },
+
+  fibonacci: {
+    name: '8. Fibonacci Sequence (First N Terms)',
+    description: 'Generates the first N numbers in the Fibonacci sequence (0, 1, 1, 2, 3, 5, 8...).',
+    data: {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              data: {},
+              class: 'start',
+              html: renderNodeHtml('start', {}),
+              typenode: false,
+              inputs: {},
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 30
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'N', variablename: 'N' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'N' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 120
+            },
+            '3': {
+              id: 3,
+              name: 'assignment',
+              data: { expression: 'a = 0' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'a = 0' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 210
+            },
+            '4': {
+              id: 4,
+              name: 'assignment',
+              data: { expression: 'b = 1' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'b = 1' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '5', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 300
+            },
+            '5': {
+              id: 5,
+              name: 'loop',
+              data: { condition: 'i = 1, N, 1' },
+              class: 'loop',
+              html: renderNodeHtml('loop', { condition: 'i = 1, N, 1' }),
+              typenode: false,
+              inputs: {
+                input_1: { connections: [{ node: '4', input: 'output_1' }] },
+                input_2: { connections: [{ node: '9', input: 'output_1' }] }
+              },
+              outputs: {
+                output_1: { connections: [{ node: '6', output: 'input_1' }] },
+                output_2: { connections: [{ node: '10', output: 'input_1' }] }
+              },
+              pos_x: 250,
+              pos_y: 390
+            },
+            '6': {
+              id: 6,
+              name: 'output',
+              data: { expression: '"Fib #" + i + ": " + a' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"Fib #" + i + ": " + a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '7', output: 'input_1' }] } },
+              pos_x: 520,
+              pos_y: 390
+            },
+            '7': {
+              id: 7,
+              name: 'assignment',
+              data: { expression: 'next = a + b' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'next = a + b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '8', output: 'input_1' }] } },
+              pos_x: 520,
+              pos_y: 500
+            },
+            '8': {
+              id: 8,
+              name: 'assignment',
+              data: { expression: 'a = b' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'a = b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '7', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '9', output: 'input_1' }] } },
+              pos_x: 520,
+              pos_y: 590
+            },
+            '9': {
+              id: 9,
+              name: 'assignment',
+              data: { expression: 'b = next' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'b = next' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '8', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '5', input: 'input_2' }] } },
+              pos_x: 520,
+              pos_y: 680
+            },
+            '10': {
+              id: 10,
+              name: 'end',
+              data: {},
+              class: 'end',
+              html: renderNodeHtml('end', {}),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_2' }] } },
+              outputs: {},
+              pos_x: 250,
+              pos_y: 540
+            }
+          }
+        }
+      }
+    }
+  },
+
+  gcdEuclidean: {
+    name: '9. Greatest Common Divisor (GCD / EBOB)',
+    description: 'Computes GCD(a, b) using Euclidean division algorithm.',
+    data: {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              data: {},
+              class: 'start',
+              html: renderNodeHtml('start', {}),
+              typenode: false,
+              inputs: {},
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 30
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'a', variablename: 'a' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 120
+            },
+            '3': {
+              id: 3,
+              name: 'input',
+              data: { variableName: 'b', variablename: 'b' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 210
+            },
+            '4': {
+              id: 4,
+              name: 'decision',
+              data: { condition: 'b != 0' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'b != 0' }),
+              typenode: false,
+              inputs: {
+                input_1: {
+                  connections: [
+                    { node: '3', input: 'output_1' },
+                    { node: '7', input: 'output_1' }
+                  ]
+                }
+              },
+              outputs: {
+                output_1: { connections: [{ node: '5', output: 'input_1' }] }, // True -> compute remainder
+                output_2: { connections: [{ node: '8', output: 'input_1' }] }  // False -> output GCD
+              },
+              pos_x: 250,
+              pos_y: 310
+            },
+            '5': {
+              id: 5,
+              name: 'assignment',
+              data: { expression: 'temp = b' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'temp = b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
+              pos_x: 60,
+              pos_y: 430
+            },
+            '6': {
+              id: 6,
+              name: 'assignment',
+              data: { expression: 'b = a % b' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'b = a % b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '7', output: 'input_1' }] } },
+              pos_x: 60,
+              pos_y: 530
+            },
+            '7': {
+              id: 7,
+              name: 'assignment',
+              data: { expression: 'a = temp' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'a = temp' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', input: 'input_1' }] } },
+              pos_x: 60,
+              pos_y: 630
+            },
+            '8': {
+              id: 8,
+              name: 'output',
+              data: { expression: '"GCD (EBOB): " + a' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"GCD (EBOB): " + a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '9', output: 'input_1' }] } },
+              pos_x: 440,
+              pos_y: 430
+            },
+            '9': {
+              id: 9,
+              name: 'end',
+              data: {},
+              class: 'end',
+              html: renderNodeHtml('end', {}),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '8', input: 'output_1' }] } },
+              outputs: {},
+              pos_x: 250,
+              pos_y: 750
             }
           }
         }
