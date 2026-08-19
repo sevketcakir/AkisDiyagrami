@@ -267,7 +267,9 @@ export default {
     copy: '📋 Kopyala',
     copied: '✅ Kopyalandı!',
     download: '💾 İndir (.c)',
-    close: 'Kapat (Esc)'
+    close: 'Kapat (Esc)',
+    experimentalTitle: '🧪 Deneysel Özellik:',
+    experimentalDesc: 'C kod üretimi prototip aşamasındadır. Akış şemasındaki bazı işlemler (örneğin metin karşılaştırmaları "==", dinamik tip dönüşümleri vb.) C dilinde strcmp() gibi standart kütüphane fonksiyonları veya özel işaretçi yönetimi gerektirebilir ve üretilen kodda manuel düzenleme gerekebilir.'
   },
   spaghettiWarning: {
     title: '⚠️ Yapısal Olmayan Akış (Spaghetti Kod)',

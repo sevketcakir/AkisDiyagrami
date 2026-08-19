@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "drawflow": "^0.0.60",
-    "jsep": "^1.4.0"
+    "jsep": "^1.4.0",
+    "prismjs": "^1.30.0"
   },
   "devDependencies": {
     "vite": "^5.4.21",

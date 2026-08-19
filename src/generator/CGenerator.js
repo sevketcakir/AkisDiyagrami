@@ -454,6 +454,7 @@ export class CGenerator {
     const boilerplateHeader = [
       '#include <stdio.h>',
       '#include <stdbool.h>',
+      '#include <math.h>',
       '',
       'int main(void) {',
       declarationsCode ? declarationsCode + '\n' : ''

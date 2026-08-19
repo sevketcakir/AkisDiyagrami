@@ -88,6 +88,15 @@ export class SafeEvaluator {
       case 'BinaryExpression':
         return SafeEvaluator.isFloatAST(node.left, scope) || SafeEvaluator.isFloatAST(node.right, scope);
 
+      case 'CallExpression': {
+        const funcName = (node.callee?.name || '').toLowerCase();
+        // Mathematical functions in C (math.h) return double
+        if (['sqrt', 'pow', 'sin', 'cos', 'tan', 'log', 'log10', 'exp', 'fabs', 'floor', 'ceil', 'round'].includes(funcName)) {
+          return true;
+        }
+        return false;
+      }
+
       default:
         return false;
     }
@@ -186,6 +195,45 @@ export class SafeEvaluator {
         }
       }
 
+      case 'CallExpression': {
+        const funcName = (node.callee?.name || '').toLowerCase();
+        const args = (node.arguments || []).map(arg => SafeEvaluator.evaluateAST(arg, scope));
+
+        switch (funcName) {
+          case 'sqrt':
+            if (args[0] < 0) throw new Error('sqrt() hatası: Negatif sayının karekökü reel sayılarda hesaplanamaz.');
+            return Math.sqrt(args[0]);
+          case 'pow':
+            return Math.pow(args[0], args[1]);
+          case 'abs':
+          case 'fabs':
+            return Math.abs(args[0]);
+          case 'sin':
+            return Math.sin(args[0]);
+          case 'cos':
+            return Math.cos(args[0]);
+          case 'tan':
+            return Math.tan(args[0]);
+          case 'log':
+          case 'ln':
+            if (args[0] <= 0) throw new Error('log() hatası: Pozitif sayı girilmelidir.');
+            return Math.log(args[0]);
+          case 'log10':
+            if (args[0] <= 0) throw new Error('log10() hatası: Pozitif sayı girilmelidir.');
+            return Math.log10(args[0]);
+          case 'floor':
+            return Math.floor(args[0]);
+          case 'ceil':
+            return Math.ceil(args[0]);
+          case 'round':
+            return Math.round(args[0]);
+          case 'exp':
+            return Math.exp(args[0]);
+          default:
+            throw new Error(`Desteklenmeyen matematik fonksiyonu: "${node.callee?.name || funcName}()". Desteklenenler: sqrt, pow, abs, fabs, sin, cos, tan, log, log10, floor, ceil, round, exp.`);
+        }
+      }
+
       case 'Compound':
         // Evaluates compound comma-separated expressions
         let lastVal;
@@ -220,16 +268,29 @@ export class SafeEvaluator {
   }
 
   /**
-   * Evaluates an assignment statement (e.g. "x = y + 5", "count = count + 1", "sum += i").
+   * Evaluates an assignment statement (e.g. "x = y + 5", "count = count + 1", "sum += i", "a = 1, b = 2").
    * @param {string} assignmentStr
    * @param {import('../engine/InterpreterContext.js').InterpreterContext} context
    * @param {Object} [options]
    * @param {string} [options.variableName]
    */
-  static evaluateAssignment(assignmentStr, context, { variableName = null } = {}) {
+  static evaluateAssignment(assignmentStr, context, options = {}) {
     if (!assignmentStr) return;
 
     const trimmed = assignmentStr.trim();
+    if (!trimmed) return;
+
+    // Handle multi-statement strings (e.g. "a = 1, b = 2", "x = 5; y = 10")
+    const statements = SafeEvaluator.splitStatements(trimmed);
+    if (statements.length > 1) {
+      let lastVal;
+      for (const stmt of statements) {
+        lastVal = SafeEvaluator.evaluateAssignment(stmt, context, options);
+      }
+      return lastVal;
+    }
+
+    const { variableName = null } = options;
     const scope = { ...context.variables, __floatVars: context.floatVars };
 
     // If explicit variable name is given and assignmentStr has no '=', treat assignmentStr as RHS expression

@@ -267,7 +267,9 @@ export default {
     copy: '📋 Copy Code',
     copied: '✅ Copied!',
     download: '💾 Download (.c)',
-    close: 'Close (Esc)'
+    close: 'Close (Esc)',
+    experimentalTitle: '🧪 Experimental Feature:',
+    experimentalDesc: 'C code generation is in prototype mode. Some high-level flowchart operations (such as string equality "==", dynamic types, etc.) require standard C library functions like strcmp() or manual pointer management and may require manual tuning.'
   },
   spaghettiWarning: {
     title: '⚠️ Unstructured Flow (Spaghetti Code)',

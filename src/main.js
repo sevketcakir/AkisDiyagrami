@@ -8,6 +8,8 @@ import { SamplePrograms } from './utils/SamplePrograms.js';
 import { SafeEvaluator } from './evaluator/Evaluator.js';
 import { I18n } from './i18n/I18n.js';
 import { CGenerator, CGeneratorError } from './generator/CGenerator.js';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-c.js';
 
 class App {
   constructor() {
@@ -153,7 +155,8 @@ class App {
       try {
         const { cCode } = CGenerator.generateCProgram(startNodeId, nodes);
         if (codeOutput) {
-          codeOutput.textContent = cCode;
+          codeOutput.innerHTML = Prism.highlight(cCode, Prism.languages.c, 'c');
+          codeOutput.dataset.rawCode = cCode;
         }
         modal.style.display = 'flex';
       } catch (err) {
@@ -189,7 +192,7 @@ class App {
 
     // Copy to clipboard
     copyBtn?.addEventListener('click', async () => {
-      const codeText = codeOutput?.textContent || '';
+      const codeText = codeOutput?.dataset?.rawCode || codeOutput?.textContent || '';
       try {
         await navigator.clipboard.writeText(codeText);
         const originalText = copyBtn.textContent;
@@ -214,7 +217,7 @@ class App {
 
     // Download .c file
     downloadBtn?.addEventListener('click', () => {
-      const codeText = codeOutput?.textContent || '';
+      const codeText = codeOutput?.dataset?.rawCode || codeOutput?.textContent || '';
       const blob = new Blob([codeText], { type: 'text/x-csrc;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

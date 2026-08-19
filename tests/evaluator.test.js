@@ -64,6 +64,27 @@ describe('SafeEvaluator', () => {
     expect(() => SafeEvaluator.evaluate('10 % 0')).toThrow('Modulo by zero.');
   });
 
+  it('should evaluate mathematical functions like sqrt, pow, abs, etc.', () => {
+    expect(SafeEvaluator.evaluate('sqrt(16)')).toBe(4);
+    expect(SafeEvaluator.evaluate('sqrt(25)')).toBe(5);
+    expect(SafeEvaluator.evaluate('pow(2, 3)')).toBe(8);
+    expect(SafeEvaluator.evaluate('abs(-42)')).toBe(42);
+    expect(SafeEvaluator.evaluate('fabs(-3.14)')).toBe(3.14);
+    expect(SafeEvaluator.evaluate('floor(5.9)')).toBe(5);
+    expect(SafeEvaluator.evaluate('ceil(5.1)')).toBe(6);
+
+    // Second degree equation discriminant (b^2 - 4ac) and quadratic roots
+    const context = new InterpreterContext();
+    SafeEvaluator.evaluateAssignment('a = 1, b = -5, c = 6', context);
+    SafeEvaluator.evaluateAssignment('delta = pow(b, 2) - 4 * a * c', context);
+    expect(context.variables.delta).toBe(1); // (-5)^2 - 4*1*6 = 25 - 24 = 1
+
+    SafeEvaluator.evaluateAssignment('x1 = (-b + sqrt(delta)) / (2 * a)', context);
+    SafeEvaluator.evaluateAssignment('x2 = (-b - sqrt(delta)) / (2 * a)', context);
+    expect(context.variables.x1).toBe(3); // (5 + 1) / 2 = 3
+    expect(context.variables.x2).toBe(2); // (5 - 1) / 2 = 2
+  });
+
   it('should split multi-statement code by commas, semicolons, and newlines', () => {
     expect(SafeEvaluator.splitStatements('a = 5, b = 6, c = 7')).toEqual(['a = 5', 'b = 6', 'c = 7']);
     expect(SafeEvaluator.splitStatements('a = 5; b = 6; c = 7;')).toEqual(['a = 5', 'b = 6', 'c = 7']);

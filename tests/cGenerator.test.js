@@ -220,4 +220,20 @@ describe('CGenerator - Phase 3: Recursive C Code Generator', () => {
     expect(cCode).toContain('}');
     expect(cCode).toContain('printf("Blast off!\\n");');
   });
+
+  it('should generate complete C code with math.h functions (sqrt, pow)', () => {
+    const nodes = new Map([
+      ['1', new StartNode('1', '2')],
+      ['2', new AssignmentNode('2', { expression: 'a = 1, b = -5, c = 6', nextNodeId: '3' })],
+      ['3', new AssignmentNode('3', { expression: 'delta = pow(b, 2) - 4 * a * c', nextNodeId: '4' })],
+      ['4', new AssignmentNode('4', { expression: 'x1 = (-b + sqrt(delta)) / (2 * a)', nextNodeId: '5' })],
+      ['5', new OutputNode('5', { expression: '"Root: " + x1', nextNodeId: '6' })],
+      ['6', new EndNode('6')]
+    ]);
+
+    const { cCode } = CGenerator.generateCProgram('1', nodes);
+    expect(cCode).toContain('#include <math.h>');
+    expect(cCode).toContain('delta = pow(b, 2) - 4 * a * c;');
+    expect(cCode).toContain('x1 = (-b + sqrt(delta)) / (2 * a);');
+  });
 });
