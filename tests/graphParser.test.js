@@ -134,4 +134,43 @@ describe('GraphParser', () => {
     expect(interpreter.context.variables.i).toBe(6);
     expect(interpreter.context.output).toEqual(['Total sum is: 15']);
   });
+
+  it('should parse and execute custom input variable names (e.g. N, variablename)', () => {
+    const rawData = {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } }
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variablename: 'N' },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } }
+            },
+            '3': {
+              id: 3,
+              name: 'end',
+              outputs: {}
+            }
+          }
+        }
+      }
+    };
+
+    const { nodes, startNodeId, errors } = GraphParser.parseDrawflow(rawData);
+    expect(errors).toEqual([]);
+
+    const context = new InterpreterContext({ inputQueue: ['42'] });
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, context });
+    while (!interpreter.context.isFinished) {
+      interpreter.step();
+    }
+
+    expect(interpreter.context.variables.N).toBe(42);
+    expect(interpreter.context.variables.x).toBeUndefined();
+  });
 });

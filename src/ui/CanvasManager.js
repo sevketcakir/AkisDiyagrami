@@ -232,7 +232,7 @@ export class CanvasManager {
   }
 
   setupEvents() {
-    // 1. Synchronize input field changes directly into nodeData
+    // 1. Synchronize input field changes directly into internal Drawflow node data
     this.container.addEventListener('input', (e) => {
       const target = e.target;
       if (!target || target.tagName !== 'INPUT') return;
@@ -241,27 +241,27 @@ export class CanvasManager {
       if (!nodeElement) return;
 
       const nodeId = nodeElement.id.replace('node-', '');
-      const nodeData = this.editor.getNodeFromId(nodeId);
-      if (!nodeData) return;
-      if (!nodeData.data) nodeData.data = {};
+      const rawNode = this.editor.drawflow.drawflow[this.editor.module]?.data?.[nodeId];
+      if (!rawNode) return;
+      if (!rawNode.data) rawNode.data = {};
 
       for (const attr of target.attributes) {
         const name = attr.name.toLowerCase();
         if (name.startsWith('df-')) {
           const key = name.slice(3);
-          nodeData.data[key] = target.value;
+          rawNode.data[key] = target.value;
           if (key === 'variablename' || key === 'variable') {
-            nodeData.data.variableName = target.value;
-            nodeData.data.variablename = target.value;
+            rawNode.data.variableName = target.value;
+            rawNode.data.variablename = target.value;
           }
           if (key === 'expression') {
-            nodeData.data.expression = target.value;
+            rawNode.data.expression = target.value;
           }
           if (key === 'condition') {
-            nodeData.data.condition = target.value;
+            rawNode.data.condition = target.value;
           }
           if (key === 'prompt') {
-            nodeData.data.prompt = target.value;
+            rawNode.data.prompt = target.value;
           }
         }
       }
@@ -372,41 +372,57 @@ export class CanvasManager {
   }
 
   /**
-   * Exports diagram JSON with synchronized input values.
+   * Exports diagram JSON with synchronized input values from all DOM inputs.
    */
   exportData() {
+    const exported = this.editor.export();
+    const moduleData = exported?.drawflow?.Home?.data || exported?.data || {};
+
     const inputs = this.container.querySelectorAll('.drawflow-node input');
     for (const input of inputs) {
       const nodeEl = input.closest('.drawflow-node');
       if (!nodeEl) continue;
       const nodeId = nodeEl.id.replace('node-', '');
-      const nodeData = this.editor.getNodeFromId(nodeId);
-      if (!nodeData) continue;
+      const nodeData = moduleData[nodeId];
+      const rawInternalNode = this.editor.drawflow.drawflow[this.editor.module]?.data?.[nodeId];
 
-      if (!nodeData.data) nodeData.data = {};
-      for (const attr of input.attributes) {
-        const name = attr.name.toLowerCase();
-        if (name.startsWith('df-')) {
-          const key = name.slice(3);
-          nodeData.data[key] = input.value;
-          if (key === 'variablename' || key === 'variable') {
-            nodeData.data.variableName = input.value;
-            nodeData.data.variablename = input.value;
-          }
-          if (key === 'expression') {
-            nodeData.data.expression = input.value;
-          }
-          if (key === 'condition') {
-            nodeData.data.condition = input.value;
-          }
-          if (key === 'prompt') {
-            nodeData.data.prompt = input.value;
+      if (nodeData) {
+        if (!nodeData.data) nodeData.data = {};
+        if (rawInternalNode && !rawInternalNode.data) rawInternalNode.data = {};
+
+        for (const attr of input.attributes) {
+          const name = attr.name.toLowerCase();
+          if (name.startsWith('df-')) {
+            const key = name.slice(3);
+            nodeData.data[key] = input.value;
+            if (rawInternalNode) rawInternalNode.data[key] = input.value;
+
+            if (key === 'variablename' || key === 'variable') {
+              nodeData.data.variableName = input.value;
+              nodeData.data.variablename = input.value;
+              if (rawInternalNode) {
+                rawInternalNode.data.variableName = input.value;
+                rawInternalNode.data.variablename = input.value;
+              }
+            }
+            if (key === 'expression') {
+              nodeData.data.expression = input.value;
+              if (rawInternalNode) rawInternalNode.data.expression = input.value;
+            }
+            if (key === 'condition') {
+              nodeData.data.condition = input.value;
+              if (rawInternalNode) rawInternalNode.data.condition = input.value;
+            }
+            if (key === 'prompt') {
+              nodeData.data.prompt = input.value;
+              if (rawInternalNode) rawInternalNode.data.prompt = input.value;
+            }
           }
         }
       }
     }
 
-    return this.editor.export();
+    return exported;
   }
 
   /**

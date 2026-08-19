@@ -1,6 +1,6 @@
 {
   "name": "flowchart-c-interpreter",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "type": "module",
   "description": "Educational Flowchart Execution Engine for C Programming",
   "scripts": {
