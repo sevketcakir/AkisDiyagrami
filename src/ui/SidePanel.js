@@ -22,8 +22,7 @@ export class SidePanel {
   constructor(elements) {
     this.elements = elements;
     this.speed = parseInt(elements.speedSelect?.value || '500', 10);
-    this.intervalId = null;
-    this.status = 'READY'; // READY | RUNNING | PAUSED | FINISHED | ERROR | WAITING_INPUT
+    this.status = 'READY'; // READY | RUNNING | PAUSED | STEPPING | FINISHED | ERROR | WAITING_INPUT
     this.prevVariables = {};
 
     this.onPlay = null;
@@ -33,6 +32,7 @@ export class SidePanel {
     this.onInputSubmit = null;
 
     this.bindEvents();
+    this.setStatus('READY');
   }
 
   bindEvents() {
@@ -104,8 +104,8 @@ export class SidePanel {
   }
 
   /**
-   * Sets current state badge.
-   * @param {'READY' | 'RUNNING' | 'PAUSED' | 'FINISHED' | 'ERROR' | 'WAITING_INPUT'} status
+   * Sets current state badge and toggles button enablement correctly.
+   * @param {'READY' | 'RUNNING' | 'PAUSED' | 'STEPPING' | 'FINISHED' | 'ERROR' | 'WAITING_INPUT'} status
    * @param {string} [customMessage]
    */
   setStatus(status, customMessage = null) {
@@ -118,21 +118,35 @@ export class SidePanel {
       READY: 'Ready',
       RUNNING: 'Running...',
       PAUSED: 'Paused',
+      STEPPING: 'Stepping...',
       FINISHED: 'Finished (return 0)',
       ERROR: 'Runtime Error',
       WAITING_INPUT: 'Waiting for Input'
     };
     badge.textContent = customMessage || textMap[status] || status;
 
-    // Toggle button active states
+    // Correctly toggle button states
     if (status === 'RUNNING') {
       this.elements.playBtn.disabled = true;
       this.elements.pauseBtn.disabled = false;
       this.elements.stepBtn.disabled = true;
-    } else {
-      this.elements.playBtn.disabled = (status === 'FINISHED');
+      this.elements.resetBtn.disabled = false;
+    } else if (status === 'FINISHED' || status === 'ERROR') {
+      this.elements.playBtn.disabled = true;
       this.elements.pauseBtn.disabled = true;
-      this.elements.stepBtn.disabled = (status === 'FINISHED');
+      this.elements.stepBtn.disabled = true;
+      this.elements.resetBtn.disabled = false;
+    } else if (status === 'WAITING_INPUT') {
+      this.elements.playBtn.disabled = true;
+      this.elements.pauseBtn.disabled = true;
+      this.elements.stepBtn.disabled = true;
+      this.elements.resetBtn.disabled = false;
+    } else {
+      // READY, PAUSED, STEPPING
+      this.elements.playBtn.disabled = false;
+      this.elements.pauseBtn.disabled = true;
+      this.elements.stepBtn.disabled = false;
+      this.elements.resetBtn.disabled = false;
     }
   }
 
@@ -159,18 +173,18 @@ export class SidePanel {
 
       let cType = 'int';
       if (typeof val === 'number') {
-        cType = Number.isInteger(val) ? 'int' : 'double / float';
+        cType = Number.isInteger(val) ? 'int' : 'double';
       } else if (typeof val === 'boolean') {
-        cType = 'bool (int)';
+        cType = 'bool';
       } else if (typeof val === 'string') {
-        cType = 'char[] (string)';
+        cType = 'char[]';
       }
 
       rowsHtml += `
         <tr class="${isChanged ? 'variable-row-changed' : ''}">
-          <td class="var-name"><code>${key}</code></td>
+          <td class="var-name"><code>${escapeHtml(key)}</code></td>
           <td class="var-type"><code>${cType}</code></td>
-          <td class="var-value"><code>${JSON.stringify(val)}</code></td>
+          <td class="var-value"><code>${escapeHtml(JSON.stringify(val))}</code></td>
         </tr>
       `;
     }
@@ -192,7 +206,7 @@ export class SidePanel {
     }
 
     const linesHtml = outputLines.map((line, idx) => {
-      return `<div class="console-line"><span class="line-num">${idx + 1}</span> <span class="line-text">${this.escapeHtml(line)}</span></div>`;
+      return `<div class="console-line"><span class="line-num">${idx + 1}</span> <span class="line-text">${escapeHtml(line)}</span></div>`;
     }).join('');
 
     this.elements.consoleOutput.innerHTML = linesHtml;
@@ -204,13 +218,13 @@ export class SidePanel {
       this.elements.consoleOutput.innerHTML = `<span class="console-hint">Console cleared.</span>`;
     }
   }
+}
 
-  escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

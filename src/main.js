@@ -44,8 +44,9 @@ class App {
 
     // Load initial sample or saved data
     const saved = FileHandler.loadFromLocalStorage();
-    if (saved) {
+    if (saved && saved.drawflow) {
       this.canvasManager.loadData(saved);
+      setTimeout(() => this.resetExecution(), 100);
     } else {
       this.loadSample('rectangleArea');
     }
@@ -70,7 +71,7 @@ class App {
       if (!nodeType) return;
 
       const rect = drawflowEl.getBoundingClientRect();
-      const posX = e.clientX - rect.left - 80;
+      const posX = e.clientX - rect.left - 90;
       const posY = e.clientY - rect.top - 40;
 
       this.canvasManager.addNode(nodeType, posX, posY);
@@ -107,7 +108,7 @@ class App {
       try {
         const data = await FileHandler.loadFromFile(file);
         this.canvasManager.loadData(data);
-        this.resetExecution();
+        setTimeout(() => this.resetExecution(), 100);
       } catch (err) {
         alert(`Error loading file: ${err.message}`);
       }
@@ -136,7 +137,10 @@ class App {
   bindExecutionEvents() {
     this.sidePanel.onPlay = () => this.startPlay();
     this.sidePanel.onPause = () => this.pausePlay();
-    this.sidePanel.onStep = () => this.executeStep();
+    this.sidePanel.onStep = () => {
+      this.pausePlay();
+      this.executeStep(false);
+    };
     this.sidePanel.onReset = () => this.resetExecution();
   }
 
@@ -145,7 +149,7 @@ class App {
     if (!sample) return;
 
     this.canvasManager.loadData(sample.data);
-    this.resetExecution();
+    setTimeout(() => this.resetExecution(), 100);
   }
 
   compileGraph() {
@@ -159,10 +163,15 @@ class App {
       return false;
     }
 
-    // Custom input provider callback for interactive execution
+    if (!startNodeId) {
+      this.sidePanel.setStatus('ERROR', 'No Start node found. Please add a Start (Oval) node.');
+      return false;
+    }
+
+    // Interactive input provider callback for live execution
     const inputProvider = (promptText, varName) => {
-      // If we are in interactive UI mode and step/play hits input, return promise
-      return prompt(promptText || `Enter ${varName}:`) || '0';
+      const entered = prompt(promptText || `Enter value for ${varName}:`);
+      return entered !== null ? entered : '0';
     };
 
     const context = new InterpreterContext({ inputProvider });
@@ -176,7 +185,7 @@ class App {
     return true;
   }
 
-  executeStep() {
+  executeStep(isAutoPlay = false) {
     if (this.isWaitingForInput) return;
 
     if (!this.interpreter || this.interpreter.context.isFinished) {
@@ -210,7 +219,7 @@ class App {
       this.pausePlay();
       this.canvasManager.clearHighlight();
     } else {
-      this.sidePanel.setStatus('RUNNING');
+      this.sidePanel.setStatus(isAutoPlay ? 'RUNNING' : 'STEPPING');
       // Highlight the next node that will be executed
       if (snapshot.nextNodeId) {
         this.canvasManager.highlightActiveNode(snapshot.nextNodeId);
@@ -232,7 +241,7 @@ class App {
         this.pausePlay();
         return;
       }
-      this.executeStep();
+      this.executeStep(true);
     }, this.sidePanel.speed);
   }
 
@@ -249,10 +258,14 @@ class App {
   resetExecution() {
     this.pausePlay();
     this.canvasManager.clearHighlight();
-    this.compileGraph();
+    const ok = this.compileGraph();
     this.sidePanel.updateVariables({});
     this.sidePanel.updateConsole([]);
-    this.sidePanel.setStatus('READY');
+
+    if (ok && this.interpreter && this.interpreter.startNodeId) {
+      this.canvasManager.highlightActiveNode(this.interpreter.startNodeId);
+      this.sidePanel.setStatus('READY');
+    }
   }
 }
 

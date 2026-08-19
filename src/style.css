@@ -343,7 +343,7 @@ body {
 .var-value { color: #4ade80; }
 
 .variable-row-changed {
-  background-color: rgba(34, 197, 94, 0.15);
+  background-color: rgba(34, 197, 94, 0.2);
   transition: background-color 0.8s ease;
 }
 
@@ -437,44 +437,43 @@ body {
   width: auto !important;
   min-width: 160px;
   color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .drawflow .drawflow-node.selected .flowchart-node-content {
-  box-shadow: 0 0 0 2px var(--primary);
+  filter: drop-shadow(0 0 6px var(--primary));
 }
 
-/* Active Node Pulsating Glow in Execution */
-.drawflow-node.active-executing-node .flowchart-node-content {
-  box-shadow: 0 0 0 3px #22c55e, 0 0 25px rgba(34, 197, 94, 0.9) !important;
-  border-color: #22c55e !important;
-  animation: executingGlow 1.2s infinite alternate;
-}
-
-@keyframes executingGlow {
-  0% { transform: scale(1); filter: brightness(1); }
-  100% { transform: scale(1.03); filter: brightness(1.2); }
-}
-
-/* Base Node Content */
+/* Base Flowchart Content */
 .flowchart-node-content {
-  background-color: #1e293b;
-  border: 2px solid #475569;
-  padding: 0.75rem 1rem;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   transition: all 0.2s ease;
+}
+
+.node-inner-content {
   position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.8rem;
+  width: 100%;
 }
 
 .node-header {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
   color: var(--text-muted);
 }
 
@@ -487,7 +486,7 @@ body {
   padding: 0.35rem 0.5rem;
   border-radius: 4px;
   width: 100%;
-  max-width: 150px;
+  max-width: 135px;
   text-align: center;
   outline: none;
 }
@@ -496,11 +495,36 @@ body {
   border-color: var(--primary);
 }
 
+/* Embedded SVG Shapes */
+.shape-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.svg-shape-path {
+  fill: #1e293b;
+  stroke-width: 2.5px;
+  vector-effect: non-scaling-stroke;
+  transition: all 0.2s ease;
+}
+
+.svg-decision { stroke: #f59e0b; }
+.svg-loop { stroke: #06b6d4; }
+.svg-input { stroke: #a855f7; }
+.svg-output { stroke: #f97316; }
+
 /* 1. Oval / Capsule for Start & End */
 .shape-oval {
   border-radius: 9999px;
   padding: 0.85rem 1.8rem;
-  min-width: 150px;
+  min-width: 155px;
+  border: 2px solid transparent;
 }
 
 .shape-start {
@@ -521,7 +545,7 @@ body {
 
 .shape-oval .node-subtitle {
   font-size: 0.65rem;
-  opacity: 0.8;
+  opacity: 0.85;
   font-family: var(--font-mono);
 }
 
@@ -529,8 +553,9 @@ body {
 .shape-rectangle {
   border-radius: 6px;
   background-color: #1e293b;
-  border-color: #3b82f6;
-  min-width: 170px;
+  border: 2px solid #3b82f6;
+  min-width: 175px;
+  padding: 0.75rem 1rem;
 }
 
 .shape-rectangle .node-header {
@@ -538,134 +563,86 @@ body {
 }
 
 /* 3. Diamond for Decision (If / Else) */
-.shape-diamond-wrapper {
-  background: transparent !important;
-  border: none !important;
+.node-diamond {
   width: 190px;
-  height: 140px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 110px;
 }
 
-.shape-diamond {
-  position: absolute;
-  top: 10px;
-  left: 35px;
-  width: 120px;
-  height: 120px;
-  background-color: #1e293b;
-  border: 2px solid #f59e0b;
-  transform: rotate(45deg);
-  border-radius: 8px;
-  z-index: 1;
-  transition: all 0.2s;
-}
-
-.diamond-inner {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 130px;
-}
-
-.diamond-inner .node-header {
+.node-diamond .node-header {
   color: #fbbf24;
-}
-
-.port-label-true {
-  position: absolute;
-  right: -25px;
-  top: 25%;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #4ade80;
-  background: rgba(0,0,0,0.6);
-  padding: 1px 4px;
-  border-radius: 3px;
-}
-
-.port-label-false {
-  position: absolute;
-  right: -25px;
-  bottom: 25%;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #f87171;
-  background: rgba(0,0,0,0.6);
-  padding: 1px 4px;
-  border-radius: 3px;
 }
 
 /* 4. Hexagon for Loops */
-.shape-hexagon-wrapper {
-  border-radius: 8px;
-  background-color: #1e293b;
-  border: 2px solid #06b6d4;
-  min-width: 180px;
-  position: relative;
-  clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
-  padding: 1rem 1.75rem;
+.node-hexagon {
+  width: 200px;
+  height: 95px;
 }
 
-.shape-hexagon-wrapper .node-header {
+.node-hexagon .node-header {
   color: #22d3ee;
-}
-
-.port-label-body {
-  position: absolute;
-  right: 5px;
-  top: 15%;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #22d3ee;
-}
-
-.port-label-exit {
-  position: absolute;
-  right: 5px;
-  bottom: 15%;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #fbbf24;
 }
 
 /* 5. Parallelogram for Input / Output */
-.shape-parallelogram {
-  border-radius: 6px;
-  transform: skewX(-14deg);
-  min-width: 170px;
-}
-
-.parallelogram-inner {
-  transform: skewX(14deg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.shape-input {
-  background-color: #1e293b;
-  border-color: var(--accent-purple);
+.node-parallelogram {
+  width: 190px;
+  height: 80px;
 }
 
 .shape-input .node-header {
   color: #c084fc;
 }
 
-.shape-output {
-  background-color: #1e293b;
-  border-color: var(--accent-orange);
-}
-
 .shape-output .node-header {
   color: #fb923c;
 }
 
+/* Port Labels */
+.port-label {
+  position: absolute;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 1px 5px;
+  border-radius: 3px;
+  z-index: 3;
+  pointer-events: none;
+  border: 1px solid var(--border-color);
+}
+
+.port-label-true { right: -6px; top: 12px; color: #4ade80; }
+.port-label-false { right: -6px; bottom: 12px; color: #f87171; }
+.port-label-body { right: -4px; top: 10px; color: #22d3ee; }
+.port-label-exit { right: -4px; bottom: 10px; color: #fbbf24; }
+
+/* Active Glowing Node during Execution */
+.drawflow-node.active-executing-node .svg-shape-path {
+  stroke: #22c55e !important;
+  stroke-width: 4px !important;
+  fill: #064e3b !important;
+}
+
+.drawflow-node.active-executing-node .shape-rectangle,
+.drawflow-node.active-executing-node .shape-oval {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 3px #22c55e, 0 0 25px rgba(34, 197, 94, 0.9) !important;
+}
+
+.drawflow-node.active-executing-node .flowchart-node-content {
+  filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.95)) !important;
+  animation: executingGlow 1.2s infinite alternate;
+}
+
+@keyframes executingGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.8)); }
+  100% { transform: scale(1.04); filter: drop-shadow(0 0 25px rgba(34, 197, 94, 1)); }
+}
+
 /* Drawflow Ports & Connections */
+.drawflow .drawflow-node .inputs,
+.drawflow .drawflow-node .outputs {
+  z-index: 4;
+}
+
 .drawflow .drawflow-node .input,
 .drawflow .drawflow-node .output {
   width: 14px;
@@ -677,6 +654,7 @@ body {
 .drawflow .drawflow-node .input:hover,
 .drawflow .drawflow-node .output:hover {
   background: var(--primary);
+  transform: scale(1.2);
 }
 
 .drawflow .connection .main-path {
