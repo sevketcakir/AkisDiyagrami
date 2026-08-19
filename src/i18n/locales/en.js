@@ -16,6 +16,8 @@ export default {
     clearConfirm: 'Are you sure you want to clear the flowchart canvas?',
     help: '❓ Guide',
     helpTitle: 'User guide, operators, keyboard shortcuts, and C data types reference',
+    viewCCode: '⚡ View C Code',
+    viewCCodeTitle: 'Translate the flowchart into standard structured C99 code',
     langSwitch: 'Language / Dil'
   },
   samples: {
@@ -258,5 +260,19 @@ export default {
     missingOutgoingConnection: '{{type}} node [{{id}}] has no outgoing connection.',
     divisionByZero: 'Division by zero error.',
     unreachableNode: 'Node [{{id}}] ({{type}}) is not reachable from the Start node.'
+  },
+  cCodeModal: {
+    title: '💻 Generated C Code',
+    standardBadge: 'ISO C99 Structured',
+    copy: '📋 Copy Code',
+    copied: '✅ Copied!',
+    download: '💾 Download (.c)',
+    close: 'Close (Esc)'
+  },
+  spaghettiWarning: {
+    title: '⚠️ Unstructured Flow (Spaghetti Code)',
+    hintTitle: '💡 C Programming Hint:',
+    hintText: 'Although the flowchart simulator can follow arbitrary arrows, C structured programming prohibits unstructured goto loops or cross-jumps. Please use standard Loop and If/Else blocks instead.',
+    understood: 'Understood, I will fix it'
   }
 };

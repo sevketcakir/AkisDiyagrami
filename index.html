@@ -49,6 +49,11 @@
         🗑️ Temizle
       </button>
 
+      <!-- View C Code Button -->
+      <button id="btn-view-c-code" class="btn btn-primary-accent" data-i18n="header.viewCCode" data-i18n-title="header.viewCCodeTitle" title="Akış diyagramını standart C koduna dönüştürür">
+        ⚡ C Kodunu Gör
+      </button>
+
       <!-- Help Button -->
       <button id="btn-help-trigger" class="btn" data-i18n="header.help" data-i18n-title="header.helpTitle" title="Kullanım kılavuzu, operatörler ve C değişken tipleri referansı">
         ❓ Kılavuz
@@ -498,6 +503,51 @@
             <li data-i18n-html="help.ctrlSaveLoad"><strong>Kaydet & Yükle</strong>: Hazırladığınız akış şemasını .json formatında dışa aktarabilir veya daha önce kaydettiğiniz dosyayı yükleyebilirsiniz.</li>
           </ul>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C Code Viewer Modal -->
+  <div id="c-code-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog c-code-modal-dialog" role="dialog" aria-labelledby="c-code-modal-title">
+      <div class="modal-header">
+        <div class="c-code-header-left">
+          <h2 id="c-code-modal-title" data-i18n="cCodeModal.title">💻 Oluşturulan C Kodu</h2>
+          <span class="c-standard-badge" data-i18n="cCodeModal.standardBadge">ISO C99 Yapısal</span>
+        </div>
+        <div class="c-code-header-actions">
+          <button id="btn-copy-c-code" class="btn btn-sm" data-i18n="cCodeModal.copy" title="Kodu panoya kopyala">📋 Kopyala</button>
+          <button id="btn-download-c-code" class="btn btn-sm" data-i18n="cCodeModal.download" title="C kaynak dosyası olarak indir">💾 İndir (.c)</button>
+          <button id="btn-close-c-code-modal" class="btn-close-modal" aria-label="Close" data-i18n-title="cCodeModal.close">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body c-code-modal-body">
+        <div class="c-code-container">
+          <pre><code id="c-code-output" class="language-c"></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spaghetti Code Warning Modal -->
+  <div id="spaghetti-warning-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog warning-modal-dialog" role="dialog" aria-labelledby="spaghetti-warning-title">
+      <div class="modal-header modal-header-warning">
+        <h2 id="spaghetti-warning-title" data-i18n="spaghettiWarning.title">⚠️ Yapısal Olmayan Akış (Spaghetti Kod)</h2>
+        <button id="btn-close-spaghetti-modal" class="btn-close-modal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body warning-modal-body">
+        <div class="warning-icon-box">🍝</div>
+        <div class="warning-text-box">
+          <p id="spaghetti-warning-message" class="warning-message-text"></p>
+          <div class="warning-educational-hint">
+            <h4 data-i18n="spaghettiWarning.hintTitle">💡 C Programlama İpucu:</h4>
+            <p data-i18n="spaghettiWarning.hintText">Akış şeması bu mantığı simüle edebilse de, C dilinde yapısal programlama ilkeleri (Structured Programming) gereği goto benzeri düzensiz atlamalar yerine <strong>Döngü (Loop)</strong> ve <strong>Koşul (If/Else)</strong> blokları kullanılmalıdır.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-spaghetti-understood" class="btn btn-primary" data-i18n="spaghettiWarning.understood">Anladım, Düzelteceğim</button>
       </div>
     </div>
   </div>

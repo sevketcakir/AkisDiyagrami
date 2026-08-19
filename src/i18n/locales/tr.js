@@ -16,6 +16,8 @@ export default {
     clearConfirm: 'Akış diyagramı tuvalini temizlemek istediğinizden emin misiniz?',
     help: '❓ Kılavuz',
     helpTitle: 'Kullanım kılavuzu, operatörler, klavye kısayolları ve C değişken tipleri referansı',
+    viewCCode: '⚡ C Kodunu Gör',
+    viewCCodeTitle: 'Akış diyagramını standart yapısal C kaynak koduna dönüştürür',
     langSwitch: 'Dil / Language'
   },
   samples: {
@@ -258,5 +260,19 @@ export default {
     missingOutgoingConnection: '{{type}} bloğunun [{{id}}] çıkış oku herhangi bir bloğa bağlı değil.',
     divisionByZero: 'Sıfıra bölme hatası (Division by zero).',
     unreachableNode: '[{{id}}] numaralı blok ({{type}}) Başla bloğundan ulaşılamıyor.'
+  },
+  cCodeModal: {
+    title: '💻 Oluşturulan C Kodu',
+    standardBadge: 'ISO C99 Yapısal',
+    copy: '📋 Kopyala',
+    copied: '✅ Kopyalandı!',
+    download: '💾 İndir (.c)',
+    close: 'Kapat (Esc)'
+  },
+  spaghettiWarning: {
+    title: '⚠️ Yapısal Olmayan Akış (Spaghetti Kod)',
+    hintTitle: '💡 C Programlama İpucu:',
+    hintText: 'Akış şeması bu mantığı simüle edebilse de, C dilinde yapısal programlama ilkeleri (Structured Programming) gereği goto benzeri düzensiz atlamalar yerine Döngü (Loop) ve Koşul (If/Else) blokları kullanılmalıdır.',
+    understood: 'Anladım, Düzelteceğim'
   }
 };

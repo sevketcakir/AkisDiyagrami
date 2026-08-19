@@ -1329,3 +1329,163 @@ kbd {
   border-radius: 4px;
 }
 
+/* =========================================================
+   C CODE GENERATOR BUTTON & MODAL
+   ========================================================= */
+.btn-primary-accent {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border: 1px solid #38bdf8 !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary-accent:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%) !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.6) !important;
+  transform: translateY(-1px);
+}
+
+.c-code-modal-dialog {
+  max-width: 720px;
+  width: 90%;
+  max-height: 85vh;
+}
+
+.c-code-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.c-code-header-left h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.c-standard-badge {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  letter-spacing: 0.04em;
+}
+
+.c-code-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.c-code-modal-body {
+  padding: 1rem;
+  background-color: #0b1120;
+}
+
+.c-code-container {
+  background-color: #030712;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.c-code-container pre {
+  margin: 0;
+}
+
+.c-code-container code {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #e2e8f0;
+  white-space: pre;
+}
+
+/* =========================================================
+   SPAGHETTI CODE WARNING MODAL
+   ========================================================= */
+.warning-modal-dialog {
+  max-width: 520px;
+  width: 90%;
+  border-top: 4px solid #f59e0b;
+}
+
+.modal-header-warning {
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.modal-header-warning h2 {
+  color: #fbbf24;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.warning-modal-body {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+
+.warning-icon-box {
+  font-size: 2.75rem;
+  line-height: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.warning-text-box {
+  flex: 1;
+}
+
+.warning-message-text {
+  margin: 0 0 1rem 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #f87171;
+  font-weight: 600;
+}
+
+.warning-educational-hint {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.warning-educational-hint h4 {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.82rem;
+  color: #fbbf24;
+}
+
+.warning-educational-hint p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+}
+
+.warning-educational-hint code {
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.15);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+
+.modal-footer {
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-color);
+}
+

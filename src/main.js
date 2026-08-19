@@ -7,6 +7,7 @@ import { FileHandler } from './utils/FileHandler.js';
 import { SamplePrograms } from './utils/SamplePrograms.js';
 import { SafeEvaluator } from './evaluator/Evaluator.js';
 import { I18n } from './i18n/I18n.js';
+import { CGenerator, CGeneratorError } from './generator/CGenerator.js';
 
 class App {
   constructor() {
@@ -60,6 +61,8 @@ class App {
     this.bindExecutionEvents();
     this.setupLanguageSwitcher();
     this.setupHelpModal();
+    this.setupCCodeModal();
+    this.setupSpaghettiWarningModal();
 
     // Check for auto-saved diagram or load default curriculum example
     const saved = FileHandler.loadFromLocalStorage();
@@ -117,6 +120,145 @@ class App {
           targetContent.classList.add('active');
         }
       });
+    });
+  }
+
+  setupCCodeModal() {
+    const modal = document.getElementById('c-code-modal');
+    const triggerBtn = document.getElementById('btn-view-c-code');
+    const closeBtn = document.getElementById('btn-close-c-code-modal');
+    const copyBtn = document.getElementById('btn-copy-c-code');
+    const downloadBtn = document.getElementById('btn-download-c-code');
+    const codeOutput = document.getElementById('c-code-output');
+
+    if (!modal) return;
+
+    const openModal = () => {
+      const rawData = this.canvasManager.exportData();
+      const { nodes, startNodeId, errors, errorNodeId } = GraphParser.parseDrawflow(rawData, SafeEvaluator.hook);
+
+      if (errors.length > 0) {
+        this.sidePanel.setStatus('ERROR', errors[0]);
+        if (errorNodeId) {
+          this.canvasManager.highlightErrorNode(errorNodeId);
+        }
+        return;
+      }
+
+      if (!startNodeId) {
+        this.sidePanel.setStatus('ERROR', I18n.t('errors.noStartNode'));
+        return;
+      }
+
+      try {
+        const { cCode } = CGenerator.generateCProgram(startNodeId, nodes);
+        if (codeOutput) {
+          codeOutput.textContent = cCode;
+        }
+        modal.style.display = 'flex';
+      } catch (err) {
+        if (err instanceof CGeneratorError) {
+          if (err.nodeId) {
+            this.canvasManager.highlightErrorNode(err.nodeId);
+          }
+          this.showSpaghettiWarning(err.message);
+        } else {
+          alert(`C Generator Error: ${err.message}`);
+        }
+      }
+    };
+
+    const closeModal = () => {
+      modal.style.display = 'none';
+    };
+
+    triggerBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+        closeModal();
+      }
+    });
+
+    // Copy to clipboard
+    copyBtn?.addEventListener('click', async () => {
+      const codeText = codeOutput?.textContent || '';
+      try {
+        await navigator.clipboard.writeText(codeText);
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = I18n.t('cCodeModal.copied');
+        copyBtn.classList.add('btn-success');
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+          copyBtn.classList.remove('btn-success');
+        }, 2000);
+      } catch (e) {
+        // Fallback copy
+        const textarea = document.createElement('textarea');
+        textarea.value = codeText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        copyBtn.textContent = I18n.t('cCodeModal.copied');
+        setTimeout(() => { copyBtn.textContent = I18n.t('cCodeModal.copy'); }, 2000);
+      }
+    });
+
+    // Download .c file
+    downloadBtn?.addEventListener('click', () => {
+      const codeText = codeOutput?.textContent || '';
+      const blob = new Blob([codeText], { type: 'text/x-csrc;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'flowchart_program.c';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  setupSpaghettiWarningModal() {
+    const modal = document.getElementById('spaghetti-warning-modal');
+    const closeBtn = document.getElementById('btn-close-spaghetti-modal');
+    const understoodBtn = document.getElementById('btn-spaghetti-understood');
+    const msgEl = document.getElementById('spaghetti-warning-message');
+
+    if (!modal) return;
+
+    this.showSpaghettiWarning = (message) => {
+      if (msgEl) {
+        msgEl.textContent = message;
+      }
+      modal.style.display = 'flex';
+    };
+
+    const closeModal = () => {
+      modal.style.display = 'none';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    understoodBtn?.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+        closeModal();
+      }
     });
   }
 
