@@ -181,8 +181,9 @@ export class SidePanel {
   /**
    * Updates variable watcher table with inferred C types.
    * @param {Record<string, any>} variables
+   * @param {Set<string>} [floatVars]
    */
-  updateVariables(variables = {}) {
+  updateVariables(variables = {}, floatVars = new Set()) {
     this.currentVariables = variables;
     const tbody = this.elements.variablesTableBody;
     if (!tbody) return;
@@ -202,7 +203,7 @@ export class SidePanel {
 
       let cType = 'int';
       if (typeof val === 'number') {
-        cType = Number.isInteger(val) ? 'int' : 'double';
+        cType = (floatVars?.has(key) || !Number.isInteger(val)) ? 'double' : 'int';
       } else if (typeof val === 'boolean') {
         cType = 'bool';
       } else if (typeof val === 'string') {

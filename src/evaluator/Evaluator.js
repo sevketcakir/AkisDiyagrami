@@ -53,6 +53,47 @@ export class SafeEvaluator {
   }
 
   /**
+   * Checks if an AST node represents a floating point number in C syntax (e.g. 5.0, .5, 1e-3)
+   * or evaluates to a floating point value.
+   * @param {Object} node - AST node from jsep
+   * @param {Record<string, any>} scope - Variable dictionary
+   * @returns {boolean}
+   */
+  static isFloatAST(node, scope = {}) {
+    if (!node) return false;
+
+    switch (node.type) {
+      case 'Literal':
+        if (typeof node.value === 'number') {
+          // If raw text has a decimal dot or exponent (e.g. '5.0', '2.0', '1e-2'), it is explicitly a C float/double
+          if (node.raw && (node.raw.includes('.') || node.raw.toLowerCase().includes('e'))) {
+            return true;
+          }
+          return !Number.isInteger(node.value);
+        }
+        return false;
+
+      case 'Identifier': {
+        const val = scope[node.name];
+        if (typeof val === 'number') {
+          if (!Number.isInteger(val)) return true;
+          if (scope.__floatVars && scope.__floatVars.has(node.name)) return true;
+        }
+        return false;
+      }
+
+      case 'UnaryExpression':
+        return SafeEvaluator.isFloatAST(node.argument, scope);
+
+      case 'BinaryExpression':
+        return SafeEvaluator.isFloatAST(node.left, scope) || SafeEvaluator.isFloatAST(node.right, scope);
+
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Evaluates a node from jsep AST against a variables scope.
    * @param {Object} node - AST node from jsep
    * @param {Record<string, any>} scope - Variable dictionary
@@ -110,11 +151,18 @@ export class SafeEvaluator {
             if (right === 0) {
               throw new Error('Division by zero.');
             }
-            // Enforce C-style integer division: if both operands are integers, truncate towards zero
-            if (typeof left === 'number' && typeof right === 'number' && Number.isInteger(left) && Number.isInteger(right)) {
-              return Math.trunc(left / right);
+            // Enforce C-style division:
+            // If either operand is explicitly a float literal (e.g. 5.0, 2.0) or a float variable, do standard floating-point division.
+            // If both are pure integers (e.g. 5 / 2), truncate towards zero like in C.
+            {
+              const isLeftFloat = SafeEvaluator.isFloatAST(node.left, scope);
+              const isRightFloat = SafeEvaluator.isFloatAST(node.right, scope);
+
+              if (!isLeftFloat && !isRightFloat && typeof left === 'number' && typeof right === 'number' && Number.isInteger(left) && Number.isInteger(right)) {
+                return Math.trunc(left / right);
+              }
+              return left / right;
             }
-            return left / right;
           case '%':
             if (right === 0) {
               throw new Error('Modulo by zero.');
@@ -164,7 +212,7 @@ export class SafeEvaluator {
     if (!trimmed) return undefined;
 
     const scope = (scopeOrContext && typeof scopeOrContext === 'object' && 'variables' in scopeOrContext)
-      ? scopeOrContext.variables
+      ? { ...scopeOrContext.variables, __floatVars: scopeOrContext.floatVars }
       : scopeOrContext;
 
     const ast = jsep(trimmed);
@@ -182,11 +230,14 @@ export class SafeEvaluator {
     if (!assignmentStr) return;
 
     const trimmed = assignmentStr.trim();
+    const scope = { ...context.variables, __floatVars: context.floatVars };
 
     // If explicit variable name is given and assignmentStr has no '=', treat assignmentStr as RHS expression
     if (variableName && !trimmed.includes('=')) {
-      const value = SafeEvaluator.evaluate(trimmed, context.variables);
-      context.setVariable(variableName, value);
+      const ast = jsep(trimmed);
+      const isFloat = SafeEvaluator.isFloatAST(ast, scope);
+      const value = SafeEvaluator.evaluateAST(ast, scope);
+      context.setVariable(variableName, value, isFloat);
       return value;
     }
 
@@ -196,7 +247,11 @@ export class SafeEvaluator {
       const varName = compoundMatch[1];
       const op = compoundMatch[2];
       const rhsExpr = compoundMatch[3];
-      const rhsVal = SafeEvaluator.evaluate(rhsExpr, context.variables);
+      const ast = jsep(rhsExpr);
+      const isRhsFloat = SafeEvaluator.isFloatAST(ast, scope);
+      const isCurrentFloat = context.floatVars?.has(varName) || false;
+      const isFloat = isRhsFloat || isCurrentFloat;
+      const rhsVal = SafeEvaluator.evaluateAST(ast, scope);
       const currentVal = context.getVariable(varName) ?? 0;
 
       let newVal;
@@ -206,14 +261,14 @@ export class SafeEvaluator {
         case '*=': newVal = currentVal * rhsVal; break;
         case '/=':
           if (rhsVal === 0) throw new Error('Division by zero in assignment.');
-          newVal = currentVal / rhsVal;
+          newVal = isFloat ? currentVal / rhsVal : Math.trunc(currentVal / rhsVal);
           break;
         case '%=':
           if (rhsVal === 0) throw new Error('Modulo by zero in assignment.');
           newVal = currentVal % rhsVal;
           break;
       }
-      context.setVariable(varName, newVal);
+      context.setVariable(varName, newVal, isFloat);
       return newVal;
     }
 
@@ -227,15 +282,19 @@ export class SafeEvaluator {
         throw new Error(`Invalid variable identifier: "${targetVar}"`);
       }
 
-      const value = SafeEvaluator.evaluate(rhsExpr, context.variables);
-      context.setVariable(targetVar, value);
+      const ast = jsep(rhsExpr);
+      const isFloat = SafeEvaluator.isFloatAST(ast, scope);
+      const value = SafeEvaluator.evaluateAST(ast, scope);
+      context.setVariable(targetVar, value, isFloat);
       return value;
     }
 
     // Standalone expression or single variable assignment
     if (variableName) {
-      const value = SafeEvaluator.evaluate(trimmed, context.variables);
-      context.setVariable(variableName, value);
+      const ast = jsep(trimmed);
+      const isFloat = SafeEvaluator.isFloatAST(ast, scope);
+      const value = SafeEvaluator.evaluateAST(ast, scope);
+      context.setVariable(variableName, value, isFloat);
       return value;
     }
 

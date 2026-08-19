@@ -10,14 +10,24 @@ describe('SafeEvaluator', () => {
     expect(SafeEvaluator.evaluate('10 % 3')).toBe(1);
   });
 
-  it('should enforce C-style integer division for integer operands', () => {
-    // 5 / 2 in C evaluates to 2 (truncated towards zero)
+  it('should enforce C-style integer division for integer operands and float division for float literals', () => {
+    // 5 / 2 in C evaluates to 2 (integer division truncated towards zero)
     expect(SafeEvaluator.evaluate('5 / 2')).toBe(2);
     expect(SafeEvaluator.evaluate('7 / 3')).toBe(2);
     expect(SafeEvaluator.evaluate('-7 / 3')).toBe(-2);
     expect(SafeEvaluator.evaluate('1 / 2')).toBe(0);
-    // Floating-point operands should preserve decimals
+
+    // Explicit floating-point literals (with dot) in C evaluate to double/float division
+    expect(SafeEvaluator.evaluate('5.0 / 2.0')).toBe(2.5);
+    expect(SafeEvaluator.evaluate('5.0 / 2')).toBe(2.5);
+    expect(SafeEvaluator.evaluate('5 / 2.0')).toBe(2.5);
     expect(SafeEvaluator.evaluate('5.5 / 2')).toBe(2.75);
+
+    // Variable float tracking
+    const context = new InterpreterContext();
+    SafeEvaluator.evaluateAssignment('a = 5.0', context);
+    SafeEvaluator.evaluateAssignment('b = a / 2', context);
+    expect(context.variables.b).toBe(2.5);
   });
 
   it('should evaluate comparisons and booleans', () => {

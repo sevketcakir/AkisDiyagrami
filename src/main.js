@@ -358,7 +358,7 @@ class App {
     const snapshot = this.interpreter.step();
 
     // Update UI components
-    this.sidePanel.updateVariables(snapshot.variables);
+    this.sidePanel.updateVariables(snapshot.variables, this.interpreter.context.floatVars);
     this.sidePanel.updateConsole(snapshot.output);
 
     if (snapshot.error) {
@@ -413,7 +413,7 @@ class App {
           count++;
 
           if (snapshot.error || snapshot.isFinished) {
-            this.sidePanel.updateVariables(snapshot.variables);
+            this.sidePanel.updateVariables(snapshot.variables, this.interpreter.context.floatVars);
             this.sidePanel.updateConsole(snapshot.output);
             if (snapshot.error) {
               this.sidePanel.setStatus('ERROR', snapshot.error);
@@ -428,7 +428,7 @@ class App {
         }
 
         // Update UI after batch
-        this.sidePanel.updateVariables(this.interpreter.context.variables);
+        this.sidePanel.updateVariables(this.interpreter.context.variables, this.interpreter.context.floatVars);
         this.sidePanel.updateConsole(this.interpreter.context.output);
 
         if (!this.interpreter.context.isFinished && !this.isWaitingForInput) {

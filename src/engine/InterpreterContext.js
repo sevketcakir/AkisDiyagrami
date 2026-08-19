@@ -20,6 +20,7 @@ export class InterpreterContext {
     this.stepCount = 0;
     this.history = [];
     this.loopStates = {};
+    this.floatVars = new Set();
   }
 
   /**
@@ -35,6 +36,7 @@ export class InterpreterContext {
     this.stepCount = 0;
     this.history = [];
     this.loopStates = {};
+    this.floatVars = new Set();
   }
 
   /**
@@ -58,9 +60,15 @@ export class InterpreterContext {
    * Sets or updates a variable in memory.
    * @param {string} name
    * @param {any} value
+   * @param {boolean} [isFloat] - Explicit float type flag
    */
-  setVariable(name, value) {
+  setVariable(name, value, isFloat = false) {
     this.variables[name] = value;
+    if (isFloat || (typeof value === 'number' && !Number.isInteger(value))) {
+      this.floatVars.add(name);
+    } else {
+      this.floatVars.delete(name);
+    }
   }
 
   /**
