@@ -1,5 +1,6 @@
 import Drawflow from 'drawflow';
 import 'drawflow/dist/drawflow.min.css';
+import { AutoLayout } from './AutoLayout.js';
 
 /**
  * Generates paper-standard flowchart node HTML using embedded SVG shapes.
@@ -460,6 +461,15 @@ export class CanvasManager {
         }
       }
     }, 40);
+  }
+
+  /**
+   * Automatically lays out and snaps all canvas nodes into a clean vertical flowchart.
+   */
+  autoLayout() {
+    const rawData = this.exportData();
+    const organizedData = AutoLayout.layout(rawData);
+    this.loadData(organizedData);
   }
 
   zoomIn() {

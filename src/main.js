@@ -88,6 +88,14 @@ class App {
       }
     });
 
+    // Auto-Layout
+    const autoLayoutBtn = document.getElementById('btn-auto-layout');
+    if (autoLayoutBtn) {
+      autoLayoutBtn.addEventListener('click', () => {
+        this.canvasManager.autoLayout();
+      });
+    }
+
     // Save JSON
     document.getElementById('btn-save').addEventListener('click', () => {
       const data = this.canvasManager.exportData();
