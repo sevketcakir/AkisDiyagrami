@@ -243,6 +243,7 @@
         <button class="modal-tab-btn active" data-tab="symbols" data-i18n="help.tabSymbols">🔷 Akış Blokları</button>
         <button class="modal-tab-btn" data-tab="types" data-i18n="help.tabTypes">🔢 Değişken Tipleri</button>
         <button class="modal-tab-btn" data-tab="operators" data-i18n="help.tabOperators">⚙️ Operatörler</button>
+        <button class="modal-tab-btn" data-tab="keyboard" data-i18n="help.tabKeyboard">⌨️ Klavye Tuşları</button>
         <button class="modal-tab-btn" data-tab="controls" data-i18n="help.tabControls">🚀 Kontroller & Araçlar</button>
       </div>
 
@@ -359,7 +360,131 @@
           </div>
         </div>
 
-        <!-- Tab 4: Controls -->
+        <!-- Tab 4: Keyboard Shortcuts & Symbol Typing Guide -->
+        <div id="tab-keyboard" class="modal-tab-content">
+          <h3 data-i18n="help.keyboardTitle">Klavye Tuşları ile Sembol Yazımı</h3>
+          <p class="modal-lead" data-i18n="help.keyboardDesc">Klavyenizde (Türkçe Q ve standart klavyelerde) programlama karakterlerini hızlıca yazmak için tuş rehberi:</p>
+          
+          <div class="table-responsive">
+            <table class="keyboard-table">
+              <thead>
+                <tr>
+                  <th data-i18n="help.kbColSymbol">Sembol</th>
+                  <th data-i18n="help.kbColMeaning">Anlamı</th>
+                  <th data-i18n="help.kbColTrKey">Türkçe Q Klavye</th>
+                  <th data-i18n="help.kbColEnKey">İngilizce (US) Klavye</th>
+                  <th data-i18n="help.kbColExample">Örnek İfade</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>==</code></td>
+                  <td data-i18n="help.kbEq">Eşit mi?</td>
+                  <td data-i18n-html="help.kbTrEqKeys"><kbd>Shift</kbd> + <kbd>0</kbd> (iki kez) veya <kbd>=</kbd> <kbd>=</kbd></td>
+                  <td data-i18n-html="help.kbEnEqKeys"><kbd>=</kbd> <kbd>=</kbd></td>
+                  <td><code>a == b</code></td>
+                </tr>
+                <tr>
+                  <td><code>!=</code></td>
+                  <td data-i18n="help.kbNeq">Eşit değil mi?</td>
+                  <td data-i18n-html="help.kbTrNeqKeys"><kbd>Shift</kbd> + <kbd>1</kbd> ardından <kbd>=</kbd></td>
+                  <td data-i18n-html="help.kbEnNeqKeys"><kbd>Shift</kbd> + <kbd>1</kbd> then <kbd>=</kbd></td>
+                  <td><code>a != b</code></td>
+                </tr>
+                <tr>
+                  <td><code>&lt;</code></td>
+                  <td data-i18n="help.kbLt">Küçük mü?</td>
+                  <td data-i18n-html="help.kbTrLtKeys"><kbd>&lt;</kbd> (Z solundaki tuş)</td>
+                  <td data-i18n-html="help.kbEnLtKeys"><kbd>Shift</kbd> + <kbd>,</kbd></td>
+                  <td><code>i &lt; N</code></td>
+                </tr>
+                <tr>
+                  <td><code>&lt;=</code></td>
+                  <td data-i18n="help.kbLte">Küçük veya eşit mi?</td>
+                  <td data-i18n-html="help.kbTrLteKeys"><kbd>&lt;</kbd> ardından <kbd>=</kbd></td>
+                  <td data-i18n-html="help.kbEnLteKeys"><kbd>Shift</kbd> + <kbd>,</kbd> then <kbd>=</kbd></td>
+                  <td><code>i &lt;= 10</code></td>
+                </tr>
+                <tr>
+                  <td><code>&gt;</code></td>
+                  <td data-i18n="help.kbGt">Büyük mü?</td>
+                  <td data-i18n-html="help.kbTrGtKeys"><kbd>Shift</kbd> + <kbd>&lt;</kbd></td>
+                  <td data-i18n-html="help.kbEnGtKeys"><kbd>Shift</kbd> + <kbd>.</kbd></td>
+                  <td><code>puan &gt; 50</code></td>
+                </tr>
+                <tr>
+                  <td><code>&gt;=</code></td>
+                  <td data-i18n="help.kbGte">Büyük veya eşit mi?</td>
+                  <td data-i18n-html="help.kbTrGteKeys"><kbd>Shift</kbd> + <kbd>&lt;</kbd> ardından <kbd>=</kbd></td>
+                  <td data-i18n-html="help.kbEnGteKeys"><kbd>Shift</kbd> + <kbd>.</kbd> then <kbd>=</kbd></td>
+                  <td><code>sayi &gt;= 0</code></td>
+                </tr>
+                <tr>
+                  <td><code>&amp;&amp;</code></td>
+                  <td data-i18n="help.kbAnd">Mantıksal VE (AND)</td>
+                  <td data-i18n-html="help.kbTrAndKeys"><kbd>Shift</kbd> + <kbd>6</kbd> (iki kez <code>&amp;&amp;</code>)</td>
+                  <td data-i18n-html="help.kbEnAndKeys"><kbd>Shift</kbd> + <kbd>7</kbd> (twice <code>&amp;&amp;</code>)</td>
+                  <td><code>a &gt; 0 &amp;&amp; b &gt; 0</code></td>
+                </tr>
+                <tr>
+                  <td><code>||</code></td>
+                  <td data-i18n="help.kbOr">Mantıksal VEYA (OR)</td>
+                  <td data-i18n-html="help.kbTrOrKeys"><kbd>AltGr</kbd> + <kbd>-</kbd> veya <kbd>AltGr</kbd> + <kbd>&lt;</kbd></td>
+                  <td data-i18n-html="help.kbEnOrKeys"><kbd>Shift</kbd> + <kbd>\</kbd> (twice <code>||</code>)</td>
+                  <td><code>x == 0 || y == 0</code></td>
+                </tr>
+                <tr>
+                  <td><code>!</code></td>
+                  <td data-i18n="help.kbNot">Mantıksal DEĞİL (NOT)</td>
+                  <td data-i18n-html="help.kbTrNotKeys"><kbd>Shift</kbd> + <kbd>1</kbd></td>
+                  <td data-i18n-html="help.kbEnNotKeys"><kbd>Shift</kbd> + <kbd>1</kbd></td>
+                  <td><code>!asal</code></td>
+                </tr>
+                <tr>
+                  <td><code>%</code></td>
+                  <td data-i18n="help.kbMod">Kalan / Modulo</td>
+                  <td data-i18n-html="help.kbTrModKeys"><kbd>Shift</kbd> + <kbd>5</kbd></td>
+                  <td data-i18n-html="help.kbEnModKeys"><kbd>Shift</kbd> + <kbd>5</kbd></td>
+                  <td><code>N % i == 0</code></td>
+                </tr>
+                <tr>
+                  <td><code>*</code></td>
+                  <td data-i18n="help.kbMul">Çarpma</td>
+                  <td data-i18n-html="help.kbTrMulKeys"><kbd>Shift</kbd> + <kbd>8</kbd> veya Numpad <kbd>*</kbd></td>
+                  <td data-i18n-html="help.kbEnMulKeys"><kbd>Shift</kbd> + <kbd>8</kbd> or Numpad <kbd>*</kbd></td>
+                  <td><code>f * i</code></td>
+                </tr>
+                <tr>
+                  <td><code>/</code></td>
+                  <td data-i18n="help.kbDiv">Bölme</td>
+                  <td data-i18n-html="help.kbTrDivKeys"><kbd>Shift</kbd> + <kbd>7</kbd> veya Numpad <kbd>/</kbd></td>
+                  <td data-i18n-html="help.kbEnDivKeys"><kbd>/</kbd> or Numpad <kbd>/</kbd></td>
+                  <td><code>a / b</code></td>
+                </tr>
+                <tr>
+                  <td><code>"..."</code></td>
+                  <td data-i18n="help.kbQuote">Çift Tırnak (Metin)</td>
+                  <td data-i18n-html="help.kbTrQuoteKeys"><kbd>Shift</kbd> + <kbd>2</kbd> veya <kbd>é</kbd> tuşu</td>
+                  <td data-i18n-html="help.kbEnQuoteKeys"><kbd>Shift</kbd> + <kbd>'</kbd></td>
+                  <td><code>"Toplam: " + sum</code></td>
+                </tr>
+                <tr>
+                  <td><code>;</code></td>
+                  <td data-i18n="help.kbSemicolon">Noktalı Virgül (Ayırıcı)</td>
+                  <td data-i18n-html="help.kbTrSemicolonKeys"><kbd>Shift</kbd> + <kbd>,</kbd></td>
+                  <td data-i18n-html="help.kbEnSemicolonKeys"><kbd>;</kbd></td>
+                  <td><code>a = 5; b = 10;</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="help-footer-box" style="margin-top: 1rem;">
+            <p data-i18n="help.kbTip">💡 İpucu: Bu sembolleri doğrudan metin alanlarına kopyalayıp yapıştırabilir veya yukarıdaki tuş kombinasyonlarıyla hızlıca yazabilirsiniz.</p>
+          </div>
+        </div>
+
+        <!-- Tab 5: Controls -->
         <div id="tab-controls" class="modal-tab-content">
           <h3 data-i18n="help.controlsTitle">Çalıştırma & Gelişmiş Özellikler</h3>
           <ul class="help-feature-list">
