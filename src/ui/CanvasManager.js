@@ -147,28 +147,56 @@ export class CanvasManager {
   }
 
   /**
-   * Sets up natural top-to-bottom flowchart connection curves.
+   * Sets up natural flowchart connection curves respecting port exit directions (Bottom, Right, Left).
    */
   setupVerticalCurvature() {
     this.editor.createCurvature = (start_pos_x, start_pos_y, end_pos_x, end_pos_y) => {
       const deltaX = end_pos_x - start_pos_x;
       const deltaY = end_pos_y - start_pos_y;
 
-      // When roughly aligned vertically, draw a clean straight vertical line
+      // 1. Perfectly vertical straight line
       if (Math.abs(deltaX) <= 6 && deltaY > 0) {
         return `M ${start_pos_x} ${start_pos_y} L ${end_pos_x} ${end_pos_y}`;
       }
 
-      // If flowing downwards
-      if (deltaY > 20) {
-        const hy1 = start_pos_y + Math.max(25, deltaY * 0.45);
-        const hy2 = end_pos_y - Math.max(25, deltaY * 0.45);
-        return `M ${start_pos_x} ${start_pos_y} C ${start_pos_x} ${hy1} ${end_pos_x} ${hy2} ${end_pos_x} ${end_pos_y}`;
+      // 2. Loopback connection returning upwards (e.g. bottom of body back to loop header)
+      if (deltaY < -10) {
+        const loopOffset = Math.max(50, Math.abs(deltaX) * 0.45);
+        const p1x = start_pos_x + (deltaX > 0 ? loopOffset : -loopOffset);
+        const p1y = start_pos_y + 35;
+        const p2x = end_pos_x + 50;
+        const p2y = end_pos_y;
+        return `M ${start_pos_x} ${start_pos_y} C ${p1x} ${p1y} ${p2x} ${p2y} ${end_pos_x} ${end_pos_y}`;
       }
 
-      // Loopback curve (flowing upwards from bottom back to top/left)
-      const offset = Math.max(50, Math.abs(deltaX) * 0.4);
-      return `M ${start_pos_x} ${start_pos_y} C ${start_pos_x} ${start_pos_y + offset} ${end_pos_x - offset} ${end_pos_y} ${end_pos_x} ${end_pos_y}`;
+      // 3. Forward flowing connections:
+      let start_dx = 0;
+      let start_dy = 0;
+
+      if (deltaX > 25) {
+        // Exits horizontally to the Right (e.g. Decision False, Loop Body)
+        start_dx = Math.max(40, deltaX * 0.5);
+        start_dy = 0;
+      } else if (deltaX < -25) {
+        // Exits horizontally to the Left (e.g. Decision True)
+        start_dx = -Math.max(40, Math.abs(deltaX) * 0.5);
+        start_dy = 0;
+      } else {
+        // Exits vertically Downwards from bottom port
+        start_dx = 0;
+        start_dy = Math.max(25, deltaY * 0.45);
+      }
+
+      // Enters vertically from the Top into destination
+      const end_dx = 0;
+      const end_dy = -Math.max(25, deltaY * 0.45);
+
+      const hx1 = start_pos_x + start_dx;
+      const hy1 = start_pos_y + start_dy;
+      const hx2 = end_pos_x + end_dx;
+      const hy2 = end_pos_y + end_dy;
+
+      return `M ${start_pos_x} ${start_pos_y} C ${hx1} ${hy1} ${hx2} ${hy2} ${end_pos_x} ${end_pos_y}`;
     };
   }
 
