@@ -55,8 +55,8 @@ export function renderNodeHtml(type, customData = {}) {
             <div class="node-header">Decision (If)</div>
             <input type="text" df-condition value="${escapeHtml(cond)}" placeholder="e.g. score >= 50" />
           </div>
-          <div class="port-label port-label-true">True (T)</div>
-          <div class="port-label port-label-false">False (F)</div>
+          <div class="port-label port-label-true">True (← T)</div>
+          <div class="port-label port-label-false">False (F →)</div>
         </div>
       `;
     }

@@ -625,8 +625,8 @@ body {
   white-space: nowrap;
 }
 
-.port-label-true { bottom: -18px; left: 50%; transform: translateX(-50%); color: #4ade80; }
-.port-label-false { right: -32px; top: 50%; transform: translateY(-50%); color: #f87171; }
+.port-label-true { left: -36px; top: 50%; transform: translateY(-50%); color: #4ade80; }
+.port-label-false { right: -36px; top: 50%; transform: translateY(-50%); color: #f87171; }
 .port-label-body { right: -28px; top: 50%; transform: translateY(-50%); color: #22d3ee; }
 .port-label-exit { bottom: -18px; left: 50%; transform: translateX(-50%); color: #fbbf24; }
 
@@ -708,15 +708,19 @@ body {
 
 /* Decision Node (Diamond):
    - Input (North): Top Tip
-   - Output 1 (True / South): Bottom Tip
+   - Output 1 (True / West): Left Tip
    - Output 2 (False / East): Right Tip */
 .drawflow .drawflow-node.decision .input.input_1 {
   top: -7px !important;
   left: calc(50% - 7px) !important;
+  right: auto !important;
+  bottom: auto !important;
 }
 .drawflow .drawflow-node.decision .output.output_1 {
-  bottom: -7px !important;
-  left: calc(50% - 7px) !important;
+  left: -7px !important;
+  top: calc(50% - 7px) !important;
+  bottom: auto !important;
+  right: auto !important;
   background: #22c55e;
 }
 .drawflow .drawflow-node.decision .output.output_2 {
