@@ -73,6 +73,7 @@ export function renderNodeHtml(type, customData = {}) {
             <input type="text" df-condition value="${escapeHtml(cond)}" placeholder="e.g. I = 1, N, 1" />
           </div>
           <div class="port-label port-label-body">Body (→)</div>
+          <div class="port-label port-label-loopback">In (←)</div>
           <div class="port-label port-label-exit">Exit (↓)</div>
         </div>
       `;

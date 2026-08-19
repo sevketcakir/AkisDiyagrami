@@ -627,7 +627,8 @@ body {
 
 .port-label-true { left: -36px; top: 50%; transform: translateY(-50%); color: #4ade80; }
 .port-label-false { right: -36px; top: 50%; transform: translateY(-50%); color: #f87171; }
-.port-label-body { right: -28px; top: 50%; transform: translateY(-50%); color: #22d3ee; }
+.port-label-body { right: -32px; top: 12px; color: #22d3ee; }
+.port-label-loopback { right: -42px; bottom: 12px; color: #c084fc; }
 .port-label-exit { bottom: -18px; left: 50%; transform: translateX(-50%); color: #fbbf24; }
 
 /* Active Glowing Node during Execution */
@@ -733,20 +734,25 @@ body {
 
 /* Loop Node (Hexagon):
    - Input 1 (Entry / North): Top Edge
-   - Input 2 (Loopback / West): Left Edge
-   - Output 1 (Body / East): Right Edge (branches to loop body on right)
+   - Input 2 (Loopback Return / East): Lower Right Edge
+   - Output 1 (Body / East): Upper Right Edge (branches to loop body on right)
    - Output 2 (Exit / South): Bottom Edge (continues straight down) */
 .drawflow .drawflow-node.loop .input.input_1 {
   top: -7px !important;
   left: calc(50% - 7px) !important;
+  right: auto !important;
+  bottom: auto !important;
 }
 .drawflow .drawflow-node.loop .input.input_2 {
-  left: -7px !important;
-  top: calc(50% - 7px) !important;
+  right: -7px !important;
+  bottom: 16px !important;
+  left: auto !important;
+  top: auto !important;
+  background: #a78bfa;
 }
 .drawflow .drawflow-node.loop .output.output_1 {
   right: -7px !important;
-  top: calc(50% - 7px) !important;
+  top: 16px !important;
   bottom: auto !important;
   left: auto !important;
   background: #06b6d4;
