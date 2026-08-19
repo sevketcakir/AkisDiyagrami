@@ -34,6 +34,13 @@ export class DecisionNode extends FlowchartNode {
       result = Boolean(context.getVariable(this.condition));
     }
 
-    context.currentNodeId = result ? this.trueNodeId : this.falseNodeId;
+    const nextTarget = result ? this.trueNodeId : this.falseNodeId;
+    const branchLabel = result ? 'True (← T)' : 'False (F →)';
+
+    if (!nextTarget) {
+      throw new Error(`Decision evaluated to ${result ? 'TRUE' : 'FALSE'}, but the ${branchLabel} branch is not connected to any node.`);
+    }
+
+    context.currentNodeId = nextTarget;
   }
 }

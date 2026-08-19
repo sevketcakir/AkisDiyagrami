@@ -388,10 +388,25 @@ export class CanvasManager {
   }
 
   setupEvents() {
+    // Prevent Drawflow node dragging when selecting text inside inputs or interactive elements
+    const isolateInputEvents = (e) => {
+      const tag = e.target?.tagName?.toLowerCase();
+      if (['input', 'textarea', 'select', 'button'].includes(tag)) {
+        e.stopPropagation();
+      }
+    };
+
+    this.container.addEventListener('mousedown', isolateInputEvents, true);
+    this.container.addEventListener('pointerdown', isolateInputEvents, true);
+    this.container.addEventListener('touchstart', isolateInputEvents, true);
+
     // 1. Synchronize input field changes directly into internal Drawflow node data
     this.container.addEventListener('input', (e) => {
       const target = e.target;
       if (!target || target.tagName !== 'INPUT') return;
+
+      // Update hover tooltip with full expression text
+      target.title = target.value;
 
       const nodeElement = target.closest('.drawflow-node');
       if (!nodeElement) return;
@@ -692,17 +707,20 @@ export class CanvasManager {
         const exprInput = nodeEl.querySelector('input[df-expression]');
         if (exprInput && nodeObj.data?.expression !== undefined) {
           exprInput.value = nodeObj.data.expression;
+          exprInput.title = nodeObj.data.expression;
         }
 
         const condInput = nodeEl.querySelector('input[df-condition]');
         if (condInput && nodeObj.data?.condition !== undefined) {
           condInput.value = nodeObj.data.condition;
+          condInput.title = nodeObj.data.condition;
         }
 
         const varInput = nodeEl.querySelector('input[df-variablename], input[df-variableName]');
         const varVal = nodeObj.data?.variableName ?? nodeObj.data?.variablename;
         if (varInput && varVal !== undefined) {
           varInput.value = varVal;
+          varInput.title = varVal;
         }
       }
       this.classifyConnections();

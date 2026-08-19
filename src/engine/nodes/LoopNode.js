@@ -65,9 +65,15 @@ export class LoopNode extends FlowchartNode {
         const continueLoop = (state.stepVal > 0) ? (currentVal <= state.endVal) : (currentVal >= state.endVal);
 
         if (continueLoop) {
+          if (!this.bodyNodeId) {
+            throw new Error(`Loop condition is active, but the Body (→) branch is not connected to any node.`);
+          }
           context.currentNodeId = this.bodyNodeId;
         } else {
           state.active = false;
+          if (!this.exitNodeId) {
+            throw new Error(`Loop condition is finished, but the Exit (↓) branch is not connected to any node.`);
+          }
           context.currentNodeId = this.exitNodeId;
         }
       } else {
@@ -82,9 +88,15 @@ export class LoopNode extends FlowchartNode {
         const continueLoop = (state.stepVal > 0) ? (nextVal <= dynamicEndVal) : (nextVal >= dynamicEndVal);
 
         if (continueLoop) {
+          if (!this.bodyNodeId) {
+            throw new Error(`Loop condition is active, but the Body (→) branch is not connected to any node.`);
+          }
           context.currentNodeId = this.bodyNodeId;
         } else {
           state.active = false;
+          if (!this.exitNodeId) {
+            throw new Error(`Loop condition is finished, but the Exit (↓) branch is not connected to any node.`);
+          }
           context.currentNodeId = this.exitNodeId;
         }
       }
@@ -99,6 +111,12 @@ export class LoopNode extends FlowchartNode {
       continueLoop = Boolean(context.getVariable(rawSpec));
     }
 
-    context.currentNodeId = continueLoop ? this.bodyNodeId : this.exitNodeId;
+    const nextTarget = continueLoop ? this.bodyNodeId : this.exitNodeId;
+    const branchLabel = continueLoop ? 'Body (→)' : 'Exit (↓)';
+    if (!nextTarget) {
+      throw new Error(`Loop evaluated to ${continueLoop ? 'CONTINUE' : 'EXIT'}, but the ${branchLabel} branch is not connected.`);
+    }
+
+    context.currentNodeId = nextTarget;
   }
 }

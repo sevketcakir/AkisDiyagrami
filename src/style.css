@@ -576,13 +576,30 @@ body {
   padding: 0.35rem 0.5rem;
   border-radius: 4px;
   width: 100%;
-  max-width: 135px;
+  max-width: 160px;
   text-align: center;
   outline: none;
+  overflow-x: auto;
+  white-space: nowrap;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text !important;
+  transition: max-width 0.2s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shape-rectangle input {
+  max-width: 175px;
+}
+
+.shape-output input {
+  max-width: 175px;
 }
 
 .flowchart-node-content input:focus {
   border-color: var(--primary);
+  background-color: #020617;
+  max-width: 185px;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
 }
 
 /* Embedded SVG Shapes */

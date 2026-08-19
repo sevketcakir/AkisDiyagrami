@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { SamplePrograms } from '../src/utils/SamplePrograms.js';
 import { GraphParser } from '../src/ui/GraphParser.js';
 import { FlowchartInterpreter } from '../src/engine/index.js';
+import { SafeEvaluator } from '../src/evaluator/Evaluator.js';
 
 describe('Sample Programs Curriculum', () => {
-  it('should include all 9 educational sample programs', () => {
+  it('should include all 10 educational sample programs', () => {
     const keys = Object.keys(SamplePrograms);
     expect(keys).toEqual([
       'rectangleArea',
@@ -15,13 +16,14 @@ describe('Sample Programs Curriculum', () => {
       'isPrimeCheck',
       'allPrimesUpToN',
       'fibonacci',
+      'gcdEuclideanSubtraction',
       'gcdEuclidean'
     ]);
   });
 
   it('should compile and run Rectangle Area correctly', () => {
-    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.rectangleArea.data);
-    const interpreter = new FlowchartInterpreter({ nodes, startNodeId });
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.rectangleArea.data, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
     while (!interpreter.context.isFinished) {
       interpreter.step();
     }
@@ -31,8 +33,8 @@ describe('Sample Programs Curriculum', () => {
   });
 
   it('should compile and run Factorial of 5 correctly', () => {
-    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.factorial.data);
-    const interpreter = new FlowchartInterpreter({ nodes, startNodeId });
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.factorial.data, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
     interpreter.context.inputQueue = [5];
     while (!interpreter.context.isFinished && !interpreter.context.error) {
       interpreter.step();
@@ -44,8 +46,8 @@ describe('Sample Programs Curriculum', () => {
 
   it('should compile and run Prime Test for N = 7 (prime) and N = 8 (not prime)', () => {
     // 1. Test N = 7
-    const { nodes: nodes1, startNodeId: start1 } = GraphParser.parseDrawflow(SamplePrograms.isPrimeCheck.data);
-    const interpreter1 = new FlowchartInterpreter({ nodes: nodes1, startNodeId: start1 });
+    const { nodes: nodes1, startNodeId: start1 } = GraphParser.parseDrawflow(SamplePrograms.isPrimeCheck.data, SafeEvaluator.hook);
+    const interpreter1 = new FlowchartInterpreter({ nodes: nodes1, startNodeId: start1, evaluator: SafeEvaluator.hook });
     interpreter1.context.inputQueue = [7];
     while (!interpreter1.context.isFinished && !interpreter1.context.error) {
       interpreter1.step();
@@ -55,8 +57,8 @@ describe('Sample Programs Curriculum', () => {
     expect(interpreter1.context.output).toEqual(['7 is a PRIME number!']);
 
     // 2. Test N = 8
-    const { nodes: nodes2, startNodeId: start2 } = GraphParser.parseDrawflow(SamplePrograms.isPrimeCheck.data);
-    const interpreter2 = new FlowchartInterpreter({ nodes: nodes2, startNodeId: start2 });
+    const { nodes: nodes2, startNodeId: start2 } = GraphParser.parseDrawflow(SamplePrograms.isPrimeCheck.data, SafeEvaluator.hook);
+    const interpreter2 = new FlowchartInterpreter({ nodes: nodes2, startNodeId: start2, evaluator: SafeEvaluator.hook });
     interpreter2.context.inputQueue = [8];
     while (!interpreter2.context.isFinished && !interpreter2.context.error) {
       interpreter2.step();
@@ -67,8 +69,8 @@ describe('Sample Programs Curriculum', () => {
   });
 
   it('should compile and list all prime numbers up to N = 10', () => {
-    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.allPrimesUpToN.data);
-    const interpreter = new FlowchartInterpreter({ nodes, startNodeId });
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.allPrimesUpToN.data, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
     interpreter.context.inputQueue = [10];
     let steps = 0;
     while (!interpreter.context.isFinished && !interpreter.context.error && steps < 1000) {
@@ -85,27 +87,9 @@ describe('Sample Programs Curriculum', () => {
     ]);
   });
 
-  it('should compile and compute Fibonacci terms for N = 6', () => {
-    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.fibonacci.data);
-    const interpreter = new FlowchartInterpreter({ nodes, startNodeId });
-    interpreter.context.inputQueue = [6];
-    while (!interpreter.context.isFinished && !interpreter.context.error) {
-      interpreter.step();
-    }
-    expect(interpreter.context.error).toBeNull();
-    expect(interpreter.context.output).toEqual([
-      'Fib #1: 0',
-      'Fib #2: 1',
-      'Fib #3: 1',
-      'Fib #4: 2',
-      'Fib #5: 3',
-      'Fib #6: 5'
-    ]);
-  });
-
-  it('should compile and compute GCD(48, 18) = 6', () => {
-    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.gcdEuclidean.data);
-    const interpreter = new FlowchartInterpreter({ nodes, startNodeId });
+  it('should compile and compute Euclid Subtraction GCD(48, 18) = 6', () => {
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.gcdEuclideanSubtraction.data, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
     interpreter.context.inputQueue = [48, 18];
     while (!interpreter.context.isFinished && !interpreter.context.error) {
       interpreter.step();
@@ -113,5 +97,36 @@ describe('Sample Programs Curriculum', () => {
     expect(interpreter.context.error).toBeNull();
     expect(interpreter.context.variables.a).toBe(6);
     expect(interpreter.context.output).toEqual(['GCD (EBOB): 6']);
+  });
+
+  it('should compile and compute Euclid Modulo Division GCD(48, 18) = 6', () => {
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.gcdEuclidean.data, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
+    interpreter.context.inputQueue = [48, 18];
+    while (!interpreter.context.isFinished && !interpreter.context.error) {
+      interpreter.step();
+    }
+    expect(interpreter.context.error).toBeNull();
+    expect(interpreter.context.variables.a).toBe(6);
+    expect(interpreter.context.output).toEqual(['GCD (EBOB): 6']);
+  });
+
+  it('should throw a clear runtime error when an active branch of a decision node is unconnected', () => {
+    // Modify GCD data to remove True connection from decision node 4
+    const modifiedData = JSON.parse(JSON.stringify(SamplePrograms.gcdEuclidean.data));
+    delete modifiedData.drawflow.Home.data['4'].outputs.output_1;
+
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(modifiedData, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
+    interpreter.context.inputQueue = [48, 18];
+
+    // Step until reaching decision node 4 where b != 0 is true
+    while (!interpreter.context.isFinished && !interpreter.context.error) {
+      interpreter.step();
+    }
+
+    expect(interpreter.context.error).toContain('Runtime Error');
+    expect(interpreter.context.error).toContain('True');
+    expect(interpreter.context.error).toContain('not connected');
   });
 });

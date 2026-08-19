@@ -37,6 +37,11 @@ export class OutputNode extends FlowchartNode {
     }
 
     context.writeOutput(outputText);
+
+    if (!this.nextNodeId) {
+      throw new Error(`Output node [${this.id}] printed, but has no outgoing connection to the next node.`);
+    }
+
     context.currentNodeId = this.nextNodeId;
   }
 }

@@ -47,6 +47,11 @@ export class InputNode extends FlowchartNode {
     }
 
     context.setVariable(this.variableName, parsedValue);
+
+    if (!this.nextNodeId) {
+      throw new Error(`Input node [${this.id}] executed, but has no outgoing connection to the next node.`);
+    }
+
     context.currentNodeId = this.nextNodeId;
   }
 }

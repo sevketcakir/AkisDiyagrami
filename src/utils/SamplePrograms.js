@@ -1019,9 +1019,144 @@ export const SamplePrograms = {
     }
   },
 
+  gcdEuclideanSubtraction: {
+    name: "9. Euclid's GCD (Subtraction Method)",
+    description: 'Computes GCD(a, b) using original Euclidean repeated subtraction (if a > b then a = a - b else b = b - a).',
+    data: {
+      drawflow: {
+        Home: {
+          data: {
+            '1': {
+              id: 1,
+              name: 'start',
+              data: {},
+              class: 'start',
+              html: renderNodeHtml('start', {}),
+              typenode: false,
+              inputs: {},
+              outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 30
+            },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'a', variablename: 'a' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 120
+            },
+            '3': {
+              id: 3,
+              name: 'input',
+              data: { variableName: 'b', variablename: 'b' },
+              class: 'input',
+              html: renderNodeHtml('input', { variableName: 'b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              pos_x: 250,
+              pos_y: 210
+            },
+            '4': {
+              id: 4,
+              name: 'decision',
+              data: { condition: 'a != b' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'a != b' }),
+              typenode: false,
+              inputs: {
+                input_1: {
+                  connections: [
+                    { node: '3', input: 'output_1' },
+                    { node: '6', input: 'output_1' },
+                    { node: '7', input: 'output_1' }
+                  ]
+                }
+              },
+              outputs: {
+                output_1: { connections: [{ node: '5', output: 'input_1' }] }, // True -> compare a > b
+                output_2: { connections: [{ node: '8', output: 'input_1' }] }  // False -> output GCD (a == b)
+              },
+              pos_x: 250,
+              pos_y: 310
+            },
+            '5': {
+              id: 5,
+              name: 'decision',
+              data: { condition: 'a > b' },
+              class: 'decision',
+              html: renderNodeHtml('decision', { condition: 'a > b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', output: 'input_1' }] } },
+              outputs: {
+                output_1: { connections: [{ node: '6', output: 'input_1' }] }, // True -> a = a - b
+                output_2: { connections: [{ node: '7', output: 'input_1' }] }  // False -> b = b - a
+              },
+              pos_x: 100,
+              pos_y: 430
+            },
+            '6': {
+              id: 6,
+              name: 'assignment',
+              data: { expression: 'a = a - b' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'a = a - b' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', output: 'input_1' }] } },
+              outputs: { output_1: { connections: [{ node: '4', input: 'input_1' }] } },
+              pos_x: 10,
+              pos_y: 560
+            },
+            '7': {
+              id: 7,
+              name: 'assignment',
+              data: { expression: 'b = b - a' },
+              class: 'assignment',
+              html: renderNodeHtml('assignment', { expression: 'b = b - a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '5', output: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '4', input: 'input_1' }] } },
+              pos_x: 200,
+              pos_y: 560
+            },
+            '8': {
+              id: 8,
+              name: 'output',
+              data: { expression: '"GCD (EBOB): " + a' },
+              class: 'output',
+              html: renderNodeHtml('output', { expression: '"GCD (EBOB): " + a' }),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '4', output: 'output_2' }] } },
+              outputs: { output_1: { connections: [{ node: '9', output: 'input_1' }] } },
+              pos_x: 440,
+              pos_y: 430
+            },
+            '9': {
+              id: 9,
+              name: 'end',
+              data: {},
+              class: 'end',
+              html: renderNodeHtml('end', {}),
+              typenode: false,
+              inputs: { input_1: { connections: [{ node: '8', input: 'output_1' }] } },
+              outputs: {},
+              pos_x: 250,
+              pos_y: 720
+            }
+          }
+        }
+      }
+    }
+  },
+
   gcdEuclidean: {
-    name: '9. Greatest Common Divisor (GCD / EBOB)',
-    description: 'Computes GCD(a, b) using Euclidean division algorithm.',
+    name: "10. Euclid's GCD (Modulo Division Method)",
+    description: 'Computes GCD(a, b) using Euclidean division remainder algorithm.',
     data: {
       drawflow: {
         Home: {
@@ -1127,7 +1262,7 @@ export const SamplePrograms = {
               class: 'output',
               html: renderNodeHtml('output', { expression: '"GCD (EBOB): " + a' }),
               typenode: false,
-              inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
+              inputs: { input_1: { connections: [{ node: '4', output: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '9', output: 'input_1' }] } },
               pos_x: 440,
               pos_y: 430

@@ -40,6 +40,10 @@ export class AssignmentNode extends FlowchartNode {
       context.setVariable(varName, isNaN(num) ? rhs : num);
     }
 
+    if (!this.nextNodeId) {
+      throw new Error(`Assignment node [${this.id}] executed, but has no outgoing connection to the next node.`);
+    }
+
     context.currentNodeId = this.nextNodeId;
   }
 }

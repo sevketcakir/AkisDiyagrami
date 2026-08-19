@@ -19,6 +19,9 @@ export class StartNode extends FlowchartNode {
    * @param {import('../InterpreterContext.js').InterpreterContext} context
    */
   execute(context) {
+    if (!this.nextNodeId) {
+      throw new Error(`Start node is not connected to any subsequent node.`);
+    }
     context.currentNodeId = this.nextNodeId;
   }
 }

@@ -21,7 +21,7 @@ export class SidePanel {
    */
   constructor(elements) {
     this.elements = elements;
-    this.speed = parseInt(elements.speedSlider?.value || elements.speedSelect?.value || '500', 10);
+    this.speed = parseInt(elements.speedSlider?.value || elements.speedSelect?.value || '50', 10);
     this.status = 'READY'; // READY | RUNNING | PAUSED | STEPPING | FINISHED | ERROR | WAITING_INPUT
     this.prevVariables = {};
 
