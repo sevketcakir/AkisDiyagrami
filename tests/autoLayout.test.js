@@ -57,11 +57,11 @@ describe('AutoLayout', () => {
 
     // True branch to the left
     expect(nodes['3'].pos_x).toBe(100);
-    expect(nodes['3'].pos_y).toBe(250);
+    expect(nodes['3'].pos_y).toBe(280);
 
     // False branch to the right
     expect(nodes['4'].pos_x).toBe(500);
-    expect(nodes['4'].pos_y).toBe(250);
+    expect(nodes['4'].pos_y).toBe(280);
   });
 
   it('should layout nested loops with clear column separation and exit clearance', () => {

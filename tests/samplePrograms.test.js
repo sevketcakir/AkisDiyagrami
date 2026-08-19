@@ -32,6 +32,17 @@ describe('Sample Programs Curriculum', () => {
     expect(interpreter.context.output).toEqual(['Rectangle Area: 50']);
   });
 
+  it('should compile and find Max of Three (a=10, b=25, c=15 -> Max is B: 25)', () => {
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.maxOfThree.data, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
+    interpreter.context.inputQueue = [10, 25, 15];
+    while (!interpreter.context.isFinished && !interpreter.context.error) {
+      interpreter.step();
+    }
+    expect(interpreter.context.error).toBeNull();
+    expect(interpreter.context.output).toEqual(['Max is B: 25']);
+  });
+
   it('should compile and run Factorial of 5 correctly', () => {
     const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.factorial.data, SafeEvaluator.hook);
     const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
@@ -83,7 +94,26 @@ describe('Sample Programs Curriculum', () => {
       'Prime #1: 2',
       'Prime #2: 3',
       'Prime #3: 5',
-      'Prime #4: 7'
+      'Prime #4: 7',
+      'Total primes found: 4'
+    ]);
+  });
+
+  it('should compile and compute Fibonacci terms for N = 6', () => {
+    const { nodes, startNodeId } = GraphParser.parseDrawflow(SamplePrograms.fibonacci.data, SafeEvaluator.hook);
+    const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
+    interpreter.context.inputQueue = [6];
+    while (!interpreter.context.isFinished && !interpreter.context.error) {
+      interpreter.step();
+    }
+    expect(interpreter.context.error).toBeNull();
+    expect(interpreter.context.output).toEqual([
+      'Fib #1: 0',
+      'Fib #2: 1',
+      'Fib #3: 1',
+      'Fib #4: 2',
+      'Fib #5: 3',
+      'Fib #6: 5'
     ]);
   });
 
@@ -112,15 +142,15 @@ describe('Sample Programs Curriculum', () => {
   });
 
   it('should throw a clear runtime error when an active branch of a decision node is unconnected', () => {
-    // Modify GCD data to remove True connection from decision node 4
+    // Modify GCD data to remove True connection from decision node 3
     const modifiedData = JSON.parse(JSON.stringify(SamplePrograms.gcdEuclidean.data));
-    delete modifiedData.drawflow.Home.data['4'].outputs.output_1;
+    delete modifiedData.drawflow.Home.data['3'].outputs.output_1;
 
     const { nodes, startNodeId } = GraphParser.parseDrawflow(modifiedData, SafeEvaluator.hook);
     const interpreter = new FlowchartInterpreter({ nodes, startNodeId, evaluator: SafeEvaluator.hook });
     interpreter.context.inputQueue = [48, 18];
 
-    // Step until reaching decision node 4 where b != 0 is true
+    // Step until reaching decision node 3 where b != 0 is true
     while (!interpreter.context.isFinished && !interpreter.context.error) {
       interpreter.step();
     }

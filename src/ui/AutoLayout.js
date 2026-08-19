@@ -6,6 +6,27 @@
  */
 export class AutoLayout {
   /**
+   * Calculates the rendered visual height of a node based on its type and line count.
+   * @param {Object} node
+   * @returns {number}
+   */
+  static getNodeHeight(node) {
+    if (!node) return 80;
+    const type = (node.name || node.class || '').toLowerCase();
+    const data = node.data || {};
+    const text = data.expression || data.condition || data.variableName || data.variablename || '';
+    const lineCount = String(text).split('\n').length;
+
+    let base = 80;
+    if (type.includes('decision')) base = 110;
+    else if (type.includes('loop')) base = 95;
+    else if (type.includes('output')) base = 95;
+    else if (type.includes('start') || type.includes('end')) base = 70;
+
+    return base + (lineCount > 1 ? (lineCount - 1) * 22 : 0);
+  }
+
+  /**
    * Computes clean (X, Y) positions for all nodes in a flowchart.
    * @param {Object} drawflowData
    * @param {Object} [options]
@@ -66,15 +87,18 @@ export class AutoLayout {
       positions.set(idStr, { x, y });
 
       const nodeType = (node.name || node.class || '').toLowerCase();
+      const nodeHeight = AutoLayout.getNodeHeight(node);
+      const extraHeight = Math.max(0, nodeHeight - 80);
+      const stepY = vSpacing + extraHeight;
 
       if (nodeType.includes('decision')) {
         // Decision Diamond:
-        // True branch -> Left (x - branchSpacing, y + vSpacing)
-        // False branch -> Right (x + branchSpacing, y + vSpacing)
+        // True branch -> Left (x - branchSpacing, y + stepY)
+        // False branch -> Right (x + branchSpacing, y + stepY)
         const trueTargetId = getTargetId(node, 'output_1');
         const falseTargetId = getTargetId(node, 'output_2');
 
-        const nextY = y + vSpacing;
+        const nextY = y + stepY;
         let trueBranchEndY = nextY;
         let falseBranchEndY = nextY;
 
@@ -100,7 +124,7 @@ export class AutoLayout {
         }
 
         // Place Exit node strictly below the deepest body instruction to prevent overlaps
-        const exitY = Math.max(y + vSpacing, maxBodyY + vSpacing);
+        const exitY = Math.max(y + stepY, maxBodyY + stepY);
 
         if (exitTargetId && !visited.has(String(exitTargetId))) {
           return layoutNode(exitTargetId, x, exitY);
@@ -113,7 +137,7 @@ export class AutoLayout {
         // Linear nodes (Start, Assignment, Input, Output)
         const nextId = getTargetId(node, 'output_1');
         if (nextId && !visited.has(String(nextId))) {
-          return layoutNode(nextId, x, y + vSpacing);
+          return layoutNode(nextId, x, y + stepY);
         }
         return y;
       }
