@@ -5,10 +5,10 @@ import 'drawflow/dist/drawflow.min.css';
  * Generates paper-standard flowchart node HTML using embedded SVG shapes.
  * - Start / End: Oval (Capsule)
  * - Assignment / Process: Rectangle
- * - Decision: Diamond
- * - Loop: Hexagon (I = 1, N, 1)
+ * - Decision: Diamond (Top In, Bottom True, Right False)
+ * - Loop: Hexagon (Top In, Left Loopback In, Right Body Out, Bottom Exit Out)
  * - Input: Parallelogram (scanf)
- * - Output: Document symbol (printf)
+ * - Output: Document symbol (printf) with generous bottom clearance
  *
  * @param {string} type
  * @param {Object} [customData]
@@ -72,8 +72,8 @@ export function renderNodeHtml(type, customData = {}) {
             <div class="node-header">Loop (Hexagon)</div>
             <input type="text" df-condition value="${escapeHtml(cond)}" placeholder="e.g. I = 1, N, 1" />
           </div>
-          <div class="port-label port-label-body">Body</div>
-          <div class="port-label port-label-exit">Exit</div>
+          <div class="port-label port-label-body">Body (→)</div>
+          <div class="port-label port-label-exit">Exit (↓)</div>
         </div>
       `;
     }
@@ -97,8 +97,8 @@ export function renderNodeHtml(type, customData = {}) {
       const expr = customData.expression ?? customData.text ?? 'x';
       return `
         <div class="flowchart-node-content node-document shape-output">
-          <svg class="shape-svg" viewBox="0 0 190 85" preserveAspectRatio="none">
-            <path d="M 5,5 L 185,5 L 185,62 C 145,82 135,82 95,62 C 55,42 45,42 5,62 Z" class="svg-shape-path svg-document" />
+          <svg class="shape-svg" viewBox="0 0 200 105" preserveAspectRatio="none">
+            <path d="M 5,5 L 195,5 L 195,74 C 155,98 145,98 100,74 C 55,50 45,50 5,74 Z" class="svg-shape-path svg-document" />
           </svg>
           <div class="node-inner-content">
             <div class="node-header">Output (printf)</div>
@@ -123,7 +123,7 @@ function escapeHtml(str) {
 
 /**
  * @class CanvasManager
- * Manages the Drawflow visual canvas, custom flowchart node shapes, and connection rules.
+ * Manages the Drawflow visual canvas, vertical flowchart node shapes, and connection rules.
  */
 export class CanvasManager {
   /**
@@ -132,8 +132,7 @@ export class CanvasManager {
   constructor(container) {
     this.container = container;
     this.editor = new Drawflow(this.container);
-    this.editor.reroute = true;
-    this.editor.reroute_fix_curvature = true;
+    this.editor.reroute = false;
     this.activeNodeId = null;
 
     this.init();
@@ -141,7 +140,65 @@ export class CanvasManager {
 
   init() {
     this.editor.start();
+    this.setupVerticalCurvature();
+    this.injectArrowheadDefs();
     this.setupEvents();
+  }
+
+  /**
+   * Sets up natural top-to-bottom flowchart connection curves.
+   */
+  setupVerticalCurvature() {
+    this.editor.createCurvature = (start_pos_x, start_pos_y, end_pos_x, end_pos_y) => {
+      const deltaX = end_pos_x - start_pos_x;
+      const deltaY = end_pos_y - start_pos_y;
+
+      // When roughly aligned vertically, draw a clean straight vertical line
+      if (Math.abs(deltaX) <= 6 && deltaY > 0) {
+        return `M ${start_pos_x} ${start_pos_y} L ${end_pos_x} ${end_pos_y}`;
+      }
+
+      // If flowing downwards
+      if (deltaY > 20) {
+        const hy1 = start_pos_y + Math.max(25, deltaY * 0.45);
+        const hy2 = end_pos_y - Math.max(25, deltaY * 0.45);
+        return `M ${start_pos_x} ${start_pos_y} C ${start_pos_x} ${hy1} ${end_pos_x} ${hy2} ${end_pos_x} ${end_pos_y}`;
+      }
+
+      // Loopback curve (flowing upwards from bottom back to top/left)
+      const offset = Math.max(50, Math.abs(deltaX) * 0.4);
+      return `M ${start_pos_x} ${start_pos_y} C ${start_pos_x} ${start_pos_y + offset} ${end_pos_x - offset} ${end_pos_y} ${end_pos_x} ${end_pos_y}`;
+    };
+  }
+
+  /**
+   * Injects SVG arrowhead marker definitions so all connection lines have directional arrows.
+   */
+  injectArrowheadDefs() {
+    const precanvas = this.container.querySelector('.drawflow');
+    if (!precanvas || precanvas.querySelector('#drawflow-arrow-defs')) return;
+
+    const svgDefs = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgDefs.id = 'drawflow-arrow-defs';
+    svgDefs.style.position = 'absolute';
+    svgDefs.style.width = '0';
+    svgDefs.style.height = '0';
+    svgDefs.style.overflow = 'hidden';
+
+    svgDefs.innerHTML = `
+      <defs>
+        <marker id="flowchart-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+        </marker>
+        <marker id="flowchart-arrow-selected" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+        </marker>
+        <marker id="flowchart-arrow-active" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#22c55e" />
+        </marker>
+      </defs>
+    `;
+    precanvas.prepend(svgDefs);
   }
 
   setupEvents() {
@@ -179,15 +236,12 @@ export class CanvasManager {
 
     // 2. Enforce connection rules:
     // Single-output ports must only have 1 active outgoing connection.
-    // When a student draws a new connection from an output port that already has one,
-    // replace the old connection with the new one.
     this.editor.on('connectionCreated', ({ output_id, input_id, output_class, input_class }) => {
       const sourceNode = this.editor.getNodeFromId(output_id);
       if (!sourceNode) return;
 
       const connections = sourceNode.outputs?.[output_class]?.connections || [];
       if (connections.length > 1) {
-        // Keep the latest connection, remove any earlier connections from this specific port
         for (let i = 0; i < connections.length - 1; i++) {
           const oldConn = connections[i];
           this.editor.removeSingleConnection(output_id, oldConn.node, output_class, oldConn.output);
@@ -220,13 +274,13 @@ export class CanvasManager {
 
       case 'decision': {
         const cond = customData.condition ?? 'x > 0';
-        // 1 input, 2 outputs (output_1: True, output_2: False)
+        // 1 input (Top), 2 outputs (output_1: True at Bottom, output_2: False on Right)
         return this.editor.addNode('decision', 1, 2, posX, posY, 'decision', { condition: cond, ...customData }, html, false);
       }
 
       case 'loop': {
         const cond = customData.condition ?? 'I = 1, N, 1';
-        // 2 inputs (entry + loopback), 2 outputs (output_1: Body, output_2: Exit)
+        // 2 inputs (input_1: Top Entry, input_2: Left Loopback), 2 outputs (output_1: Right Body, output_2: Bottom Exit)
         return this.editor.addNode('loop', 2, 2, posX, posY, 'loop', { condition: cond, ...customData }, html, false);
       }
 
@@ -281,6 +335,7 @@ export class CanvasManager {
     this.clearHighlight();
     this.editor.clearModuleSelected();
     this.editor.clear();
+    this.injectArrowheadDefs();
   }
 
   /**
@@ -318,7 +373,6 @@ export class CanvasManager {
     this.clear();
     if (!rawData) return;
 
-    // Normalize raw data from any source format
     const rawModuleData = rawData?.drawflow?.Home?.data || rawData?.data || rawData || {};
     const sanitizedNodes = {};
 
@@ -334,7 +388,7 @@ export class CanvasManager {
         class: node.class || nodeType,
         data: nodeData,
         html: renderNodeHtml(nodeType, nodeData),
-        typenode: false, // Explicitly boolean false to prevent Drawflow render.version lookup
+        typenode: false,
         inputs: node.inputs || {},
         outputs: node.outputs || {},
         pos_x: Number(node.pos_x) || 100,
@@ -350,10 +404,9 @@ export class CanvasManager {
       }
     };
 
-    // Import normalized dataset
     this.editor.import(canonicalData, false);
+    this.injectArrowheadDefs();
 
-    // Refresh connections and bind input values into DOM inputs
     setTimeout(() => {
       for (const id of Object.keys(sanitizedNodes)) {
         this.editor.updateConnectionNodes(`node-${id}`);

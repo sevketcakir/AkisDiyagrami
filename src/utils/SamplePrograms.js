@@ -1,7 +1,8 @@
 import { renderNodeHtml } from '../ui/CanvasManager.js';
 
 /**
- * Pre-built educational flowchart programs for C programming students.
+ * Pre-built educational flowchart programs for C programming students,
+ * laid out along clean vertical top-to-bottom axes.
  */
 export const SamplePrograms = {
   rectangleArea: {
@@ -20,7 +21,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: {},
               outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
-              pos_x: 220,
+              pos_x: 250,
               pos_y: 40
             },
             '2': {
@@ -32,7 +33,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
-              pos_x: 220,
+              pos_x: 250,
               pos_y: 150
             },
             '3': {
@@ -44,7 +45,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
-              pos_x: 220,
+              pos_x: 250,
               pos_y: 260
             },
             '4': {
@@ -56,7 +57,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '5', output: 'input_1' }] } },
-              pos_x: 220,
+              pos_x: 250,
               pos_y: 370
             },
             '5': {
@@ -68,7 +69,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
-              pos_x: 220,
+              pos_x: 250,
               pos_y: 480
             },
             '6': {
@@ -80,8 +81,8 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '5', input: 'output_1' }] } },
               outputs: {},
-              pos_x: 220,
-              pos_y: 590
+              pos_x: 250,
+              pos_y: 610
             }
           }
         }
@@ -105,7 +106,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: {},
               outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
-              pos_x: 240,
+              pos_x: 250,
               pos_y: 40
             },
             '2': {
@@ -117,7 +118,7 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '1', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } },
-              pos_x: 240,
+              pos_x: 250,
               pos_y: 150
             },
             '3': {
@@ -129,10 +130,10 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
               outputs: {
-                output_1: { connections: [{ node: '4', output: 'input_1' }] }, // True
-                output_2: { connections: [{ node: '5', output: 'input_1' }] }  // False
+                output_1: { connections: [{ node: '4', output: 'input_1' }] }, // True (Bottom)
+                output_2: { connections: [{ node: '5', output: 'input_1' }] }  // False (Right)
               },
-              pos_x: 240,
+              pos_x: 250,
               pos_y: 260
             },
             '4': {
@@ -144,8 +145,8 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '3', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
-              pos_x: 80,
-              pos_y: 410
+              pos_x: 250,
+              pos_y: 400
             },
             '5': {
               id: 5,
@@ -156,8 +157,8 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '3', input: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '6', output: 'input_1' }] } },
-              pos_x: 400,
-              pos_y: 410
+              pos_x: 480,
+              pos_y: 400
             },
             '6': {
               id: 6,
@@ -175,7 +176,7 @@ export const SamplePrograms = {
                 }
               },
               outputs: {},
-              pos_x: 240,
+              pos_x: 250,
               pos_y: 540
             }
           }
@@ -201,7 +202,7 @@ export const SamplePrograms = {
               inputs: {},
               outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } },
               pos_x: 250,
-              pos_y: 30
+              pos_y: 40
             },
             '2': {
               id: 2,
@@ -225,7 +226,7 @@ export const SamplePrograms = {
               inputs: { input_1: { connections: [{ node: '2', input: 'output_1' }] } },
               outputs: { output_1: { connections: [{ node: '4', output: 'input_1' }] } },
               pos_x: 250,
-              pos_y: 250
+              pos_y: 240
             },
             '4': {
               id: 4,
@@ -235,19 +236,15 @@ export const SamplePrograms = {
               html: renderNodeHtml('loop', { condition: 'i = 1, N, 1' }),
               typenode: false,
               inputs: {
-                input_1: {
-                  connections: [
-                    { node: '3', input: 'output_1' },
-                    { node: '5', input: 'output_1' }
-                  ]
-                }
+                input_1: { connections: [{ node: '3', input: 'output_1' }] },
+                input_2: { connections: [{ node: '5', input: 'output_1' }] }
               },
               outputs: {
-                output_1: { connections: [{ node: '5', output: 'input_1' }] }, // Body
-                output_2: { connections: [{ node: '6', output: 'input_1' }] }  // Exit
+                output_1: { connections: [{ node: '5', output: 'input_1' }] }, // Body (Right)
+                output_2: { connections: [{ node: '6', output: 'input_1' }] }  // Exit (Bottom)
               },
               pos_x: 250,
-              pos_y: 370
+              pos_y: 340
             },
             '5': {
               id: 5,
@@ -257,9 +254,9 @@ export const SamplePrograms = {
               html: renderNodeHtml('assignment', { expression: 'sum = sum + i' }),
               typenode: false,
               inputs: { input_1: { connections: [{ node: '4', input: 'output_1' }] } },
-              outputs: { output_1: { connections: [{ node: '4', input: 'output_1' }] } },
-              pos_x: 90,
-              pos_y: 520
+              outputs: { output_1: { connections: [{ node: '4', input: 'input_2' }] } },
+              pos_x: 480,
+              pos_y: 340
             },
             '6': {
               id: 6,
@@ -270,8 +267,8 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '4', input: 'output_2' }] } },
               outputs: { output_1: { connections: [{ node: '7', output: 'input_1' }] } },
-              pos_x: 420,
-              pos_y: 520
+              pos_x: 250,
+              pos_y: 470
             },
             '7': {
               id: 7,
@@ -282,8 +279,8 @@ export const SamplePrograms = {
               typenode: false,
               inputs: { input_1: { connections: [{ node: '6', input: 'output_1' }] } },
               outputs: {},
-              pos_x: 420,
-              pos_y: 640
+              pos_x: 250,
+              pos_y: 600
             }
           }
         }
