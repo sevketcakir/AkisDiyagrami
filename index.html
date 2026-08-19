@@ -359,8 +359,81 @@
               </ul>
             </div>
           </div>
-          <div class="help-footer-box">
-            <strong data-i18n="help.opPrecedenceTitle">İşlem Önceliği & Parantezler</strong>
+
+          <div class="help-math-section" style="margin-top: 1.25rem;">
+            <h4 data-i18n="help.mathFunctionsTitle" style="color: #93c5fd; margin-bottom: 0.35rem;">🧮 C Matematik Fonksiyonları (&lt;math.h&gt;)</h4>
+            <p class="help-desc" data-i18n="help.mathFunctionsDesc" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.75rem;">Atama, Karar ve Döngü bloklarında standart C matematik kütüphanesi fonksiyonlarını doğrudan çağırabilirsiniz:</p>
+            <div class="table-responsive">
+              <table class="keyboard-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="help.mathColFunc">Fonksiyon</th>
+                    <th data-i18n="help.mathColDesc">Açıklama &amp; C Karşılığı</th>
+                    <th data-i18n="help.mathColExample">Kullanım Örneği</th>
+                    <th data-i18n="help.mathColResult">Sonuç</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>sqrt(x)</code></td>
+                    <td data-i18n="help.mathSqrt">Karekök alma (x &gt;= 0)</td>
+                    <td><code>sqrt(16)</code> veya <code>sqrt(delta)</code></td>
+                    <td><code>4.0</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>pow(x, y)</code></td>
+                    <td data-i18n="help.mathPow">Üs alma (x üzeri y)</td>
+                    <td><code>pow(2, 3)</code> veya <code>pow(b, 2)</code></td>
+                    <td><code>8.0</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>abs(x) / fabs(x)</code></td>
+                    <td data-i18n="help.mathAbs">Mutlak değer alma</td>
+                    <td><code>abs(-15)</code> veya <code>fabs(-3.14)</code></td>
+                    <td><code>15 / 3.14</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>floor(x)</code></td>
+                    <td data-i18n="help.mathFloor">Aşağı yuvarlama (Taban tam sayı)</td>
+                    <td><code>floor(5.8)</code></td>
+                    <td><code>5.0</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>ceil(x)</code></td>
+                    <td data-i18n="help.mathCeil">Yukarı yuvarlama (Tavan tam sayı)</td>
+                    <td><code>ceil(5.2)</code></td>
+                    <td><code>6.0</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>round(x)</code></td>
+                    <td data-i18n="help.mathRound">En yakın tam sayıya yuvarlama</td>
+                    <td><code>round(5.5)</code></td>
+                    <td><code>6.0</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>sin(x) / cos(x) / tan(x)</code></td>
+                    <td data-i18n="help.mathTrig">Trigonometrik fonksiyonlar (Radyan cinsinden)</td>
+                    <td><code>sin(3.14159 / 2)</code></td>
+                    <td><code>1.0</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>log(x) / log10(x) / exp(x)</code></td>
+                    <td data-i18n="help.mathLogExp">Doğal logaritma (ln), 10 tabanı ve e^x</td>
+                    <td><code>log(2.71828)</code> veya <code>exp(1)</code></td>
+                    <td><code>1.0 / 2.718...</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="help-footer-box" style="margin-top: 1rem;">
+            <strong data-i18n="help.mathQuadraticTitle">💡 Örnek: 2. Dereceden Denklem Kökleri (ax² + bx + c = 0)</strong>
+            <p data-i18n-html="help.mathQuadraticDesc" style="margin-top: 0.35rem; line-height: 1.6;">Diskriminant: <code>delta = pow(b, 2) - 4 * a * c</code><br>Kök 1: <code>x1 = (-b + sqrt(delta)) / (2 * a)</code><br>Kök 2: <code>x2 = (-b - sqrt(delta)) / (2 * a)</code></p>
+          </div>
+
+          <div class="help-footer-box" style="margin-top: 0.75rem;">
+            <strong data-i18n="help.opPrecedenceTitle">İşlem Önceliği &amp; Parantezler</strong>
             <p data-i18n-html="help.opPrecedenceDesc">Matematiksel işlem önceliği: Parantez <code>()</code> &gt; Çarpma/Bölme/Mod <code>* / %</code> &gt; Toplama/Çıkarma <code>+ -</code> &gt; Karşılaştırma &gt; Mantıksal VE/VEYA. Örnek: <code>(a + b) * (c - d)</code>.</p>
           </div>
         </div>
