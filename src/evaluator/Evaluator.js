@@ -6,6 +6,53 @@ import jsep from 'jsep';
  */
 export class SafeEvaluator {
   /**
+   * Splits multi-statement text into individual statements.
+   * Supports semicolon (;), newline (\n), and comma (,) separators when outside quotes/parens.
+   * @param {string} code
+   * @returns {string[]}
+   */
+  static splitStatements(code) {
+    if (!code) return [];
+    const statements = [];
+    let current = '';
+    let inQuote = false;
+    let quoteChar = '';
+    let parenDepth = 0;
+
+    for (let i = 0; i < code.length; i++) {
+      const ch = code[i];
+
+      if ((ch === '"' || ch === "'") && (i === 0 || code[i - 1] !== '\\')) {
+        if (!inQuote) {
+          inQuote = true;
+          quoteChar = ch;
+        } else if (quoteChar === ch) {
+          inQuote = false;
+        }
+        current += ch;
+      } else if (inQuote) {
+        current += ch;
+      } else if (ch === '(' || ch === '[' || ch === '{') {
+        parenDepth++;
+        current += ch;
+      } else if (ch === ')' || ch === ']' || ch === '}') {
+        parenDepth = Math.max(0, parenDepth - 1);
+        current += ch;
+      } else if ((ch === ';' || ch === '\n' || (ch === ',' && parenDepth === 0)) && parenDepth === 0) {
+        const trimmed = current.trim();
+        if (trimmed) statements.push(trimmed);
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+
+    const finalTrimmed = current.trim();
+    if (finalTrimmed) statements.push(finalTrimmed);
+    return statements;
+  }
+
+  /**
    * Evaluates a node from jsep AST against a variables scope.
    * @param {Object} node - AST node from jsep
    * @param {Record<string, any>} scope - Variable dictionary

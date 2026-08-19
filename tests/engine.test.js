@@ -267,4 +267,53 @@ describe('InputNode handling', () => {
     expect(interpreter.context.variables.userAge).toBe(42);
     expect(interpreter.context.currentNodeId).toBe('end');
   });
+
+  it('should handle multiple input variables in a single Input node', () => {
+    const context = new InterpreterContext({ inputQueue: ['10', '20', '30'] });
+    const inputNode = new InputNode('in_multi', { variableName: 'a, b, c', nextNodeId: 'end' });
+    const end = new EndNode('end');
+
+    const interpreter = new FlowchartInterpreter({
+      nodes: { in_multi: inputNode, end },
+      startNodeId: 'in_multi',
+      context
+    });
+
+    interpreter.step();
+    expect(interpreter.context.variables.a).toBe(10);
+    expect(interpreter.context.variables.b).toBe(20);
+    expect(interpreter.context.variables.c).toBe(30);
+  });
+});
+
+describe('Multi-Statement Nodes (Compact Flowchart Blocks)', () => {
+  it('should execute multiple assignments in a single Assignment node', () => {
+    const evaluator = SafeEvaluator.hook;
+    const start = new StartNode('start', 'assign_multi');
+    const assignMulti = new AssignmentNode('assign_multi', {
+      expression: 'x = 5, y = 10, z = x + y',
+      nextNodeId: 'out_multi',
+      evaluator
+    });
+    const outMulti = new OutputNode('out_multi', {
+      expression: '"X: " + x, "Y: " + y, "Z: " + z',
+      nextNodeId: 'end',
+      evaluator
+    });
+    const end = new EndNode('end');
+
+    const interpreter = new FlowchartInterpreter({
+      nodes: { start, assignMulti, outMulti, end },
+      evaluator
+    });
+
+    while (!interpreter.context.isFinished) {
+      interpreter.step();
+    }
+
+    expect(interpreter.context.variables.x).toBe(5);
+    expect(interpreter.context.variables.y).toBe(10);
+    expect(interpreter.context.variables.z).toBe(15);
+    expect(interpreter.context.output).toEqual(['X: 5', 'Y: 10', 'Z: 15']);
+  });
 });

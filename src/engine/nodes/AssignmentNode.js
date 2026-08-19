@@ -1,4 +1,5 @@
 import { FlowchartNode } from './FlowchartNode.js';
+import { SafeEvaluator } from '../../evaluator/Evaluator.js';
 
 /**
  * @class AssignmentNode
@@ -26,18 +27,27 @@ export class AssignmentNode extends FlowchartNode {
    * @param {import('../InterpreterContext.js').InterpreterContext} context
    */
   execute(context) {
-    if (this.evaluator) {
-      this.evaluator(this.expression, context, { variableName: this.variableName });
-    } else if (this.variableName) {
-      // Fallback simple assignment if no evaluator is attached
-      const num = Number(this.expression);
-      context.setVariable(this.variableName, isNaN(num) ? this.expression : num);
-    } else if (this.expression.includes('=')) {
-      const parts = this.expression.split('=');
-      const varName = parts[0].trim();
-      const rhs = parts.slice(1).join('=').trim();
-      const num = Number(rhs);
-      context.setVariable(varName, isNaN(num) ? rhs : num);
+    const statements = SafeEvaluator.splitStatements(this.expression);
+
+    if (statements.length === 0) {
+      if (this.variableName) {
+        context.setVariable(this.variableName, 0);
+      }
+    } else {
+      for (const stmt of statements) {
+        if (this.evaluator) {
+          this.evaluator(stmt, context, { variableName: this.variableName });
+        } else if (this.variableName && !stmt.includes('=')) {
+          const num = Number(stmt);
+          context.setVariable(this.variableName, isNaN(num) ? stmt : num);
+        } else if (stmt.includes('=')) {
+          const parts = stmt.split('=');
+          const varName = parts[0].trim();
+          const rhs = parts.slice(1).join('=').trim();
+          const num = Number(rhs);
+          context.setVariable(varName, isNaN(num) ? rhs : num);
+        }
+      }
     }
 
     if (!this.nextNodeId) {

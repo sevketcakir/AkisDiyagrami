@@ -43,4 +43,11 @@ describe('SafeEvaluator', () => {
     expect(() => SafeEvaluator.evaluate('10 / 0')).toThrow('Division by zero.');
     expect(() => SafeEvaluator.evaluate('10 % 0')).toThrow('Modulo by zero.');
   });
+
+  it('should split multi-statement code by commas, semicolons, and newlines', () => {
+    expect(SafeEvaluator.splitStatements('a = 5, b = 6, c = 7')).toEqual(['a = 5', 'b = 6', 'c = 7']);
+    expect(SafeEvaluator.splitStatements('a = 5; b = 6; c = 7;')).toEqual(['a = 5', 'b = 6', 'c = 7']);
+    expect(SafeEvaluator.splitStatements('a = 5\nb = 6\nc = 7')).toEqual(['a = 5', 'b = 6', 'c = 7']);
+    expect(SafeEvaluator.splitStatements('msg = "hello, world", x = 10')).toEqual(['msg = "hello, world"', 'x = 10']);
+  });
 });

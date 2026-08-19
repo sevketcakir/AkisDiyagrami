@@ -567,38 +567,45 @@ body {
   color: var(--text-muted);
 }
 
-.flowchart-node-content input {
+.flowchart-node-content input,
+.flowchart-node-content .node-textarea {
   background-color: #0f172a;
   border: 1px solid #334155;
   color: #38bdf8;
   font-family: var(--font-mono);
   font-size: 0.8rem;
+  line-height: 1.35;
   padding: 0.35rem 0.5rem;
   border-radius: 4px;
   width: 100%;
-  max-width: 160px;
+  max-width: 165px;
   text-align: center;
   outline: none;
   overflow-x: auto;
-  white-space: nowrap;
+  overflow-y: auto;
+  resize: none;
+  box-sizing: border-box;
   user-select: text !important;
   -webkit-user-select: text !important;
   cursor: text !important;
   transition: max-width 0.2s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.shape-rectangle input {
+.shape-rectangle input,
+.shape-rectangle .node-textarea {
+  max-width: 180px;
+}
+
+.shape-output input,
+.shape-output .node-textarea {
   max-width: 175px;
 }
 
-.shape-output input {
-  max-width: 175px;
-}
-
-.flowchart-node-content input:focus {
+.flowchart-node-content input:focus,
+.flowchart-node-content .node-textarea:focus {
   border-color: var(--primary);
   background-color: #020617;
-  max-width: 185px;
+  max-width: 195px;
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
 }
 

@@ -1,4 +1,5 @@
 import { FlowchartNode } from './FlowchartNode.js';
+import { SafeEvaluator } from '../../evaluator/Evaluator.js';
 
 /**
  * @class OutputNode
@@ -24,19 +25,24 @@ export class OutputNode extends FlowchartNode {
    * @param {import('../InterpreterContext.js').InterpreterContext} context
    */
   execute(context) {
-    let outputText = '';
+    const expressions = SafeEvaluator.splitStatements(this.expression);
 
-    if (this.evaluator) {
-      const result = this.evaluator(this.expression, context);
-      outputText = result !== undefined ? String(result) : '';
-    } else if (this.expression in context.variables) {
-      outputText = String(context.variables[this.expression]);
+    if (expressions.length === 0) {
+      context.writeOutput('');
     } else {
-      // Clean leading/trailing quotes if simple literal string
-      outputText = this.expression.replace(/^["']|["']$/g, '');
+      for (const expr of expressions) {
+        let outputText = '';
+        if (this.evaluator) {
+          const result = this.evaluator(expr, context);
+          outputText = result !== undefined ? String(result) : '';
+        } else if (expr in context.variables) {
+          outputText = String(context.variables[expr]);
+        } else {
+          outputText = expr.replace(/^["']|["']$/g, '');
+        }
+        context.writeOutput(outputText);
+      }
     }
-
-    context.writeOutput(outputText);
 
     if (!this.nextNodeId) {
       throw new Error(`Output node [${this.id}] printed, but has no outgoing connection to the next node.`);

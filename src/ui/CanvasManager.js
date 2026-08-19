@@ -35,11 +35,13 @@ export function renderNodeHtml(type, customData = {}) {
 
     case 'assignment': {
       const expr = customData.expression ?? customData.text ?? 'x = 0';
+      const lines = String(expr).split('\n').length;
+      const rows = Math.min(4, Math.max(1, lines));
       return `
         <div class="flowchart-node-content shape-rectangle">
           <div class="node-header">Process / Assignment</div>
           <div class="node-body">
-            <input type="text" df-expression value="${escapeHtml(expr)}" placeholder="e.g. x = y + 5" />
+            <textarea df-expression class="node-textarea" rows="${rows}" placeholder="e.g. a = 5&#10;b = 10" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
           </div>
         </div>
       `;
@@ -54,7 +56,7 @@ export function renderNodeHtml(type, customData = {}) {
           </svg>
           <div class="node-inner-content">
             <div class="node-header">Decision (If)</div>
-            <input type="text" df-condition value="${escapeHtml(cond)}" placeholder="e.g. score >= 50" />
+            <textarea df-condition class="node-textarea" rows="1" placeholder="e.g. score >= 50" title="${escapeHtml(cond)}">${escapeHtml(cond)}</textarea>
           </div>
           <div class="port-label port-label-true">True (← T)</div>
           <div class="port-label port-label-false">False (F →)</div>
@@ -71,7 +73,7 @@ export function renderNodeHtml(type, customData = {}) {
           </svg>
           <div class="node-inner-content">
             <div class="node-header">Loop (Hexagon)</div>
-            <input type="text" df-condition value="${escapeHtml(cond)}" placeholder="e.g. I = 1, N, 1" />
+            <textarea df-condition class="node-textarea" rows="1" placeholder="e.g. I = 1, N, 1" title="${escapeHtml(cond)}">${escapeHtml(cond)}</textarea>
           </div>
           <div class="port-label port-label-body">Body (→)</div>
           <div class="port-label port-label-loopback">In (←)</div>
@@ -82,6 +84,8 @@ export function renderNodeHtml(type, customData = {}) {
 
     case 'input': {
       const varName = customData.variableName ?? customData.variablename ?? customData.variable ?? customData.name ?? customData.text ?? 'x';
+      const lines = String(varName).split('\n').length;
+      const rows = Math.min(3, Math.max(1, lines));
       return `
         <div class="flowchart-node-content node-parallelogram shape-input">
           <svg class="shape-svg" viewBox="0 0 190 80" preserveAspectRatio="none">
@@ -89,7 +93,7 @@ export function renderNodeHtml(type, customData = {}) {
           </svg>
           <div class="node-inner-content">
             <div class="node-header">Input (scanf)</div>
-            <input type="text" df-variablename value="${escapeHtml(varName)}" placeholder="Variable (e.g. N)" />
+            <textarea df-variablename class="node-textarea" rows="${rows}" placeholder="e.g. a, b, c" title="${escapeHtml(varName)}">${escapeHtml(varName)}</textarea>
           </div>
         </div>
       `;
@@ -97,6 +101,8 @@ export function renderNodeHtml(type, customData = {}) {
 
     case 'output': {
       const expr = customData.expression ?? customData.text ?? 'x';
+      const lines = String(expr).split('\n').length;
+      const rows = Math.min(3, Math.max(1, lines));
       return `
         <div class="flowchart-node-content node-document shape-output">
           <svg class="shape-svg" viewBox="0 0 200 105" preserveAspectRatio="none">
@@ -104,7 +110,7 @@ export function renderNodeHtml(type, customData = {}) {
           </svg>
           <div class="node-inner-content">
             <div class="node-header">Output (printf)</div>
-            <input type="text" df-expression value="${escapeHtml(expr)}" placeholder="Expression to print" />
+            <textarea df-expression class="node-textarea" rows="${rows}" placeholder="Expression to print" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
           </div>
         </div>
       `;
@@ -403,7 +409,7 @@ export class CanvasManager {
     // 1. Synchronize input field changes directly into internal Drawflow node data
     this.container.addEventListener('input', (e) => {
       const target = e.target;
-      if (!target || target.tagName !== 'INPUT') return;
+      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) return;
 
       // Update hover tooltip with full expression text
       target.title = target.value;
@@ -607,7 +613,7 @@ export class CanvasManager {
     const exported = this.editor.export();
     const moduleData = exported?.drawflow?.Home?.data || exported?.data || {};
 
-    const inputs = this.container.querySelectorAll('.drawflow-node input');
+    const inputs = this.container.querySelectorAll('.drawflow-node input, .drawflow-node textarea');
     for (const input of inputs) {
       const nodeEl = input.closest('.drawflow-node');
       if (!nodeEl) continue;
@@ -704,19 +710,19 @@ export class CanvasManager {
         if (!nodeEl) continue;
 
         const nodeObj = sanitizedNodes[id];
-        const exprInput = nodeEl.querySelector('input[df-expression]');
+        const exprInput = nodeEl.querySelector('input[df-expression], textarea[df-expression]');
         if (exprInput && nodeObj.data?.expression !== undefined) {
           exprInput.value = nodeObj.data.expression;
           exprInput.title = nodeObj.data.expression;
         }
 
-        const condInput = nodeEl.querySelector('input[df-condition]');
+        const condInput = nodeEl.querySelector('input[df-condition], textarea[df-condition]');
         if (condInput && nodeObj.data?.condition !== undefined) {
           condInput.value = nodeObj.data.condition;
           condInput.title = nodeObj.data.condition;
         }
 
-        const varInput = nodeEl.querySelector('input[df-variablename], input[df-variableName]');
+        const varInput = nodeEl.querySelector('input[df-variablename], textarea[df-variablename], input[df-variableName], textarea[df-variableName]');
         const varVal = nodeObj.data?.variableName ?? nodeObj.data?.variablename;
         if (varInput && varVal !== undefined) {
           varInput.value = varVal;
