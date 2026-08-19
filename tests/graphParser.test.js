@@ -51,7 +51,7 @@ describe('GraphParser', () => {
       }
     };
 
-    const { nodes, startNodeId, errors } = GraphParser.parseDrawflow(mockDrawflowExport);
+    const { nodes, startNodeId, errors, warnings } = GraphParser.parseDrawflow(mockDrawflowExport);
     expect(errors).toEqual([]);
     expect(startNodeId).toBe('1');
     expect(nodes.size).toBe(5);
@@ -64,6 +64,37 @@ describe('GraphParser', () => {
     expect(interpreter.context.variables.radius).toBe(5);
     expect(interpreter.context.variables.area).toBe(75);
     expect(interpreter.context.output).toEqual(['75']);
+  });
+
+  it('should detect when no Start node is present', () => {
+    const data = {
+      drawflow: {
+        Home: {
+          data: {
+            '1': { id: 1, name: 'assignment', data: { expression: 'x = 10' }, outputs: {} }
+          }
+        }
+      }
+    };
+    const { errors } = GraphParser.parseDrawflow(data);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0]).toContain('No Start node found');
+  });
+
+  it('should detect when there is no path from Start to End', () => {
+    const data = {
+      drawflow: {
+        Home: {
+          data: {
+            '1': { id: 1, name: 'start', outputs: {} }, // Unconnected start
+            '2': { id: 2, name: 'end', outputs: {} }
+          }
+        }
+      }
+    };
+    const { errors } = GraphParser.parseDrawflow(data);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.some(e => e.includes('No valid execution path') || e.includes('not connected'))).toBe(true);
   });
 
   it('should execute evenOrOdd sample program correctly', () => {

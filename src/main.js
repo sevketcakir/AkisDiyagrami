@@ -42,11 +42,11 @@ class App {
     this.bindHeaderActions();
     this.bindExecutionEvents();
 
-    // Load initial sample or saved data
+    // Check for auto-saved diagram or load default curriculum example
     const saved = FileHandler.loadFromLocalStorage();
-    if (saved && saved.drawflow) {
+    if (saved) {
       this.canvasManager.loadData(saved);
-      setTimeout(() => this.resetExecution(), 100);
+      setTimeout(() => this.resetExecution(), 120);
     } else {
       this.loadSample('rectangleArea');
     }
@@ -71,15 +71,15 @@ class App {
       if (!nodeType) return;
 
       const rect = drawflowEl.getBoundingClientRect();
-      const posX = e.clientX - rect.left - 90;
-      const posY = e.clientY - rect.top - 40;
+      const posX = Math.max(20, e.clientX - rect.left - 90);
+      const posY = Math.max(20, e.clientY - rect.top - 40);
 
       this.canvasManager.addNode(nodeType, posX, posY);
     });
   }
 
   bindHeaderActions() {
-    // Sample select
+    // Sample select dropdown
     const sampleSelect = document.getElementById('sample-select');
     sampleSelect.addEventListener('change', (e) => {
       const sampleKey = e.target.value;
@@ -108,7 +108,7 @@ class App {
       try {
         const data = await FileHandler.loadFromFile(file);
         this.canvasManager.loadData(data);
-        setTimeout(() => this.resetExecution(), 100);
+        setTimeout(() => this.resetExecution(), 120);
       } catch (err) {
         alert(`Error loading file: ${err.message}`);
       }
@@ -116,7 +116,8 @@ class App {
 
     // Clear Canvas
     document.getElementById('btn-clear-canvas').addEventListener('click', () => {
-      if (confirm('Clear the entire flowchart canvas?')) {
+      if (confirm('Clear the flowchart canvas?')) {
+        FileHandler.clearLocalStorage();
         this.canvasManager.clear();
         this.resetExecution();
       }
@@ -148,15 +149,19 @@ class App {
     const sample = SamplePrograms[sampleKey];
     if (!sample) return;
 
+    const sampleSelect = document.getElementById('sample-select');
+    if (sampleSelect) {
+      sampleSelect.value = sampleKey;
+    }
+
     this.canvasManager.loadData(sample.data);
-    setTimeout(() => this.resetExecution(), 100);
+    setTimeout(() => this.resetExecution(), 120);
   }
 
   compileGraph() {
     const rawData = this.canvasManager.exportData();
-    FileHandler.saveToLocalStorage(rawData);
 
-    const { nodes, startNodeId, errors } = GraphParser.parseDrawflow(rawData, SafeEvaluator.hook);
+    const { nodes, startNodeId, errors, warnings } = GraphParser.parseDrawflow(rawData, SafeEvaluator.hook);
 
     if (errors.length > 0) {
       this.sidePanel.setStatus('ERROR', errors[0]);
@@ -166,6 +171,10 @@ class App {
     if (!startNodeId) {
       this.sidePanel.setStatus('ERROR', 'No Start node found. Please add a Start (Oval) node.');
       return false;
+    }
+
+    if (nodes.size > 0) {
+      FileHandler.saveToLocalStorage(rawData);
     }
 
     // Interactive input provider callback for live execution
@@ -181,6 +190,10 @@ class App {
       context,
       evaluator: SafeEvaluator.hook
     });
+
+    if (warnings.length > 0) {
+      console.warn('Flowchart warnings:', warnings);
+    }
 
     return true;
   }

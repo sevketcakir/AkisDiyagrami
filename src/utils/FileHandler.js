@@ -52,7 +52,10 @@ export class FileHandler {
    */
   static saveToLocalStorage(data) {
     try {
-      localStorage.setItem('flowchart_c_autosave', JSON.stringify(data));
+      const moduleData = data?.drawflow?.Home?.data || data?.data;
+      if (moduleData && Object.keys(moduleData).length > 0) {
+        localStorage.setItem('flowchart_c_autosave', JSON.stringify(data));
+      }
     } catch (e) {
       console.warn('Auto-save to localStorage failed:', e);
     }
@@ -65,9 +68,26 @@ export class FileHandler {
   static loadFromLocalStorage() {
     try {
       const saved = localStorage.getItem('flowchart_c_autosave');
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      const moduleData = parsed?.drawflow?.Home?.data || parsed?.data;
+      if (moduleData && Object.keys(moduleData).length > 0) {
+        return parsed;
+      }
+      return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  /**
+   * Clears auto-saved diagram in localStorage.
+   */
+  static clearLocalStorage() {
+    try {
+      localStorage.removeItem('flowchart_c_autosave');
+    } catch (e) {
+      // Ignore
     }
   }
 }
