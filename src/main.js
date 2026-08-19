@@ -59,6 +59,7 @@ class App {
     this.bindHeaderActions();
     this.bindExecutionEvents();
     this.setupLanguageSwitcher();
+    this.setupHelpModal();
 
     // Check for auto-saved diagram or load default curriculum example
     const saved = FileHandler.loadFromLocalStorage();
@@ -68,6 +69,55 @@ class App {
     } else {
       this.loadSample('rectangleArea');
     }
+  }
+
+  setupHelpModal() {
+    const modal = document.getElementById('help-modal');
+    const triggerBtn = document.getElementById('btn-help-trigger');
+    const closeBtn = document.getElementById('btn-close-help');
+
+    if (!modal) return;
+
+    const openModal = () => {
+      modal.classList.remove('hidden');
+    };
+
+    const closeModal = () => {
+      modal.classList.add('hidden');
+    };
+
+    triggerBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    // Tab switching
+    const tabBtns = modal.querySelectorAll('.modal-tab-btn');
+    const tabContents = modal.querySelectorAll('.modal-tab-content');
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tabKey = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+        const targetContent = document.getElementById(`tab-${tabKey}`);
+        if (targetContent) {
+          targetContent.classList.add('active');
+        }
+      });
+    });
   }
 
   setupLanguageSwitcher() {

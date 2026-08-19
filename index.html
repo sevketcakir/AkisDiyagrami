@@ -49,6 +49,11 @@
         🗑️ Temizle
       </button>
 
+      <!-- Help Button -->
+      <button id="btn-help-trigger" class="btn" data-i18n="header.help" data-i18n-title="header.helpTitle" title="Kullanım kılavuzu, operatörler ve C değişken tipleri referansı">
+        ❓ Kılavuz
+      </button>
+
       <!-- Language Switcher -->
       <div class="lang-switcher" role="group" aria-label="Language Selector">
         <button id="btn-lang-tr" class="btn-lang active" title="Türkçe">🇹🇷 TR</button>
@@ -224,6 +229,153 @@
       </div>
     </aside>
   </main>
+
+  <!-- Help & Guide Modal -->
+  <div id="help-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 data-i18n="help.title">Kullanım Kılavuzu & C Referansı</h2>
+        <button id="btn-close-help" class="btn btn-icon modal-close" data-i18n-title="help.close" title="Kapat (Esc)">✕</button>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-tab="symbols" data-i18n="help.tabSymbols">🔷 Akış Blokları</button>
+        <button class="modal-tab-btn" data-tab="types" data-i18n="help.tabTypes">🔢 Değişken Tipleri</button>
+        <button class="modal-tab-btn" data-tab="operators" data-i18n="help.tabOperators">⚙️ Operatörler</button>
+        <button class="modal-tab-btn" data-tab="controls" data-i18n="help.tabControls">🚀 Kontroller & Araçlar</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tab 1: Symbols -->
+        <div id="tab-symbols" class="modal-tab-content active">
+          <h3 data-i18n="help.symbolsTitle">Akış Şeması Blokları ve C Karşılıkları</h3>
+          <p class="modal-lead" data-i18n="help.symbolsDesc">C dilindeki temel kontrol yapıları standart geometrik akış blokları ile modellenir:</p>
+          <div class="help-grid">
+            <div class="help-card">
+              <span class="help-badge badge-green">Oval</span>
+              <strong data-i18n="help.symStartTitle">Başla (Oval)</strong>
+              <p data-i18n-html="help.symStartDesc">C dilindeki <code>int main()</code> fonksiyonunun girişidir. Akış her zaman bu bloktan başlar.</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-blue">Dikdörtgen</span>
+              <strong data-i18n="help.symAssignmentTitle">İşlem / Atama (Dikdörtgen)</strong>
+              <p data-i18n-html="help.symAssignmentDesc">Değişken tanımlama ve hesaplamalar yapılır. Kompakt kullanım için birden fazla atama virgül (<code>,</code>), noktalı virgül (<code>;</code>) veya yeni satır ile yazılabilir (ör. <code>a = 5\nb = 10\ntoplam = a + b</code>).</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-purple">Paralelkenar</span>
+              <strong data-i18n="help.symInputTitle">Girdi (Paralelkenar / scanf)</strong>
+              <p data-i18n-html="help.symInputDesc">Kullanıcıdan klavye ile dinamik değer alır. Birden fazla değişken virgülle yazılabilir (ör. <code>a, b, c</code>).</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-orange">Baklava</span>
+              <strong data-i18n="help.symDecisionTitle">Karar / Koşul (Baklava / if-else)</strong>
+              <p data-i18n-html="help.symDecisionDesc">Mantıksal bir şartı değerlendirir. Şart doğruysa sol çıkıştan (<strong>Doğru / True</strong>), yanlışsa sağ çıkıştan (<strong>Yanlış / False</strong>) devam eder.</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-cyan">Altıgen</span>
+              <strong data-i18n="help.symLoopTitle">Döngü (Altıgen / for-while)</strong>
+              <p data-i18n-html="help.symLoopDesc">Sayaçlı döngü bloğudur: <code>değişken = başlangıç, bitiş, adım</code> (ör. <code>i = 1, N, 1</code>). Sağ üst çıkış <strong>Gövde (Body)</strong>, sağ alt giriş <strong>Dönüş (In)</strong>, alt çıkış ise <strong>Çıkış (Exit)</strong> portudur.</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-yellow">Belge</span>
+              <strong data-i18n="help.symOutputTitle">Çıktı (Belge / printf)</strong>
+              <p data-i18n-html="help.symOutputDesc">Konsola metin veya değişken değeri yazdırır (ör. <code>"Sonuç: " + toplam</code> veya <code>x * 2</code>).</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-red">Oval</span>
+              <strong data-i18n="help.symEndTitle">Bitiş (Oval)</strong>
+              <p data-i18n-html="help.symEndDesc">C dilindeki <code>return 0;</code> ifadesidir. Akış bu bloğa ulaştığında program başarıyla sonlanır.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Types -->
+        <div id="tab-types" class="modal-tab-content">
+          <h3 data-i18n="help.typesTitle">C Veri Tipleri (Otomatik Tip Çıkarımı)</h3>
+          <p class="modal-lead" data-i18n="help.typesDesc">Yorumlayıcı, atanan değerleri analiz ederek C türlerini otomatik belirler ve bellek tablosunda canlı gösterir:</p>
+          <div class="help-grid">
+            <div class="help-card">
+              <span class="help-badge badge-blue">int</span>
+              <strong data-i18n="help.typeIntTitle">int (Tamsayı)</strong>
+              <p data-i18n-html="help.typeIntDesc">Ondalık kısmı olmayan pozitif ve negatif tamsayılar. Örnek: <code>x = 42</code>, <code>sayac = -5</code>.</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-cyan">double</span>
+              <strong data-i18n="help.typeDoubleTitle">double / float (Kayan Noktalı Sayı)</strong>
+              <p data-i18n-html="help.typeDoubleDesc">Ondalıklı reel sayılar. Nokta (<code>.</code>) karakteri ile yazılır. Örnek: <code>pi = 3.14159</code>, <code>oran = 0.5</code>.</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-green">bool</span>
+              <strong data-i18n="help.typeBoolTitle">bool (_Bool / Mantıksal)</strong>
+              <p data-i18n-html="help.typeBoolDesc">Mantıksal doğruluk değerleri: <code>true</code> (1) veya <code>false</code> (0). Örnek: <code>asal = true</code>, <code>bulundu = false</code>.</p>
+            </div>
+            <div class="help-card">
+              <span class="help-badge badge-purple">char[]</span>
+              <strong data-i18n="help.typeStringTitle">char[] (Metin Dizisi / String)</strong>
+              <p data-i18n-html="help.typeStringDesc">Çift tırnak (<code>"..."</code>) içindeki metinler. Çıktılarda metin ve sayılar <code>+</code> operatörü ile birleştirilebilir (ör. <code>"Alan: " + alan</code>).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Operators -->
+        <div id="tab-operators" class="modal-tab-content">
+          <h3 data-i18n="help.operatorsTitle">Operatörler & İfade Kuralları</h3>
+          <p class="modal-lead" data-i18n="help.operatorsDesc">C standardına uygun tüm temel operatörler güvenli AST ayrıştırıcı ile çalıştırılır:</p>
+          <div class="help-columns">
+            <div class="help-group">
+              <h4 data-i18n="help.opArithmeticTitle">Aritmetik Operatörler</h4>
+              <ul class="help-list">
+                <li data-i18n-html="help.opAdd">Toplama (<code>a + b</code>)</li>
+                <li data-i18n-html="help.opSub">Çıkarma (<code>a - b</code>)</li>
+                <li data-i18n-html="help.opMul">Çarpma (<code>a * b</code>)</li>
+                <li data-i18n-html="help.opDiv">Bölme (<code>a / b</code>)</li>
+                <li data-i18n-html="help.opMod">Kalan / Modulo (<code>a % b</code>)</li>
+              </ul>
+            </div>
+            <div class="help-group">
+              <h4 data-i18n="help.opComparisonTitle">Karşılaştırma / İlişkisel Operatörler</h4>
+              <ul class="help-list">
+                <li data-i18n-html="help.opEq">Eşit mi? (<code>a == b</code>)</li>
+                <li data-i18n-html="help.opNeq">Eşit değil mi? (<code>a != b</code>)</li>
+                <li data-i18n-html="help.opLt">Küçük mü? (<code>a &lt; b</code>)</li>
+                <li data-i18n-html="help.opLte">Küçük veya eşit mi? (<code>a &lt;= b</code>)</li>
+                <li data-i18n-html="help.opGt">Büyük mü? (<code>a &gt; b</code>)</li>
+                <li data-i18n-html="help.opGte">Büyük veya eşit mi? (<code>a &gt;= b</code>)</li>
+              </ul>
+            </div>
+            <div class="help-group">
+              <h4 data-i18n="help.opLogicalTitle">Mantıksal Operatörler</h4>
+              <ul class="help-list">
+                <li data-i18n-html="help.opAnd">Mantıksal VE (<code>a &amp;&amp; b</code>)</li>
+                <li data-i18n-html="help.opOr">Mantıksal VEYA (<code>a || b</code>)</li>
+                <li data-i18n-html="help.opNot">Mantıksal DEĞİL (<code>!a</code>)</li>
+              </ul>
+            </div>
+          </div>
+          <div class="help-footer-box">
+            <strong data-i18n="help.opPrecedenceTitle">İşlem Önceliği & Parantezler</strong>
+            <p data-i18n-html="help.opPrecedenceDesc">Matematiksel işlem önceliği: Parantez <code>()</code> &gt; Çarpma/Bölme/Mod <code>* / %</code> &gt; Toplama/Çıkarma <code>+ -</code> &gt; Karşılaştırma &gt; Mantıksal VE/VEYA. Örnek: <code>(a + b) * (c - d)</code>.</p>
+          </div>
+        </div>
+
+        <!-- Tab 4: Controls -->
+        <div id="tab-controls" class="modal-tab-content">
+          <h3 data-i18n="help.controlsTitle">Çalıştırma & Gelişmiş Özellikler</h3>
+          <ul class="help-feature-list">
+            <li data-i18n-html="help.ctrlPlay"><strong>Çalıştır (Play)</strong>: Akışı belirlenen gecikme süresinde otomatik adımlarla baştan sona çalıştırır.</li>
+            <li data-i18n-html="help.ctrlStep"><strong>Adımla (Step)</strong>: Akışı tek bir düğüm ilerletir, aktif düğümü ve takip eden bağlantı yolunu vurgular.</li>
+            <li data-i18n-html="help.ctrlPause"><strong>Duraklat (Pause)</strong>: Sürekli çalıştırmayı durdurur; kaldığınız yerden Adımla veya Çalıştır ile devam edebilirsiniz.</li>
+            <li data-i18n-html="help.ctrlReset"><strong>Sıfırla (Reset)</strong>: Değişken belleğini ve konsolu temizleyerek Başla düğümüne döner.</li>
+            <li data-i18n-html="help.ctrlDirectRerun"><strong>Doğrudan Yeniden Başlatma</strong>: Program bittiğinde sıfırlamaya basmadan doğrudan Çalıştır veya Adımla düğmesine basarak yeniden başlatabilirsiniz.</li>
+            <li data-i18n-html="help.ctrlSpeed"><strong>Adım Gecikmesi (Slider)</strong>: 0 ms (Anında) ile 2000 ms arasında gecikmeyi dinamik olarak değiştirir.</li>
+            <li data-i18n-html="help.ctrlAutoLayout"><strong>Otomatik Düzenle (Auto-Layout)</strong>: Düğümleri otomatik hizalar, temiz dikey Manhattan 90° bağlantı hatları çizer.</li>
+            <li data-i18n-html="help.ctrlSaveLoad"><strong>Kaydet & Yükle</strong>: Hazırladığınız akış şemasını .json formatında dışa aktarabilir veya daha önce kaydettiğiniz dosyayı yükleyebilirsiniz.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="/src/main.js"></script>
 </body>

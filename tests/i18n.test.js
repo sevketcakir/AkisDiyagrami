@@ -50,6 +50,20 @@ describe('I18n Internationalization Subsystem', () => {
     expect(SamplePrograms.isPrimeCheck.name).toBe('6. Prime Test (Is N Prime?)');
   });
 
+  it('should translate help section keys correctly in both languages', () => {
+    I18n.setLanguage('tr');
+    expect(I18n.t('help.title')).toBe('Kullanım Kılavuzu & C Referansı');
+    expect(I18n.t('help.tabSymbols')).toBe('🔷 Akış Blokları');
+    expect(I18n.t('help.tabTypes')).toBe('🔢 Değişken Tipleri');
+    expect(I18n.t('help.tabOperators')).toBe('⚙️ Operatörler');
+
+    I18n.setLanguage('en');
+    expect(I18n.t('help.title')).toBe('User Guide & C Reference');
+    expect(I18n.t('help.tabSymbols')).toBe('🔷 Flowchart Symbols');
+    expect(I18n.t('help.tabTypes')).toBe('🔢 Data Types');
+    expect(I18n.t('help.tabOperators')).toBe('⚙️ Operators');
+  });
+
   it('should have parity between Turkish and English translation structures', () => {
     const getKeys = (obj, prefix = '') => {
       let keys = [];

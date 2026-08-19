@@ -829,8 +829,22 @@ export class CanvasManager {
     const nodeElements = this.container.querySelectorAll('.drawflow-node');
     nodeElements.forEach((nodeEl) => {
       const numId = nodeEl.id.replace('node-', '');
-      const rawData = this.getNodeData(numId);
-      const nodeType = (rawData?.name || rawData?.class || '').toLowerCase();
+      let nodeType = '';
+      try {
+        const rawData = this.editor.getNodeFromId(numId);
+        nodeType = (rawData?.name || rawData?.class || '').toLowerCase();
+      } catch {
+        // Fallback to class search
+      }
+
+      if (!nodeType) {
+        for (const cls of ['start', 'end', 'assignment', 'decision', 'loop', 'input', 'output']) {
+          if (nodeEl.classList.contains(cls)) {
+            nodeType = cls;
+            break;
+          }
+        }
+      }
 
       // Headers
       const header = nodeEl.querySelector('.node-header');
