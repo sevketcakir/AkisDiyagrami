@@ -99,7 +99,29 @@ class App {
             variables: { ...ctx.variables }
           });
         } catch (err) {
-          alert(`Error setting variable ${varName}: ${err.message}`);
+          // If assignment evaluation failed and newValueStr is not already quoted and is not a number/boolean,
+          // try interpreting as string literal (e.g. user typed hello instead of "hello")
+          let handled = false;
+          if (!newValueStr.startsWith('"') && !newValueStr.startsWith("'") && isNaN(Number(newValueStr)) && newValueStr !== 'true' && newValueStr !== 'false') {
+            try {
+              const escaped = JSON.stringify(newValueStr);
+              SafeEvaluator.evaluateAssignment(`${varName} = ${escaped}`, ctx);
+              this.sidePanel.updateVariables(ctx.variables, ctx.floatVars);
+              this.debugManager.updateWatches(ctx);
+              this.debugManager.logReplOutput(`${varName} = ${escaped}`, {
+                isAssignment: true,
+                result: ctx.getVariable(varName),
+                variables: { ...ctx.variables }
+              });
+              handled = true;
+            } catch {
+              // fallback failed, proceed with original error
+            }
+          }
+          if (!handled) {
+            alert(`Error setting variable ${varName}: ${err.message}`);
+            this.sidePanel.updateVariables(ctx.variables, ctx.floatVars);
+          }
         }
       }
     };

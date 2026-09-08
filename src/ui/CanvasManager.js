@@ -131,12 +131,52 @@ function escapeHtml(str) {
 }
 
 /**
- * Generates an SVG path string connecting orthogonal points with smooth rounded fillet corners.
+ * Cleans points by eliminating redundant collinear points and duplicates.
  * @param {Array<{x: number, y: number}>} points
+ * @returns {Array<{x: number, y: number}>}
+ */
+export function cleanPoints(points) {
+  if (!points || points.length <= 2) return points ? [...points] : [];
+  const result = [{ x: Math.round(points[0].x), y: Math.round(points[0].y) }];
+
+  for (let i = 1; i < points.length; i++) {
+    const prev = result[result.length - 1];
+    const curr = { x: Math.round(points[i].x), y: Math.round(points[i].y) };
+
+    // Skip if coincident with previous point
+    if (Math.abs(curr.x - prev.x) < 1 && Math.abs(curr.y - prev.y) < 1) {
+      continue;
+    }
+
+    // Check if intermediate point is collinear with previous-previous and current
+    if (result.length >= 2) {
+      const pPrev = result[result.length - 2];
+      // Horizontal collinearity
+      if (Math.abs(pPrev.y - prev.y) === 0 && Math.abs(prev.y - curr.y) === 0) {
+        result[result.length - 1] = curr;
+        continue;
+      }
+      // Vertical collinearity
+      if (Math.abs(pPrev.x - prev.x) === 0 && Math.abs(prev.x - curr.x) === 0) {
+        result[result.length - 1] = curr;
+        continue;
+      }
+    }
+
+    result.push(curr);
+  }
+
+  return result;
+}
+
+/**
+ * Generates an SVG path string connecting orthogonal points with smooth rounded fillet corners.
+ * @param {Array<{x: number, y: number}>} rawPoints
  * @param {number} [radius=6]
  * @returns {string} SVG Path 'd'
  */
-export function createFilletedPath(points, radius = 6) {
+export function createFilletedPath(rawPoints, radius = 6) {
+  const points = cleanPoints(rawPoints);
   if (!points || points.length === 0) return '';
   if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
   if (points.length === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
@@ -163,10 +203,10 @@ export function createFilletedPath(points, radius = 6) {
 
     const r = Math.min(radius, len1 / 2, len2 / 2);
 
-    const startX = curr.x + (vx1 / len1) * r;
-    const startY = curr.y + (vy1 / len1) * r;
-    const endX = curr.x + (vx2 / len2) * r;
-    const endY = curr.y + (vy2 / len2) * r;
+    const startX = Math.round(curr.x + (vx1 / len1) * r);
+    const startY = Math.round(curr.y + (vy1 / len1) * r);
+    const endX = Math.round(curr.x + (vx2 / len2) * r);
+    const endY = Math.round(curr.y + (vy2 / len2) * r);
 
     d += ` L ${startX} ${startY} Q ${curr.x} ${curr.y} ${endX} ${endY}`;
   }
@@ -176,16 +216,274 @@ export function createFilletedPath(points, radius = 6) {
 }
 
 /**
- * Builds clean Orthogonal (Manhattan 90-degree) step paths with multi-corner routing and rounded corners.
- * Handles loop body top entry, loop return under pass, and lateral branching cleanly without node collision.
+ * Determines port exit or entry normal direction.
+ * @param {string} nodeType
+ * @param {string} portClass e.g. "output_1", "output_2", "input_1", "input_2"
+ * @param {boolean} isOutput
+ * @returns {'north' | 'south' | 'east' | 'west'}
+ */
+export function getPortDirection(nodeType, portClass, isOutput) {
+  const type = (nodeType || '').toLowerCase();
+  if (isOutput) {
+    if (type.includes('decision')) {
+      return portClass === 'output_1' ? 'west' : 'east'; // True = Left (West), False = Right (East)
+    }
+    if (type.includes('loop')) {
+      return portClass === 'output_1' ? 'east' : 'south'; // Body = Right (East), Exit = Bottom (South)
+    }
+    return 'south'; // Start, Assignment, Input, Output: all exit South (Bottom)
+  } else {
+    if (type.includes('loop') && portClass === 'input_2') {
+      return 'east'; // Loopback in (←): enters from East (Right)
+    }
+    return 'north'; // All input_1 ports enter from North (Top)
+  }
+}
+
+/**
+ * Fallback port coordinate offsets when DOM element measurements are not yet ready.
+ * @param {string} nodeType
+ * @param {string} portClass
+ * @param {boolean} isOutput
+ * @returns {{x: number, y: number}}
+ */
+export function getNodePortOffset(nodeType, portClass, isOutput) {
+  const type = (nodeType || '').toLowerCase();
+  if (type.includes('decision')) {
+    if (isOutput) {
+      return portClass === 'output_1' ? { x: 0, y: 55 } : { x: 190, y: 55 };
+    }
+    return { x: 95, y: 0 };
+  }
+  if (type.includes('loop')) {
+    if (isOutput) {
+      return portClass === 'output_1' ? { x: 200, y: 19 } : { x: 100, y: 95 };
+    }
+    return portClass === 'input_2' ? { x: 200, y: 76 } : { x: 100, y: 0 };
+  }
+  if (type.includes('start')) {
+    return { x: 85, y: 60 };
+  }
+  if (type.includes('end')) {
+    return { x: 85, y: 0 };
+  }
+  if (type.includes('input')) {
+    return isOutput ? { x: 95, y: 80 } : { x: 95, y: 0 };
+  }
+  if (type.includes('output')) {
+    return isOutput ? { x: 100, y: 95 } : { x: 100, y: 0 };
+  }
+  // assignment / process
+  return isOutput ? { x: 95, y: 75 } : { x: 95, y: 0 };
+}
+
+/**
+ * Full Manhattan 90-degree orthogonal router using exact port orientations and bus separation.
  *
  * @param {number} x1 - Source port X
  * @param {number} y1 - Source port Y
  * @param {number} x2 - Target port X
  * @param {number} y2 - Target port Y
+ * @param {'north' | 'south' | 'east' | 'west'} [sourceDir='south']
+ * @param {'north' | 'south' | 'east' | 'west'} [targetDir='north']
+ * @param {Object} [options]
+ * @param {number} [options.connIndex=0]
+ * @returns {string} SVG Path 'd'
+ */
+export function routeOrthogonalConnection(x1, y1, x2, y2, sourceDir = 'south', targetDir = 'north', options = {}) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const connIndex = options.connIndex || 0;
+  const busOffset = connIndex * 16;
+
+  let rawPoints = [];
+
+  // =========================================================================
+  // Target: EAST (Loop input_2 loopback return port on right edge)
+  // The line MUST approach (x2, y2) from the right (+X) heading left (-X).
+  // =========================================================================
+  if (targetDir === 'east') {
+    const corridorX = Math.round(x2 + 30 + busOffset);
+
+    if (sourceDir === 'east') {
+      // Source exits East (e.g. Decision False)
+      const stubX = Math.round(x1 + 20);
+      if (y1 > y2) {
+        // Source is lower than target: drop below source to clear node, go to corridor, up to y2, enter left
+        const clearY = Math.round(y1 + 30);
+        rawPoints = [
+          { x: x1, y: y1 },
+          { x: stubX, y: y1 },
+          { x: stubX, y: clearY },
+          { x: corridorX, y: clearY },
+          { x: corridorX, y: y2 },
+          { x: x2, y: y2 }
+        ];
+      } else {
+        // Source is higher than or level with target
+        rawPoints = [
+          { x: x1, y: y1 },
+          { x: corridorX, y: y1 },
+          { x: corridorX, y: y2 },
+          { x: x2, y: y2 }
+        ];
+      }
+    } else if (sourceDir === 'west') {
+      // Source exits West (e.g. Decision True returning to loop)
+      const stubX = Math.round(x1 - 20);
+      const clearY = Math.round(y1 + (y1 > y2 ? 30 : -30));
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: stubX, y: y1 },
+        { x: stubX, y: clearY },
+        { x: corridorX, y: clearY },
+        { x: corridorX, y: y2 },
+        { x: x2, y: y2 }
+      ];
+    } else {
+      // Default: Source exits South (bottom port returning up to loop)
+      const dropY = Math.round(y1 + 20);
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: x1, y: dropY },
+        { x: corridorX, y: dropY },
+        { x: corridorX, y: y2 },
+        { x: x2, y: y2 }
+      ];
+    }
+
+    return createFilletedPath(rawPoints, 8);
+  }
+
+  // =========================================================================
+  // Target: NORTH (All standard input_1 top ports)
+  // The line MUST approach (x2, y2) from above heading down (+Y).
+  // =========================================================================
+
+  // Source exits EAST (e.g. Loop Body or Decision False)
+  if (sourceDir === 'east') {
+    if (x2 >= x1 && dy >= 15) {
+      // Clean L-step: go right to x2, then down to y2
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: x2, y: y1 },
+        { x: x2, y: y2 }
+      ];
+    } else if (x2 >= x1 && dy < 15) {
+      // Target is level with or higher than source:
+      // Step up above target top, go across to x2, drop down into y2
+      const stepX = Math.round(x1 + Math.min(30, Math.max(15, dx * 0.35)));
+      const clearTopY = Math.round(y2 - 20);
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: stepX, y: y1 },
+        { x: stepX, y: clearTopY },
+        { x: x2, y: clearTopY },
+        { x: x2, y: y2 }
+      ];
+    } else {
+      // Target is to the left of East port (x2 < x1)
+      const stubX = Math.round(x1 + 25);
+      const midY = Math.max(y1 + 25, Math.round((y1 + y2) / 2));
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: stubX, y: y1 },
+        { x: stubX, y: midY },
+        { x: x2, y: midY },
+        { x: x2, y: y2 }
+      ];
+    }
+    return createFilletedPath(rawPoints, 8);
+  }
+
+  // Source exits WEST (e.g. Decision True)
+  if (sourceDir === 'west') {
+    if (x2 <= x1 && dy >= 15) {
+      // Clean L-step: go left to x2, then down to y2
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: x2, y: y1 },
+        { x: x2, y: y2 }
+      ];
+    } else if (x2 <= x1 && dy < 15) {
+      // Target is level with or higher than source:
+      // Step up above target top, go left to x2, drop down into y2
+      const stepX = Math.round(x1 - Math.min(30, Math.max(15, Math.abs(dx) * 0.35)));
+      const clearTopY = Math.round(y2 - 20);
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: stepX, y: y1 },
+        { x: stepX, y: clearTopY },
+        { x: x2, y: clearTopY },
+        { x: x2, y: y2 }
+      ];
+    } else {
+      // Target is to the right of West port (x2 > x1)
+      const stubX = Math.round(x1 - 25);
+      const midY = Math.max(y1 + 25, Math.round((y1 + y2) / 2));
+      rawPoints = [
+        { x: x1, y: y1 },
+        { x: stubX, y: y1 },
+        { x: stubX, y: midY },
+        { x: x2, y: midY },
+        { x: x2, y: y2 }
+      ];
+    }
+    return createFilletedPath(rawPoints, 8);
+  }
+
+  // Source exits SOUTH (Default: Start, Assignment, Input, Output, Loop Exit)
+  if (dy >= 15) {
+    if (Math.abs(dx) <= 4) {
+      return `M ${x1} ${y1} L ${x2} ${y2}`;
+    }
+    const midY = Math.round((y1 + y2) / 2);
+    rawPoints = [
+      { x: x1, y: y1 },
+      { x: x1, y: midY },
+      { x: x2, y: midY },
+      { x: x2, y: y2 }
+    ];
+  } else {
+    // Upward flow from bottom to top (U-shaped loop around side corridor)
+    const clearBottomY = Math.round(y1 + 25);
+    const clearTopY = Math.round(y2 - 25);
+    const goLeft = dx <= 0;
+    const corridorX = goLeft
+      ? Math.round(Math.min(x1, x2) - 45 - busOffset)
+      : Math.round(Math.max(x1, x2) + 45 + busOffset);
+
+    rawPoints = [
+      { x: x1, y: y1 },
+      { x: x1, y: clearBottomY },
+      { x: corridorX, y: clearBottomY },
+      { x: corridorX, y: clearTopY },
+      { x: x2, y: clearTopY },
+      { x: x2, y: y2 }
+    ];
+  }
+
+  return createFilletedPath(rawPoints, 8);
+}
+
+/**
+ * Builds clean Orthogonal (Manhattan 90-degree) step paths with multi-corner routing and rounded corners.
+ * Handles backward compatibility with tests while providing port-direction awareness.
+ *
+ * @param {number} x1 - Source port X
+ * @param {number} y1 - Source port Y
+ * @param {number} x2 - Target port X
+ * @param {number} y2 - Target port Y
+ * @param {'north' | 'south' | 'east' | 'west'} [sourceDir]
+ * @param {'north' | 'south' | 'east' | 'west'} [targetDir]
+ * @param {Object} [options]
  * @returns {string} SVG Path 'd' attribute
  */
-export function buildOrthogonalPath(x1, y1, x2, y2) {
+export function buildOrthogonalPath(x1, y1, x2, y2, sourceDir, targetDir, options) {
+  if (sourceDir && targetDir) {
+    return routeOrthogonalConnection(x1, y1, x2, y2, sourceDir, targetDir, options);
+  }
+
   const dx = x2 - x1;
   const dy = y2 - y1;
 
@@ -195,11 +493,9 @@ export function buildOrthogonalPath(x1, y1, x2, y2) {
   }
 
   // 2. Upward loopback / return line (dy <= -10)
-  // Drops down under source block, routes around side corridor (left or right), steps up above target, and drops into top port
   if (dy <= -10) {
     const clearBottomY = y1 + 25;
     const clearTopY = y2 - 25;
-    // Route around the left corridor if source is to the left or dx < -20
     const goLeft = dx < -20 || (Math.abs(dx) <= 20 && x1 < 300);
     const corridorX = goLeft ? Math.min(x1, x2) - 50 : Math.max(x1, x2) + 50;
 
@@ -214,9 +510,8 @@ export function buildOrthogonalPath(x1, y1, x2, y2) {
   }
 
   // 3. Loop Body Output (exiting right to a target whose top is level or higher, e.g. sum1ToN)
-  // Routes right, steps UP above target block, goes right, and drops cleanly into top input port
   if (dx > 20 && dy < 30) {
-    const clearTopY = y2 - 25; // 25px clearance above target block
+    const clearTopY = y2 - 25;
     const stepRightX = Math.round(x1 + Math.min(35, dx * 0.35));
     return createFilletedPath([
       { x: x1, y: y1 },
@@ -227,7 +522,7 @@ export function buildOrthogonalPath(x1, y1, x2, y2) {
     ]);
   }
 
-  // 4. Return Wire going Left to Loop In port at horizontal level (e.g. from process bottom (575, 425) to Loop In (450, 421))
+  // 4. Return Wire going Left to Loop In port at horizontal level
   if (dx < -20 && dy < 30) {
     const clearBottomY = y1 + 25;
     const approachX = Math.round(x2 + 25);
@@ -240,7 +535,7 @@ export function buildOrthogonalPath(x1, y1, x2, y2) {
     ]);
   }
 
-  // 5. Exiting Right and flowing downwards (Decision False or Loop Body to lower block)
+  // 5. Exiting Right and flowing downwards
   if (dx > 20) {
     return createFilletedPath([
       { x: x1, y: y1 },
@@ -249,7 +544,7 @@ export function buildOrthogonalPath(x1, y1, x2, y2) {
     ]);
   }
 
-  // 6. Exiting Left and flowing downwards (Decision True)
+  // 6. Exiting Left and flowing downwards
   if (dx < -20) {
     return createFilletedPath([
       { x: x1, y: y1 },
@@ -301,6 +596,107 @@ export class CanvasManager {
     this.editor.createCurvature = (start_pos_x, start_pos_y, end_pos_x, end_pos_y) => {
       return buildOrthogonalPath(start_pos_x, start_pos_y, end_pos_x, end_pos_y);
     };
+
+    // Intercept updateConnectionNodes to calculate exact port-aware orthogonal routes
+    const origUpdateConnectionNodes = this.editor.updateConnectionNodes.bind(this.editor);
+    this.editor.updateConnectionNodes = (id) => {
+      origUpdateConnectionNodes(id);
+      this.routeAllNodeConnections(id);
+    };
+  }
+
+  /**
+   * Recalculates and updates the SVG path 'd' for all connections associated with a node (or all nodes if omitted).
+   * Uses precise port positions, orientations, and bus corridor separation.
+   * @param {string} [id] - e.g. "node-12" or "12"
+   */
+  routeAllNodeConnections(id) {
+    const precanvas = this.container.querySelector('.drawflow');
+    if (!precanvas) return;
+
+    const precanvasRect = precanvas.getBoundingClientRect();
+    const zoom = this.editor.zoom || 1;
+    const rawData = this.editor.drawflow.drawflow[this.editor.module]?.data || {};
+
+    let conns = [];
+    if (id) {
+      const cleanId = String(id).replace('node-', '');
+      const outConns = Array.from(this.container.querySelectorAll(`.drawflow .connection.node_out_node-${cleanId}`));
+      const inConns = Array.from(this.container.querySelectorAll(`.drawflow .connection.node_in_node-${cleanId}`));
+      conns = Array.from(new Set([...outConns, ...inConns]));
+    } else {
+      conns = Array.from(this.container.querySelectorAll('.drawflow .connection'));
+    }
+
+    for (const conn of conns) {
+      const path = conn.querySelector('.main-path');
+      if (!path) continue;
+
+      const classes = Array.from(conn.classList);
+      const outNodeClass = classes.find(c => c.startsWith('node_out_node-'));
+      const inNodeClass = classes.find(c => c.startsWith('node_in_node-'));
+      const outPortClass = classes.find(c => c.startsWith('output_'));
+      const inPortClass = classes.find(c => c.startsWith('input_'));
+
+      if (!outNodeClass || !inNodeClass || !outPortClass || !inPortClass) continue;
+
+      const sourceId = outNodeClass.replace('node_out_node-', '');
+      const targetId = inNodeClass.replace('node_in_node-', '');
+
+      const sourceNode = rawData[sourceId];
+      const targetNode = rawData[targetId];
+      if (!sourceNode || !targetNode) continue;
+
+      const sourceEl = this.container.querySelector(`#node-${sourceId}`);
+      const targetEl = this.container.querySelector(`#node-${targetId}`);
+
+      const sourcePortEl = sourceEl?.querySelector(`.${outPortClass}`);
+      const targetPortEl = targetEl?.querySelector(`.${inPortClass}`);
+
+      let x1, y1, x2, y2;
+
+      if (sourcePortEl && targetPortEl && precanvasRect.width > 0) {
+        const outRect = sourcePortEl.getBoundingClientRect();
+        const inRect = targetPortEl.getBoundingClientRect();
+
+        if (outRect.width > 0 && inRect.width > 0) {
+          x1 = (outRect.left + outRect.width / 2 - precanvasRect.left) / zoom;
+          y1 = (outRect.top + outRect.height / 2 - precanvasRect.top) / zoom;
+          x2 = (inRect.left + inRect.width / 2 - precanvasRect.left) / zoom;
+          y2 = (inRect.top + inRect.height / 2 - precanvasRect.top) / zoom;
+        }
+      }
+
+      // Fallback calculation using node pos_x, pos_y and port offsets
+      if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
+        const outOffset = getNodePortOffset(sourceNode.name || sourceNode.class, outPortClass, true);
+        const inOffset = getNodePortOffset(targetNode.name || targetNode.class, inPortClass, false);
+        x1 = (sourceNode.pos_x || 0) + outOffset.x;
+        y1 = (sourceNode.pos_y || 0) + outOffset.y;
+        x2 = (targetNode.pos_x || 0) + inOffset.x;
+        y2 = (targetNode.pos_y || 0) + inOffset.y;
+      }
+
+      const sourceDir = getPortDirection(sourceNode.name || sourceNode.class, outPortClass, true);
+      const targetDir = getPortDirection(targetNode.name || targetNode.class, inPortClass, false);
+
+      let connIndex = 0;
+      if (targetDir === 'east') {
+        const loopConnections = targetNode.inputs?.input_2?.connections || [];
+        const idx = loopConnections.findIndex(c => String(c.node) === String(sourceId));
+        connIndex = idx >= 0 ? idx : 0;
+      }
+
+      const d = routeOrthogonalConnection(x1, y1, x2, y2, sourceDir, targetDir, {
+        connIndex,
+        sourceNode,
+        targetNode
+      });
+
+      if (d) {
+        path.setAttributeNS(null, 'd', d);
+      }
+    }
   }
 
   /**
@@ -424,6 +820,14 @@ export class CanvasManager {
       if (!nodeElement) return;
 
       const nodeId = nodeElement.id.replace('node-', '');
+
+      // Dynamically adjust textarea height based on line count
+      if (target.tagName === 'TEXTAREA') {
+        const lineCount = target.value.split('\n').length;
+        target.rows = Math.min(6, Math.max(1, lineCount));
+        this.routeAllNodeConnections(nodeId);
+      }
+
       const rawNode = this.editor.drawflow.drawflow[this.editor.module]?.data?.[nodeId];
       if (!rawNode) return;
       if (!rawNode.data) rawNode.data = {};
@@ -466,21 +870,31 @@ export class CanvasManager {
         }
       }
 
+      this.routeAllNodeConnections();
       this.classifyConnections();
       this.onDataChange?.();
     });
 
     this.editor.on('connectionRemoved', () => {
+      this.routeAllNodeConnections();
       this.classifyConnections();
       this.onDataChange?.();
     });
 
     this.editor.on('nodeCreated', () => {
+      this.routeAllNodeConnections();
+      this.classifyConnections();
+      this.onDataChange?.();
+    });
+
+    this.editor.on('nodeMoved', (id) => {
+      this.routeAllNodeConnections(id);
       this.classifyConnections();
       this.onDataChange?.();
     });
 
     this.editor.on('nodeRemoved', () => {
+      this.routeAllNodeConnections();
       this.classifyConnections();
       this.onDataChange?.();
     });
@@ -824,6 +1238,7 @@ export class CanvasManager {
           varInput.title = varVal;
         }
       }
+      this.routeAllNodeConnections();
       this.classifyConnections();
     };
 

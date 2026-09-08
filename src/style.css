@@ -467,10 +467,47 @@ body {
 .var-value { 
   color: #4ade80; 
   cursor: pointer;
+  user-select: none;
 }
 
-.var-value:hover {
-  text-decoration: underline dotted #4ade80;
+.var-value-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.var-val-text {
+  color: #4ade80;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-edit-var {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.25rem;
+  border-radius: 4px;
+  opacity: 0.4;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.variables-table tr:hover .btn-edit-var,
+.btn-edit-var:hover {
+  opacity: 1;
+  background-color: rgba(56, 189, 248, 0.2);
+}
+
+.inline-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
 }
 
 .inline-var-input {
@@ -479,10 +516,40 @@ body {
   color: #facc15;
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.35rem;
   border-radius: 4px;
-  width: 90%;
+  flex: 1;
+  min-width: 45px;
   outline: none;
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+}
+
+.btn-inline-save,
+.btn-inline-cancel {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.12rem 0.25rem;
+  border-radius: 3px;
+  line-height: 1;
+  transition: background-color 0.15s ease;
+}
+
+.btn-inline-save {
+  color: #4ade80;
+}
+
+.btn-inline-save:hover {
+  background-color: rgba(74, 222, 128, 0.25);
+}
+
+.btn-inline-cancel {
+  color: #f87171;
+}
+
+.btn-inline-cancel:hover {
+  background-color: rgba(248, 113, 113, 0.25);
 }
 
 .variable-row-changed {
@@ -574,6 +641,27 @@ body {
 .watches-table .watch-expr {
   color: #e2e8f0;
   font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.watches-table .watch-expr:hover .watch-expr-text {
+  color: #38bdf8;
+  text-decoration: underline dotted;
+}
+
+.watches-table .watch-expr-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.watches-table .watch-expr-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .watches-table .watch-val code {
@@ -591,20 +679,58 @@ body {
   font-size: 0.75rem;
 }
 
+.watches-table .watch-action {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.btn-edit-watch,
 .btn-remove-watch {
   background: transparent;
   border: none;
-  color: #64748b;
   cursor: pointer;
-  font-size: 0.8rem;
-  padding: 0.15rem 0.35rem;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.25rem;
   border-radius: 4px;
+  line-height: 1;
   transition: all 0.15s ease;
 }
 
+.btn-edit-watch {
+  color: #38bdf8;
+  opacity: 0.45;
+}
+
+.watches-table tr:hover .btn-edit-watch,
+.btn-edit-watch:hover {
+  opacity: 1;
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.btn-remove-watch {
+  color: #64748b;
+  opacity: 0.45;
+}
+
+.watches-table tr:hover .btn-remove-watch,
 .btn-remove-watch:hover {
+  opacity: 1;
   color: #ef4444;
   background: rgba(239, 68, 68, 0.15);
+}
+
+.inline-watch-input {
+  background-color: #030712;
+  border: 1px solid #38bdf8;
+  color: #facc15;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  flex: 1;
+  min-width: 60px;
+  outline: none;
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
 }
 
 /* Interactive Input Prompt Bar */
@@ -847,6 +973,9 @@ body {
   outline: none;
   overflow-x: auto;
   overflow-y: auto;
+  white-space: pre;
+  word-break: keep-all;
+  overflow-wrap: normal;
   resize: none;
   box-sizing: border-box;
   user-select: text !important;
@@ -857,19 +986,19 @@ body {
 
 .shape-rectangle input,
 .shape-rectangle .node-textarea {
-  max-width: 180px;
+  min-width: 200px;
+  max-width: 290px;
 }
 
 .shape-output input,
 .shape-output .node-textarea {
-  max-width: 175px;
+  max-width: 195px;
 }
 
 .flowchart-node-content input:focus,
 .flowchart-node-content .node-textarea:focus {
   border-color: var(--primary);
   background-color: #020617;
-  max-width: 195px;
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
 }
 
@@ -932,8 +1061,10 @@ body {
   border-radius: 6px;
   background-color: #1e293b;
   border: 2px solid #3b82f6;
-  min-width: 175px;
-  padding: 0.75rem 1rem;
+  min-width: 220px;
+  max-width: 320px;
+  width: auto;
+  padding: 0.65rem 0.85rem;
 }
 
 .shape-rectangle .node-header {
@@ -995,19 +1126,47 @@ body {
   font-size: 0.62rem;
   font-weight: 600;
   background: rgba(15, 23, 42, 0.95);
-  padding: 1px 4px;
+  padding: 1px 5px;
   border-radius: 3px;
-  z-index: 5;
+  z-index: 15;
   pointer-events: none;
   border: 1px solid var(--border-color);
   white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-.port-label-true { left: -34px; top: 50%; transform: translateY(-50%); color: #4ade80; }
-.port-label-false { right: -34px; top: 50%; transform: translateY(-50%); color: #f87171; }
-.port-label-body { right: -28px; top: 10px; color: #22d3ee; }
-.port-label-loopback { right: -32px; bottom: 10px; color: #c084fc; }
-.port-label-exit { bottom: -16px; left: 50%; transform: translateX(-50%); color: #fbbf24; }
+.port-label-true {
+  left: -4px;
+  top: 14px;
+  transform: none;
+  color: #4ade80;
+}
+
+.port-label-false {
+  right: -4px;
+  top: 14px;
+  transform: none;
+  color: #f87171;
+}
+
+.port-label-body {
+  right: 0px;
+  top: -10px;
+  color: #22d3ee;
+}
+
+.port-label-loopback {
+  right: 0px;
+  bottom: -10px;
+  color: #c084fc;
+}
+
+.port-label-exit {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fbbf24;
+}
 
 /* Active Glowing Node during Execution */
 .drawflow-node.active-executing-node .svg-shape-path {

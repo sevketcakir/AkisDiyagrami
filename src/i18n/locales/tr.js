@@ -94,7 +94,9 @@ export default {
     colType: 'C Tipi',
     colValue: 'Değer',
     emptyHint: 'Bellekte henüz tanımlı değişken yok',
-    editHint: 'Değeri değiştirmek için çift tıklayın'
+    editHint: 'Değeri değiştirmek için çift tıklayın veya ✏️ simgesine tıklayın',
+    saveBtn: 'Kaydet (Enter)',
+    cancelBtn: 'İptal (Esc)'
   },
   watches: {
     title: '👁️ İzlenenler',
@@ -105,7 +107,11 @@ export default {
     colType: 'Tip',
     emptyHint: 'Henüz izlenen ifade eklenmedi',
     undefined: '(tanımsız)',
-    remove: 'İzlemeyi kaldır'
+    remove: 'İzlemeyi kaldır',
+    edit: 'İfadeyi düzenle',
+    editHint: 'İfadeyi düzenlemek için çift tıklayın veya ✏️ simgesine tıklayın',
+    saveBtn: 'Kaydet (Enter)',
+    cancelBtn: 'İptal (Esc)'
   },
   console: {
     title: '💻 Konsol (printf)',
@@ -133,8 +139,8 @@ export default {
     portFalse: 'Yanlış (Y →)',
     loopHeader: 'Döngü (Altıgen)',
     loopPlaceholder: 'ör. i = 1, N, 1',
-    portBody: 'Gövde (→)',
-    portIn: 'Giriş (←)',
+    portBody: 'Devam (→)',
+    portIn: 'Dönüş (←)',
     portExit: 'Çıkış (↓)',
     inputHeader: 'Girdi (scanf)',
     inputPlaceholder: 'ör. a, b, c',
@@ -166,7 +172,7 @@ export default {
     symDecisionTitle: 'Karar / Koşul (Baklava / if-else)',
     symDecisionDesc: 'Mantıksal bir şartı değerlendirir. Şart doğruysa sol çıkıştan (<strong>Doğru / True</strong>), yanlışsa sağ çıkıştan (<strong>Yanlış / False</strong>) devam eder.',
     symLoopTitle: 'Döngü (Altıgen / for-while)',
-    symLoopDesc: 'Sayaçlı döngü bloğudur: <code>değişken = başlangıç, bitiş, adım</code> (ör. <code>i = 1, N, 1</code>). Sağ üst çıkış <strong>Gövde (Body)</strong>, sağ alt giriş <strong>Dönüş (In)</strong>, alt çıkış ise <strong>Çıkış (Exit)</strong> portudur.',
+    symLoopDesc: 'Sayaçlı döngü bloğudur: <code>değişken = başlangıç, bitiş, adım</code> (ör. <code>i = 1, N, 1</code>). Sağ üst çıkış <strong>Devam (Gövde)</strong>, sağ alt giriş <strong>Dönüş (In)</strong>, alt çıkış ise <strong>Çıkış (Exit)</strong> portudur.',
     symOutputTitle: 'Çıktı (Belge / printf)',
     symOutputDesc: 'Konsola metin veya değişken değeri yazdırır (ör. <code>"Sonuç: " + toplam</code> veya <code>x * 2</code>).',
     symEndTitle: 'Bitiş (Oval)',
@@ -295,7 +301,7 @@ export default {
     noPathToEnd: 'Başla düğümünden Bitiş düğümüne geçerli bir akış yolu bulunamadı. Lütfen blokları bağlayın.',
     missingTrueConnection: 'Karar (If) bloğunun [{{id}}] "Doğru (True)" çıkışı herhangi bir bloğa bağlı değil.',
     missingFalseConnection: 'Karar (If) bloğunun [{{id}}] "Yanlış (False)" çıkışı herhangi bir bloğa bağlı değil.',
-    missingLoopBodyConnection: 'Döngü (Loop) bloğunun [{{id}}] "Gövde (Body)" çıkışı herhangi bir bloğa bağlı değil.',
+    missingLoopBodyConnection: 'Döngü (Loop) bloğunun [{{id}}] "Devam (Gövde)" çıkışı herhangi bir bloğa bağlı değil.',
     missingLoopExitConnection: 'Döngü (Loop) bloğunun [{{id}}] "Çıkış (Exit)" çıkışı herhangi bir bloğa bağlı değil.',
     missingOutgoingConnection: '{{type}} bloğunun [{{id}}] çıkış oku herhangi bir bloğa bağlı değil.',
     divisionByZero: 'Sıfıra bölme hatası (Division by zero).',

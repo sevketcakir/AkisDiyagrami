@@ -142,6 +142,27 @@ export class SidePanel {
         this.submitUserInput();
       }
     });
+
+    // Event delegation for variable editing (double-click anywhere on cell, or single-click on edit button)
+    this.elements.variablesTableBody?.addEventListener('dblclick', (e) => {
+      const cell = e.target.closest('.var-value');
+      if (!cell || cell.querySelector('.inline-var-input')) return;
+      const varName = cell.dataset.var;
+      if (varName) {
+        this.startInlineEdit(cell, varName);
+      }
+    });
+
+    this.elements.variablesTableBody?.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.btn-edit-var');
+      if (editBtn) {
+        const varName = editBtn.dataset.var;
+        const cell = editBtn.closest('.var-value');
+        if (cell && varName && !cell.querySelector('.inline-var-input')) {
+          this.startInlineEdit(cell, varName);
+        }
+      }
+    });
   }
 
   updateSpeedBadge() {
@@ -267,52 +288,112 @@ export class SidePanel {
         <tr class="${isChanged ? 'variable-row-changed' : ''}">
           <td class="var-name"><code>${escapeHtml(key)}</code></td>
           <td class="var-type"><code>${cType}</code></td>
-          <td class="var-value" data-var="${escapeHtml(key)}" title="${I18n.t('variables.editHint')}"><code>${escapeHtml(JSON.stringify(val))}</code></td>
+          <td class="var-value" data-var="${escapeHtml(key)}" title="${I18n.t('variables.editHint')}">
+            <div class="var-value-wrapper">
+              <code class="var-val-text">${escapeHtml(JSON.stringify(val))}</code>
+              <button type="button" class="btn-edit-var" data-var="${escapeHtml(key)}" title="${I18n.t('variables.editHint')}">✏️</button>
+            </div>
+          </td>
         </tr>
       `;
     }
 
     tbody.innerHTML = rowsHtml;
     this.prevVariables = { ...variables };
+  }
 
-    // Attach double-click edit listeners to variable value cells
-    tbody.querySelectorAll('.var-value').forEach((cell) => {
-      cell.addEventListener('dblclick', () => {
-        const varName = cell.dataset.var;
-        const currentVal = this.currentVariables[varName];
-        if (cell.querySelector('input')) return; // Already editing
+  /**
+   * Starts inline editing for a variable table cell.
+   * @param {HTMLElement} cell
+   * @param {string} varName
+   */
+  startInlineEdit(cell, varName) {
+    const currentVal = this.currentVariables[varName];
+    if (cell.querySelector('.inline-var-input')) return; // Already editing
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'inline-var-input';
-        input.value = typeof currentVal === 'string' ? `"${currentVal}"` : String(currentVal ?? '');
+    const container = document.createElement('div');
+    container.className = 'inline-edit-container';
 
-        cell.innerHTML = '';
-        cell.appendChild(input);
-        input.focus();
-        input.select();
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'inline-var-input';
+    input.value = typeof currentVal === 'string' ? `"${currentVal}"` : String(currentVal ?? '');
 
-        let finished = false;
-        const finishEdit = () => {
-          if (finished) return;
-          finished = true;
-          const newValStr = input.value.trim();
-          if (this.onVariableEdit && newValStr !== '') {
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.className = 'btn-inline-save';
+    saveBtn.textContent = '✓';
+    saveBtn.title = I18n.t('variables.saveBtn') || 'Kaydet (Enter)';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn-inline-cancel';
+    cancelBtn.textContent = '✕';
+    cancelBtn.title = I18n.t('variables.cancelBtn') || 'İptal (Esc)';
+
+    container.appendChild(input);
+    container.appendChild(saveBtn);
+    container.appendChild(cancelBtn);
+
+    cell.innerHTML = '';
+    cell.appendChild(container);
+
+    let isOpening = true;
+    setTimeout(() => { isOpening = false; }, 250);
+
+    input.focus();
+    input.select();
+
+    let finished = false;
+    const finishEdit = (save = true) => {
+      if (finished) return;
+      finished = true;
+      if (save) {
+        const newValStr = input.value.trim();
+        if (this.onVariableEdit && newValStr !== '') {
+          try {
             this.onVariableEdit(varName, newValStr);
-          } else {
-            cell.innerHTML = `<code>${escapeHtml(JSON.stringify(currentVal))}</code>`;
+          } catch (err) {
+            this.updateVariables(this.currentVariables, this.currentFloatVars);
           }
-        };
+          return;
+        }
+      }
+      cell.innerHTML = `
+        <div class="var-value-wrapper">
+          <code class="var-val-text">${escapeHtml(JSON.stringify(currentVal))}</code>
+          <button type="button" class="btn-edit-var" data-var="${escapeHtml(varName)}" title="${I18n.t('variables.editHint')}">✏️</button>
+        </div>
+      `;
+    };
 
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') finishEdit();
-          else if (e.key === 'Escape') {
-            finished = true;
-            cell.innerHTML = `<code>${escapeHtml(JSON.stringify(currentVal))}</code>`;
-          }
-        });
-        input.addEventListener('blur', finishEdit);
-      });
+    saveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      finishEdit(true);
+    });
+
+    cancelBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      finishEdit(false);
+    });
+
+    container.addEventListener('click', (e) => e.stopPropagation());
+    container.addEventListener('dblclick', (e) => e.stopPropagation());
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        finishEdit(true);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        finishEdit(false);
+      }
+    });
+
+    input.addEventListener('blur', (e) => {
+      if (isOpening) return;
+      if (e.relatedTarget === saveBtn || e.relatedTarget === cancelBtn) return;
+      finishEdit(true);
     });
   }
 

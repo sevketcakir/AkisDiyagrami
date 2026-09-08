@@ -94,7 +94,9 @@ export default {
     colType: 'C Type',
     colValue: 'Value',
     emptyHint: 'No variables declared in memory yet',
-    editHint: 'Double-click value to edit'
+    editHint: 'Double-click value or click ✏️ to edit',
+    saveBtn: 'Save (Enter)',
+    cancelBtn: 'Cancel (Esc)'
   },
   watches: {
     title: '👁️ Watches',
@@ -105,7 +107,11 @@ export default {
     colType: 'Type',
     emptyHint: 'No watch expressions added yet',
     undefined: '(undefined)',
-    remove: 'Remove watch'
+    remove: 'Remove watch',
+    edit: 'Edit watch expression',
+    editHint: 'Double-click or click ✏️ to edit expression',
+    saveBtn: 'Save (Enter)',
+    cancelBtn: 'Cancel (Esc)'
   },
   console: {
     title: '💻 Console (printf)',
@@ -133,7 +139,7 @@ export default {
     portFalse: 'False (F →)',
     loopHeader: 'Loop (Hexagon)',
     loopPlaceholder: 'e.g. i = 1, N, 1',
-    portBody: 'Body (→)',
+    portBody: 'Continue (→)',
     portIn: 'In (←)',
     portExit: 'Exit (↓)',
     inputHeader: 'Input (scanf)',
@@ -166,7 +172,7 @@ export default {
     symDecisionTitle: 'Decision / Condition (Diamond / if-else)',
     symDecisionDesc: 'Evaluates a boolean condition. If true, flow continues through the left port (<strong>True</strong>); if false, through the right port (<strong>False</strong>).',
     symLoopTitle: 'Loop (Hexagon / for-while)',
-    symLoopDesc: 'Parametric counting loop: <code>variable = start, end, step</code> (e.g. <code>i = 1, N, 1</code>). Upper-right is <strong>Body</strong>, lower-right is loopback <strong>In</strong>, bottom is <strong>Exit</strong>.',
+    symLoopDesc: 'Parametric counting loop: <code>variable = start, end, step</code> (e.g. <code>i = 1, N, 1</code>). Upper-right is <strong>Continue (Body)</strong>, lower-right is loopback <strong>In</strong>, bottom is <strong>Exit</strong>.',
     symOutputTitle: 'Output (Document / printf)',
     symOutputDesc: 'Prints text or evaluated expressions to the console (e.g. <code>"Result: " + sum</code> or <code>x * 2</code>).',
     symEndTitle: 'End (Oval)',
@@ -295,7 +301,7 @@ export default {
     noPathToEnd: 'No valid execution path found from Start to End. Please ensure your nodes are connected.',
     missingTrueConnection: 'Decision node [{{id}}] is missing a "True (True)" outgoing connection.',
     missingFalseConnection: 'Decision node [{{id}}] is missing a "False (False)" outgoing connection.',
-    missingLoopBodyConnection: 'Loop node [{{id}}] is missing a "Body" outgoing connection.',
+    missingLoopBodyConnection: 'Loop node [{{id}}] is missing a "Continue (Body)" outgoing connection.',
     missingLoopExitConnection: 'Loop node [{{id}}] is missing an "Exit" outgoing connection.',
     missingOutgoingConnection: '{{type}} node [{{id}}] has no outgoing connection.',
     divisionByZero: 'Division by zero error.',

@@ -53,6 +53,25 @@ describe('DebugManager - Watch Expressions & REPL Evaluator', () => {
       expect(debugManager.watches).toEqual([]);
     });
 
+    it('should edit an existing watch expression and persist to localStorage', () => {
+      debugManager.addWatch('a + b');
+      debugManager.addWatch('delta * 2');
+
+      const success = debugManager.editWatch(0, 'a * b + 5');
+      expect(success).toBe(true);
+      expect(debugManager.watches).toEqual(['a * b + 5', 'delta * 2']);
+
+      // Check localStorage persistence
+      const stored = JSON.parse(storage.get('flowchart_watches'));
+      expect(stored).toEqual(['a * b + 5', 'delta * 2']);
+
+      // Editing with empty or invalid index should fail and not alter watches
+      expect(debugManager.editWatch(0, '   ')).toBe(false);
+      expect(debugManager.editWatch(99, 'x + 1')).toBe(false);
+      expect(debugManager.editWatch(-1, 'x + 1')).toBe(false);
+      expect(debugManager.watches[0]).toBe('a * b + 5');
+    });
+
     it('should evaluate watch expressions correctly with types', () => {
       debugManager.addWatch('a + b');
       debugManager.addWatch('sqrt(delta)');

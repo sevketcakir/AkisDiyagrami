@@ -108,6 +108,37 @@ export class DebugManager {
         }
       }
     });
+
+    // Event delegation for watch editing (double-click anywhere on expression cell, or click on edit button)
+    this.options.watchesTableBody?.addEventListener('dblclick', (e) => {
+      const cell = e.target.closest('.watch-expr');
+      if (!cell || cell.querySelector('.inline-watch-input')) return;
+      const indexStr = cell.dataset.index;
+      if (indexStr !== undefined) {
+        this.startInlineEdit(cell, parseInt(indexStr, 10));
+      }
+    });
+
+    this.options.watchesTableBody?.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.btn-remove-watch');
+      if (removeBtn) {
+        const idx = parseInt(removeBtn.dataset.index, 10);
+        if (!isNaN(idx)) {
+          this.removeWatch(idx);
+        }
+        return;
+      }
+
+      const editBtn = e.target.closest('.btn-edit-watch');
+      if (editBtn) {
+        const indexStr = editBtn.dataset.index;
+        const row = editBtn.closest('tr');
+        const cell = row?.querySelector('.watch-expr');
+        if (cell && indexStr !== undefined && !cell.querySelector('.inline-watch-input')) {
+          this.startInlineEdit(cell, parseInt(indexStr, 10));
+        }
+      }
+    });
   }
 
   /**
@@ -136,6 +167,24 @@ export class DebugManager {
     }
     this.saveWatches();
     this.updateWatches();
+  }
+
+  /**
+   * Updates an existing watch expression by index.
+   * @param {number} index
+   * @param {string} newExpression
+   * @returns {boolean}
+   */
+  editWatch(index, newExpression) {
+    const trimmed = (newExpression || '').trim();
+    if (!trimmed) return false;
+    if (typeof index === 'number' && index >= 0 && index < this.watches.length) {
+      this.watches[index] = trimmed;
+      this.saveWatches();
+      this.updateWatches();
+      return true;
+    }
+    return false;
   }
 
   clearWatches() {
@@ -215,6 +264,9 @@ export class DebugManager {
 
     if (!tbody) return;
 
+    // Do not disrupt user if they are currently typing in inline edit mode
+    if (tbody.querySelector('.inline-watch-input')) return;
+
     if (this.watches.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" class="empty-hint">${I18n.t('watches.emptyHint')}</td></tr>`;
       return;
@@ -236,26 +288,115 @@ export class DebugManager {
         valDisplay = `<code>${escapeHtml(JSON.stringify(res.value))}</code>`;
       }
 
+      const editHint = I18n.t('watches.editHint');
+      const tooltip = `${escapeHtml(res.expr)} - ${editHint}`;
+
       html += `
-        <tr>
-          <td class="watch-expr" title="${escapeHtml(res.expr)}"><code>${escapeHtml(res.expr)}</code></td>
+        <tr data-index="${index}">
+          <td class="watch-expr" data-index="${index}" title="${tooltip}">
+            <div class="watch-expr-wrapper">
+              <code class="watch-expr-text">${escapeHtml(res.expr)}</code>
+            </div>
+          </td>
           <td class="${valClass}">${valDisplay}</td>
           <td class="var-type"><code>${escapeHtml(res.cType)}</code></td>
           <td class="watch-action">
-            <button class="btn-remove-watch" data-index="${index}" title="${I18n.t('watches.remove')}">✕</button>
+            <button type="button" class="btn-edit-watch" data-index="${index}" title="${escapeHtml(editHint)}">✏️</button>
+            <button type="button" class="btn-remove-watch" data-index="${index}" title="${I18n.t('watches.remove')}">✕</button>
           </td>
         </tr>
       `;
     });
 
     tbody.innerHTML = html;
+  }
 
-    // Bind remove buttons
-    tbody.querySelectorAll('.btn-remove-watch').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        const idx = parseInt(e.currentTarget.dataset.index, 10);
-        this.removeWatch(idx);
-      });
+  /**
+   * Starts inline editing for a watch expression table cell.
+   * @param {HTMLElement} cell
+   * @param {number} index
+   */
+  startInlineEdit(cell, index) {
+    if (index < 0 || index >= this.watches.length) return;
+    const currentExpr = this.watches[index];
+    if (cell.querySelector('.inline-watch-input')) return; // Already editing
+
+    const container = document.createElement('div');
+    container.className = 'inline-edit-container';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'inline-var-input inline-watch-input';
+    input.value = currentExpr;
+
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'button';
+    saveBtn.className = 'btn-inline-save';
+    saveBtn.textContent = '✓';
+    saveBtn.title = I18n.t('watches.saveBtn') || 'Kaydet (Enter)';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn-inline-cancel';
+    cancelBtn.textContent = '✕';
+    cancelBtn.title = I18n.t('watches.cancelBtn') || 'İptal (Esc)';
+
+    container.appendChild(input);
+    container.appendChild(saveBtn);
+    container.appendChild(cancelBtn);
+
+    cell.innerHTML = '';
+    cell.appendChild(container);
+
+    let isOpening = true;
+    setTimeout(() => { isOpening = false; }, 250);
+
+    input.focus();
+    input.select();
+
+    let finished = false;
+    const finishEdit = (save = true) => {
+      if (finished) return;
+      finished = true;
+      if (save) {
+        const newExpr = input.value.trim();
+        if (newExpr !== '' && newExpr !== currentExpr) {
+          cell.innerHTML = '';
+          this.editWatch(index, newExpr);
+          return;
+        }
+      }
+      cell.innerHTML = '';
+      this.updateWatches();
+    };
+
+    saveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      finishEdit(true);
+    });
+
+    cancelBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      finishEdit(false);
+    });
+
+    container.addEventListener('click', (e) => e.stopPropagation());
+    container.addEventListener('dblclick', (e) => e.stopPropagation());
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        finishEdit(true);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        finishEdit(false);
+      }
+    });
+
+    input.addEventListener('blur', (e) => {
+      if (isOpening) return;
+      if (e.relatedTarget === saveBtn || e.relatedTarget === cancelBtn) return;
+      finishEdit(true);
     });
   }
 
