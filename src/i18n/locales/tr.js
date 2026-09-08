@@ -89,16 +89,36 @@ export default {
     waitingInput: 'Girdi Bekleniyor'
   },
   variables: {
-    title: 'Değişken Takipçisi (Bellek)',
+    title: '📊 Değişkenler',
     colVariable: 'Değişken',
     colType: 'C Tipi',
     colValue: 'Değer',
-    emptyHint: 'Bellekte henüz tanımlı değişken yok'
+    emptyHint: 'Bellekte henüz tanımlı değişken yok',
+    editHint: 'Değeri değiştirmek için çift tıklayın'
+  },
+  watches: {
+    title: '👁️ İzlenenler',
+    inputPlaceholder: 'İfade ekle (örn: x > 0, delta, sqrt(b))...',
+    addTitle: 'İfadeyi izlemeye ekle',
+    colExpr: 'İfade',
+    colValue: 'Değer',
+    colType: 'Tip',
+    emptyHint: 'Henüz izlenen ifade eklenmedi',
+    undefined: '(tanımsız)',
+    remove: 'İzlemeyi kaldır'
   },
   console: {
-    title: 'Konsol Çıktısı (printf)',
+    title: '💻 Konsol (printf)',
     clear: 'Temizle',
     emptyHint: 'Konsol çıktıları (printf) burada görüntülenecektir...'
+  },
+  debug: {
+    title: '🐛 Hata Ayıklama',
+    replHint: 'İfadeleri hesaplayabilir (örn: a + b, sqrt(delta)) veya değişken değerlerini değiştirebilirsiniz (örn: x = 20, a = 5).',
+    inputPlaceholder: 'İfade girin veya değer atayın (örn: x = 10, i < N)...',
+    evalBtn: 'Hesapla',
+    varUpdated: 'Değişken güncellendi',
+    noContext: 'Bellek henüz hazır değil. Akış diyagramı başlatıldığında değişkenler kullanılabilir.'
   },
   nodes: {
     startTitle: 'BAŞLA',
@@ -263,7 +283,10 @@ export default {
     ctrlDirectRerun: '<strong>Doğrudan Yeniden Başlatma</strong>: Program bittiğinde sıfırlamaya basmadan doğrudan Çalıştır veya Adımla düğmesine basarak yeniden başlatabilirsiniz.',
     ctrlSpeed: '<strong>Adım Gecikmesi (Slider)</strong>: 0 ms (Anında) ile 2000 ms arasında gecikmeyi dinamik olarak değiştirir.',
     ctrlAutoLayout: '<strong>Otomatik Düzenle (Auto-Layout)</strong>: Düğümleri otomatik hizalar, temiz dikey Manhattan 90° bağlantı hatları çizer.',
-    ctrlSaveLoad: '<strong>Kaydet & Yükle</strong>: Hazırladığınız akış şemasını .json formatında dışa aktarabilir veya daha önce kaydettiğiniz dosyayı yükleyebilirsiniz.'
+    ctrlSaveLoad: '<strong>Kaydet & Yükle</strong>: Hazırladığınız akış şemasını .json formatında dışa aktarabilir veya daha önce kaydettiğiniz dosyayı yükleyebilirsiniz.',
+    ctrlWatches: '<strong>İzlenenler (Watches)</strong>: Canlı olarak izlemek istediğiniz ifadeleri (ör. <code>i &lt; N</code>, <code>sqrt(delta)</code>) ekleyebilir, her adımda değerlerinin değişimini gözlemleyebilirsiniz.',
+    ctrlDebug: '<strong>Hata Ayıklama (Debug REPL)</strong>: Herhangi bir ifadeyi anlık hesaplayabilir ve çalışma esnasında değişken değerlerini dinamik değiştirebilirsiniz (ör. <code>x = 50</code>, <code>a += 10</code>).',
+    ctrlEditVar: '<strong>Değişken Düzenleme</strong>: Bellek tablosundaki bir değişkenin değerine çift tıklayarak değerini doğrudan değiştirebilirsiniz.'
   },
   errors: {
     emptyCanvas: 'Akış diyagramı tuvali boş. Lütfen soldaki paletten blokları tuvale sürükleyin.',

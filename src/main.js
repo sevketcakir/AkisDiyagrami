@@ -8,6 +8,7 @@ import { SamplePrograms } from './utils/SamplePrograms.js';
 import { SafeEvaluator } from './evaluator/Evaluator.js';
 import { I18n } from './i18n/I18n.js';
 import { CGenerator, CGeneratorError } from './generator/CGenerator.js';
+import { DebugManager } from './ui/DebugManager.js';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-c.js';
 
@@ -15,6 +16,7 @@ class App {
   constructor() {
     this.canvasManager = null;
     this.sidePanel = null;
+    this.debugManager = null;
     this.interpreter = null;
     this.playInterval = null;
     this.playAnimationId = null;
@@ -57,6 +59,50 @@ class App {
       promptSubmitBtn: document.getElementById('prompt-submit-btn'),
       promptLabel: document.getElementById('prompt-label')
     });
+
+    this.debugManager = new DebugManager({
+      watchInput: document.getElementById('watch-input'),
+      watchAddBtn: document.getElementById('btn-add-watch'),
+      watchesTableBody: document.getElementById('watches-tbody'),
+      watchesBadge: document.getElementById('watches-count-badge'),
+      replInput: document.getElementById('repl-input'),
+      replSubmitBtn: document.getElementById('btn-repl-eval'),
+      replOutput: document.getElementById('repl-output'),
+      getContext: () => {
+        if (!this.interpreter) {
+          this.compileGraph();
+        }
+        return this.interpreter?.context;
+      },
+      onVariableMutated: (variables, floatVars) => {
+        this.sidePanel.updateVariables(variables, floatVars);
+      }
+    });
+
+    this.sidePanel.onClearRepl = () => {
+      this.debugManager.clearReplLog();
+    };
+
+    this.sidePanel.onVariableEdit = (varName, newValueStr) => {
+      if (!this.interpreter) {
+        this.compileGraph();
+      }
+      const ctx = this.interpreter?.context;
+      if (ctx) {
+        try {
+          SafeEvaluator.evaluateAssignment(`${varName} = ${newValueStr}`, ctx);
+          this.sidePanel.updateVariables(ctx.variables, ctx.floatVars);
+          this.debugManager.updateWatches(ctx);
+          this.debugManager.logReplOutput(`${varName} = ${newValueStr}`, {
+            isAssignment: true,
+            result: ctx.getVariable(varName),
+            variables: { ...ctx.variables }
+          });
+        } catch (err) {
+          alert(`Error setting variable ${varName}: ${err.message}`);
+        }
+      }
+    };
 
     this.bindSidebarDrag();
     this.bindHeaderActions();
@@ -276,6 +322,7 @@ class App {
       this.populateSampleDropdown();
       this.canvasManager.refreshNodeLabels();
       this.sidePanel.refreshLocalization();
+      this.debugManager?.refreshLocalization();
     };
 
     I18n.onLanguageChange((lang) => {
@@ -505,6 +552,7 @@ class App {
     // Update UI components
     this.sidePanel.updateVariables(snapshot.variables, this.interpreter.context.floatVars);
     this.sidePanel.updateConsole(snapshot.output);
+    this.debugManager?.updateWatches(this.interpreter.context);
 
     if (snapshot.error) {
       this.sidePanel.setStatus('ERROR', snapshot.error);
@@ -560,6 +608,7 @@ class App {
           if (snapshot.error || snapshot.isFinished) {
             this.sidePanel.updateVariables(snapshot.variables, this.interpreter.context.floatVars);
             this.sidePanel.updateConsole(snapshot.output);
+            this.debugManager?.updateWatches(this.interpreter.context);
             if (snapshot.error) {
               this.sidePanel.setStatus('ERROR', snapshot.error);
               this.canvasManager.highlightErrorNode(currentId);
@@ -575,6 +624,7 @@ class App {
         // Update UI after batch
         this.sidePanel.updateVariables(this.interpreter.context.variables, this.interpreter.context.floatVars);
         this.sidePanel.updateConsole(this.interpreter.context.output);
+        this.debugManager?.updateWatches(this.interpreter.context);
 
         if (!this.interpreter.context.isFinished && !this.isWaitingForInput) {
           this.playAnimationId = requestAnimationFrame(runInstant);
@@ -618,6 +668,7 @@ class App {
     const ok = this.compileGraph();
     this.sidePanel.updateVariables({});
     this.sidePanel.updateConsole([]);
+    this.debugManager?.updateWatches(this.interpreter?.context);
 
     if (ok && this.interpreter && this.interpreter.startNodeId) {
       this.interpreter.reset();

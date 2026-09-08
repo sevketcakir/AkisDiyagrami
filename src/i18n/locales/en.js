@@ -89,16 +89,36 @@ export default {
     waitingInput: 'Waiting for Input'
   },
   variables: {
-    title: 'Variable Watcher (Memory)',
+    title: '📊 Variables',
     colVariable: 'Variable',
     colType: 'C Type',
     colValue: 'Value',
-    emptyHint: 'No variables declared in memory yet'
+    emptyHint: 'No variables declared in memory yet',
+    editHint: 'Double-click value to edit'
+  },
+  watches: {
+    title: '👁️ Watches',
+    inputPlaceholder: 'Add expression (e.g. x > 0, delta, sqrt(b))...',
+    addTitle: 'Add watch expression',
+    colExpr: 'Expression',
+    colValue: 'Value',
+    colType: 'Type',
+    emptyHint: 'No watch expressions added yet',
+    undefined: '(undefined)',
+    remove: 'Remove watch'
   },
   console: {
-    title: 'Output Console (printf)',
+    title: '💻 Console (printf)',
     clear: 'Clear',
     emptyHint: 'Console output (printf) will appear here...'
+  },
+  debug: {
+    title: '🐛 Debug REPL',
+    replHint: 'Evaluate expressions (e.g. a + b, sqrt(delta)) or modify variables on the fly (e.g. x = 20, a = 5).',
+    inputPlaceholder: 'Evaluate expression or assign (e.g. x = 10, i < N)...',
+    evalBtn: 'Evaluate',
+    varUpdated: 'Variable updated',
+    noContext: 'Memory context not ready. Start or step the flowchart to inspect.'
   },
   nodes: {
     startTitle: 'START',
@@ -263,7 +283,10 @@ export default {
     ctrlDirectRerun: '<strong>Direct Re-Run</strong>: Once finished, click Play or Step to immediately restart without needing to press Reset first.',
     ctrlSpeed: '<strong>Step Delay Slider</strong>: Adjusts delay dynamically from 0 ms (Instant batch) to 2000 ms.',
     ctrlAutoLayout: '<strong>Auto-Layout</strong>: Neatly re-aligns all flowchart nodes and routes clean 90° Manhattan wires.',
-    ctrlSaveLoad: '<strong>Save & Load</strong>: Export diagrams as .json files or reload previously saved flowcharts.'
+    ctrlSaveLoad: '<strong>Save & Load</strong>: Export diagrams as .json files or reload previously saved flowcharts.',
+    ctrlWatches: '<strong>Watch Expressions</strong>: Add expressions (e.g. <code>i &lt; N</code>, <code>sqrt(delta)</code>) to track how their values evolve step by step.',
+    ctrlDebug: '<strong>Debug REPL</strong>: Evaluate any expression in real-time or mutate variable values on the fly (e.g. <code>x = 50</code>, <code>a += 10</code>).',
+    ctrlEditVar: '<strong>Edit Variables</strong>: Double-click any variable value in the memory table to modify it directly.'
   },
   errors: {
     emptyCanvas: 'The flowchart canvas is empty. Drag symbols from the left palette to build a program.',

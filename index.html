@@ -197,39 +197,97 @@
         </div>
       </div>
 
-      <!-- Variable Watcher Section -->
-      <div class="panel-section">
-        <div class="section-header">
-          <h2 data-i18n="variables.title">Değişken Takipçisi (Bellek)</h2>
+      <!-- Variable & Watch Inspector Section -->
+      <div class="panel-section inspector-section">
+        <div class="section-header-tabs">
+          <div class="panel-tabs" role="tablist">
+            <button id="tab-btn-variables" class="panel-tab-btn active" data-subtab="variables" role="tab" aria-selected="true">
+              <span data-i18n="variables.title">📊 Değişkenler</span>
+            </button>
+            <button id="tab-btn-watches" class="panel-tab-btn" data-subtab="watches" role="tab" aria-selected="false">
+              <span data-i18n="watches.title">👁️ İzlenenler</span>
+              <span id="watches-count-badge" class="badge-count" style="display: none;">0</span>
+            </button>
+          </div>
         </div>
 
-        <div class="variables-table-container">
-          <table class="variables-table">
-            <thead>
-              <tr>
-                <th data-i18n="variables.colVariable">Değişken</th>
-                <th data-i18n="variables.colType">C Tipi</th>
-                <th data-i18n="variables.colValue">Değer</th>
-              </tr>
-            </thead>
-            <tbody id="variables-tbody">
-              <tr>
-                <td colspan="3" class="empty-hint" data-i18n="variables.emptyHint">Bellekte henüz tanımlı değişken yok</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Subtab 1: Variables Table -->
+        <div id="subtab-variables" class="subtab-content active">
+          <div class="variables-table-container">
+            <table class="variables-table">
+              <thead>
+                <tr>
+                  <th data-i18n="variables.colVariable">Değişken</th>
+                  <th data-i18n="variables.colType">C Tipi</th>
+                  <th data-i18n="variables.colValue">Değer</th>
+                </tr>
+              </thead>
+              <tbody id="variables-tbody">
+                <tr>
+                  <td colspan="3" class="empty-hint" data-i18n="variables.emptyHint">Bellekte henüz tanımlı değişken yok</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Subtab 2: Watches Table -->
+        <div id="subtab-watches" class="subtab-content" style="display: none;">
+          <div class="watch-input-bar">
+            <input type="text" id="watch-input" data-i18n-placeholder="watches.inputPlaceholder" placeholder="İfade ekle (örn: x > 0, delta)..." />
+            <button id="btn-add-watch" class="btn btn-sm btn-primary" data-i18n-title="watches.addTitle" title="İfadeyi izlemeye ekle">➕</button>
+          </div>
+          <div class="variables-table-container watches-table-container">
+            <table class="variables-table watches-table">
+              <thead>
+                <tr>
+                  <th data-i18n="watches.colExpr">İfade</th>
+                  <th data-i18n="watches.colValue">Değer</th>
+                  <th data-i18n="watches.colType">Tip</th>
+                  <th style="width: 28px;"></th>
+                </tr>
+              </thead>
+              <tbody id="watches-tbody">
+                <tr>
+                  <td colspan="4" class="empty-hint" data-i18n="watches.emptyHint">Henüz izlenen ifade eklenmedi</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Output Console Section -->
-      <div class="panel-section" style="flex: 1; display: flex; flex-direction: column;">
-        <div class="section-header">
-          <h2 data-i18n="console.title">Konsol Çıktısı (printf)</h2>
-          <button id="btn-clear-console" class="btn" data-i18n="console.clear" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Temizle</button>
+      <!-- Output & Debug Console Section -->
+      <div class="panel-section console-debug-section" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="section-header-tabs">
+          <div class="panel-tabs" role="tablist">
+            <button id="tab-btn-console" class="panel-tab-btn active" data-subtab="console" role="tab" aria-selected="true">
+              <span data-i18n="console.title">💻 Konsol (printf)</span>
+            </button>
+            <button id="tab-btn-debug" class="panel-tab-btn" data-subtab="debug" role="tab" aria-selected="false">
+              <span data-i18n="debug.title">🐛 Hata Ayıklama</span>
+            </button>
+          </div>
+          <button id="btn-clear-console" class="btn btn-sm" data-i18n="console.clear" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Temizle</button>
         </div>
 
-        <div id="console-output" class="console-box" style="flex: 1;">
-          <span class="console-hint" data-i18n="console.emptyHint">Konsol çıktıları (printf) burada görüntülenecektir...</span>
+        <!-- Subtab 1: Printf Console Output -->
+        <div id="subtab-console" class="subtab-content console-tab-content active" style="flex: 1; display: flex; flex-direction: column;">
+          <div id="console-output" class="console-box" style="flex: 1;">
+            <span class="console-hint" data-i18n="console.emptyHint">Konsol çıktıları (printf) burada görüntülenecektir...</span>
+          </div>
+        </div>
+
+        <!-- Subtab 2: Debug REPL -->
+        <div id="subtab-debug" class="subtab-content debug-tab-content" style="flex: 1; display: none; flex-direction: column;">
+          <div id="repl-output" class="console-box repl-box" style="flex: 1;">
+            <span class="repl-hint" data-i18n="debug.replHint">İfadeleri test edin veya değişken değerlerini değiştirin (örn: x = 10, a + b)...</span>
+          </div>
+          <div class="repl-input-group">
+            <span class="repl-prompt-symbol">&gt;</span>
+            <input type="text" id="repl-input" data-i18n-placeholder="debug.inputPlaceholder" placeholder="İfade değerlendir veya ata (örn: x = 15, sqrt(delta))..." autocomplete="off" />
+            <button id="btn-repl-eval" class="btn btn-sm btn-primary" data-i18n="debug.evalBtn">Hesapla</button>
+          </div>
         </div>
       </div>
     </aside>
@@ -574,6 +632,9 @@
             <li data-i18n-html="help.ctrlSpeed"><strong>Adım Gecikmesi (Slider)</strong>: 0 ms (Anında) ile 2000 ms arasında gecikmeyi dinamik olarak değiştirir.</li>
             <li data-i18n-html="help.ctrlAutoLayout"><strong>Otomatik Düzenle (Auto-Layout)</strong>: Düğümleri otomatik hizalar, temiz dikey Manhattan 90° bağlantı hatları çizer.</li>
             <li data-i18n-html="help.ctrlSaveLoad"><strong>Kaydet & Yükle</strong>: Hazırladığınız akış şemasını .json formatında dışa aktarabilir veya daha önce kaydettiğiniz dosyayı yükleyebilirsiniz.</li>
+            <li data-i18n-html="help.ctrlWatches"><strong>İzlenenler (Watches)</strong>: Canlı olarak izlemek istediğiniz ifadeleri (ör. <code>i &lt; N</code>, <code>sqrt(delta)</code>) ekleyebilir, her adımda değerlerinin değişimini gözlemleyebilirsiniz.</li>
+            <li data-i18n-html="help.ctrlDebug"><strong>Hata Ayıklama (Debug REPL)</strong>: Herhangi bir ifadeyi anlık hesaplayabilir ve çalışma esnasında değişken değerlerini dinamik değiştirebilirsiniz (ör. <code>x = 50</code>, <code>a += 10</code>).</li>
+            <li data-i18n-html="help.ctrlEditVar"><strong>Değişken Düzenleme</strong>: Bellek tablosundaki bir değişkenin değerine çift tıklayarak değerini doğrudan değiştirebilirsiniz.</li>
           </ul>
         </div>
       </div>

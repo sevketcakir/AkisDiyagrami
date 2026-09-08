@@ -37,9 +37,58 @@ export class SidePanel {
     this.onReset = null;
     this.onSpeedChange = null;
     this.onInputSubmit = null;
+    this.onVariableEdit = null;
+    this.onClearRepl = null;
+    this.activeLowerTab = 'console'; // 'console' | 'debug'
 
     this.bindEvents();
+    this.bindTabEvents();
     this.setStatus('READY');
+  }
+
+  bindTabEvents() {
+    // Upper Inspector Tabs (Variables vs Watches)
+    const btnVars = document.getElementById('tab-btn-variables');
+    const btnWatches = document.getElementById('tab-btn-watches');
+    const subtabVars = document.getElementById('subtab-variables');
+    const subtabWatches = document.getElementById('subtab-watches');
+
+    btnVars?.addEventListener('click', () => {
+      btnVars.classList.add('active');
+      btnWatches?.classList.remove('active');
+      if (subtabVars) subtabVars.style.display = 'block';
+      if (subtabWatches) subtabWatches.style.display = 'none';
+    });
+
+    btnWatches?.addEventListener('click', () => {
+      btnWatches.classList.add('active');
+      btnVars?.classList.remove('active');
+      if (subtabWatches) subtabWatches.style.display = 'block';
+      if (subtabVars) subtabVars.style.display = 'none';
+    });
+
+    // Lower Output Tabs (Console vs Debug REPL)
+    const btnConsole = document.getElementById('tab-btn-console');
+    const btnDebug = document.getElementById('tab-btn-debug');
+    const subtabConsole = document.getElementById('subtab-console');
+    const subtabDebug = document.getElementById('subtab-debug');
+
+    btnConsole?.addEventListener('click', () => {
+      this.activeLowerTab = 'console';
+      btnConsole.classList.add('active');
+      btnDebug?.classList.remove('active');
+      if (subtabConsole) subtabConsole.style.display = 'flex';
+      if (subtabDebug) subtabDebug.style.display = 'none';
+    });
+
+    btnDebug?.addEventListener('click', () => {
+      this.activeLowerTab = 'debug';
+      btnDebug.classList.add('active');
+      btnConsole?.classList.remove('active');
+      if (subtabDebug) subtabDebug.style.display = 'flex';
+      if (subtabConsole) subtabConsole.style.display = 'none';
+      document.getElementById('repl-input')?.focus();
+    });
   }
 
   bindEvents() {
@@ -77,7 +126,11 @@ export class SidePanel {
     });
 
     this.elements.clearConsoleBtn?.addEventListener('click', () => {
-      this.clearConsole();
+      if (this.activeLowerTab === 'debug') {
+        if (this.onClearRepl) this.onClearRepl();
+      } else {
+        this.clearConsole();
+      }
     });
 
     this.elements.promptSubmitBtn?.addEventListener('click', () => {
@@ -214,13 +267,53 @@ export class SidePanel {
         <tr class="${isChanged ? 'variable-row-changed' : ''}">
           <td class="var-name"><code>${escapeHtml(key)}</code></td>
           <td class="var-type"><code>${cType}</code></td>
-          <td class="var-value"><code>${escapeHtml(JSON.stringify(val))}</code></td>
+          <td class="var-value" data-var="${escapeHtml(key)}" title="${I18n.t('variables.editHint')}"><code>${escapeHtml(JSON.stringify(val))}</code></td>
         </tr>
       `;
     }
 
     tbody.innerHTML = rowsHtml;
     this.prevVariables = { ...variables };
+
+    // Attach double-click edit listeners to variable value cells
+    tbody.querySelectorAll('.var-value').forEach((cell) => {
+      cell.addEventListener('dblclick', () => {
+        const varName = cell.dataset.var;
+        const currentVal = this.currentVariables[varName];
+        if (cell.querySelector('input')) return; // Already editing
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'inline-var-input';
+        input.value = typeof currentVal === 'string' ? `"${currentVal}"` : String(currentVal ?? '');
+
+        cell.innerHTML = '';
+        cell.appendChild(input);
+        input.focus();
+        input.select();
+
+        let finished = false;
+        const finishEdit = () => {
+          if (finished) return;
+          finished = true;
+          const newValStr = input.value.trim();
+          if (this.onVariableEdit && newValStr !== '') {
+            this.onVariableEdit(varName, newValStr);
+          } else {
+            cell.innerHTML = `<code>${escapeHtml(JSON.stringify(currentVal))}</code>`;
+          }
+        };
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') finishEdit();
+          else if (e.key === 'Escape') {
+            finished = true;
+            cell.innerHTML = `<code>${escapeHtml(JSON.stringify(currentVal))}</code>`;
+          }
+        });
+        input.addEventListener('blur', finishEdit);
+      });
+    });
   }
 
   /**
