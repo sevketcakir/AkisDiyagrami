@@ -399,7 +399,19 @@ export class CGenerator {
         const inputNode = /** @type {import('../engine/nodes/InputNode.js').InputNode} */ (node);
         const varNames = (inputNode.variableName || 'x').split(',').map(s => s.trim());
         for (const v of varNames) {
-          registerVar(v, 'int'); // Default input variable to int
+          const typeMatch = v.match(/^(int|float|double|char|string)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)$/i);
+          if (typeMatch) {
+            const explicitType = typeMatch[1].toLowerCase();
+            const actualName = typeMatch[2];
+            const targetType = (explicitType === 'double' || explicitType === 'float')
+              ? 'double'
+              : (explicitType === 'char' || explicitType === 'string')
+                ? 'char[]'
+                : 'int';
+            registerVar(actualName, targetType);
+          } else {
+            registerVar(v, 'int'); // Default input variable to int
+          }
         }
       } else if (node.type === 'loop') {
         const loopNode = /** @type {import('../engine/nodes/LoopNode.js').LoopNode} */ (node);
@@ -535,13 +547,15 @@ export class CGenerator {
    * @returns {string} e.g. 'scanf("%d %lf", &a, &b);'
    */
   static formatScanf(variableName, symbolTable) {
-    const names = String(variableName || 'x').split(',').map(s => s.trim()).filter(Boolean);
-    if (names.length === 0) return 'scanf("%d", &x);';
+    const rawNames = String(variableName || 'x').split(',').map(s => s.trim()).filter(Boolean);
+    if (rawNames.length === 0) return 'scanf("%d", &x);';
 
     const formatTokens = [];
     const scanArgs = [];
 
-    for (const name of names) {
+    for (const rawName of rawNames) {
+      const typeMatch = rawName.match(/^(int|float|double|char|string)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)$/i);
+      const name = typeMatch ? typeMatch[2] : rawName;
       const varEntry = symbolTable.get(name);
       if (varEntry?.type === 'double') {
         formatTokens.push('%lf');

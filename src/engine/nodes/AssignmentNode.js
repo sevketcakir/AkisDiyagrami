@@ -38,14 +38,22 @@ export class AssignmentNode extends FlowchartNode {
         if (this.evaluator) {
           this.evaluator(stmt, context, { variableName: this.variableName });
         } else if (this.variableName && !stmt.includes('=')) {
-          const num = Number(stmt);
-          context.setVariable(this.variableName, isNaN(num) ? stmt : num);
+          const trimmed = stmt.trim();
+          const normalized = (/^[+-]?\d+,\d+$/.test(trimmed)) ? trimmed.replace(',', '.') : trimmed;
+          const num = Number(normalized);
+          const isFloat = normalized.includes('.') || normalized.toLowerCase().includes('e');
+          context.setVariable(this.variableName, isNaN(num) ? stmt : num, isFloat);
         } else if (stmt.includes('=')) {
           const parts = stmt.split('=');
-          const varName = parts[0].trim();
+          const varPart = parts[0].trim();
+          const typeMatch = varPart.match(/^(int|float|double|char|string)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)$/i);
+          const varName = typeMatch ? typeMatch[2] : varPart;
           const rhs = parts.slice(1).join('=').trim();
-          const num = Number(rhs);
-          context.setVariable(varName, isNaN(num) ? rhs : num);
+          const normalized = (/^[+-]?\d+,\d+$/.test(rhs)) ? rhs.replace(',', '.') : rhs;
+          const num = Number(normalized);
+          const isFloat = (typeMatch && (typeMatch[1].toLowerCase() === 'double' || typeMatch[1].toLowerCase() === 'float')) ||
+            normalized.includes('.') || normalized.toLowerCase().includes('e');
+          context.setVariable(varName, isNaN(num) ? rhs : num, isFloat);
         }
       }
     }

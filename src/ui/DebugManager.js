@@ -285,7 +285,10 @@ export class DebugManager {
       } else if (res.value === undefined) {
         valDisplay = `<span class="watch-undefined">${I18n.t('watches.undefined')}</span>`;
       } else {
-        valDisplay = `<code>${escapeHtml(JSON.stringify(res.value))}</code>`;
+        const displayVal = (res.cType === 'double' && typeof res.value === 'number' && Number.isInteger(res.value))
+          ? res.value.toFixed(1)
+          : JSON.stringify(res.value);
+        valDisplay = `<code>${escapeHtml(displayVal)}</code>`;
       }
 
       const editHint = I18n.t('watches.editHint');
@@ -429,9 +432,14 @@ export class DebugManager {
         }
         this.updateWatches(ctx);
 
+        const targetVarMatch = trimmed.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)/);
+        const targetVar = targetVarMatch ? targetVarMatch[1] : null;
+        const isFloat = targetVar ? ctx.floatVars?.has(targetVar) : false;
+
         this.logReplOutput(trimmed, {
           isAssignment: true,
           result,
+          isFloat,
           variables: { ...ctx.variables }
         });
       } else {
@@ -509,10 +517,18 @@ export class DebugManager {
     if (res.error) {
       resultHtml = `<div class="repl-res repl-res-error"><span class="repl-indicator">❌</span> ${escapeHtml(res.error)}</div>`;
     } else if (res.isAssignment) {
-      resultHtml = `<div class="repl-res repl-res-assign"><span class="repl-indicator">✓</span> <code>${escapeHtml(JSON.stringify(res.result))}</code> <span class="repl-badge-assign">${I18n.t('debug.varUpdated')}</span></div>`;
+      const isFloatVal = res.isFloat || (typeof res.result === 'number' && !Number.isInteger(res.result));
+      const assignVal = (isFloatVal && typeof res.result === 'number' && Number.isInteger(res.result))
+        ? res.result.toFixed(1)
+        : JSON.stringify(res.result);
+      resultHtml = `<div class="repl-res repl-res-assign"><span class="repl-indicator">✓</span> <code>${escapeHtml(assignVal)}</code> <span class="repl-badge-assign">${I18n.t('debug.varUpdated')}</span></div>`;
     } else {
       const typeBadge = res.cType ? `<span class="repl-type-badge">${escapeHtml(res.cType)}</span>` : '';
-      const displayVal = res.result === undefined ? 'undefined' : JSON.stringify(res.result);
+      const displayVal = res.result === undefined
+        ? 'undefined'
+        : (res.cType === 'double' && typeof res.result === 'number' && Number.isInteger(res.result)
+            ? res.result.toFixed(1)
+            : JSON.stringify(res.result));
       resultHtml = `<div class="repl-res repl-res-val"><span class="repl-indicator">←</span> <code>${escapeHtml(displayVal)}</code> ${typeBadge}</div>`;
     }
 

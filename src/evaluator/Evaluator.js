@@ -74,10 +74,10 @@ export class SafeEvaluator {
         return false;
 
       case 'Identifier': {
+        if (scope.__floatVars && scope.__floatVars.has(node.name)) return true;
         const val = scope[node.name];
         if (typeof val === 'number') {
           if (!Number.isInteger(val)) return true;
-          if (scope.__floatVars && scope.__floatVars.has(node.name)) return true;
         }
         return false;
       }
@@ -303,15 +303,16 @@ export class SafeEvaluator {
     }
 
     // Check for compound assignments like +=, -=, *=, /=
-    const compoundMatch = trimmed.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(\+=|-=|\*=|\/=|%=)\s*(.+)$/);
+    const compoundMatch = trimmed.match(/^(?:(int|float|double|char|string)\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(\+=|-=|\*=|\/=|%=)\s*(.+)$/i);
     if (compoundMatch) {
-      const varName = compoundMatch[1];
-      const op = compoundMatch[2];
-      const rhsExpr = compoundMatch[3];
+      const explicitType = compoundMatch[1]?.toLowerCase();
+      const varName = compoundMatch[2];
+      const op = compoundMatch[3];
+      const rhsExpr = compoundMatch[4];
       const ast = jsep(rhsExpr);
       const isRhsFloat = SafeEvaluator.isFloatAST(ast, scope);
       const isCurrentFloat = context.floatVars?.has(varName) || false;
-      const isFloat = isRhsFloat || isCurrentFloat;
+      const isFloat = explicitType === 'double' || explicitType === 'float' || isRhsFloat || isCurrentFloat;
       const rhsVal = SafeEvaluator.evaluateAST(ast, scope);
       const currentVal = context.getVariable(varName) ?? 0;
 
@@ -336,15 +337,25 @@ export class SafeEvaluator {
     // Standard assignment: var = expression
     const eqIdx = trimmed.indexOf('=');
     if (eqIdx !== -1) {
-      const targetVar = trimmed.substring(0, eqIdx).trim();
+      let targetVar = trimmed.substring(0, eqIdx).trim();
       const rhsExpr = trimmed.substring(eqIdx + 1).trim();
+
+      let explicitFloat = false;
+      const typeMatch = targetVar.match(/^(int|float|double|char|string)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)$/i);
+      if (typeMatch) {
+        const explicitType = typeMatch[1].toLowerCase();
+        targetVar = typeMatch[2];
+        if (explicitType === 'double' || explicitType === 'float') {
+          explicitFloat = true;
+        }
+      }
 
       if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(targetVar)) {
         throw new Error(`Invalid variable identifier: "${targetVar}"`);
       }
 
       const ast = jsep(rhsExpr);
-      const isFloat = SafeEvaluator.isFloatAST(ast, scope);
+      const isFloat = explicitFloat || SafeEvaluator.isFloatAST(ast, scope);
       const value = SafeEvaluator.evaluateAST(ast, scope);
       context.setVariable(targetVar, value, isFloat);
       return value;

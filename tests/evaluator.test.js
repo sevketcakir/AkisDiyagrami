@@ -57,6 +57,19 @@ describe('SafeEvaluator', () => {
 
     SafeEvaluator.evaluateAssignment('x += 5', context);
     expect(context.variables.x).toBe(15);
+
+    // Explicit float assignment like 3.0 or double r = 3
+    SafeEvaluator.evaluateAssignment('r = 3.0', context);
+    expect(context.variables.r).toBe(3);
+    expect(context.floatVars.has('r')).toBe(true);
+
+    SafeEvaluator.evaluateAssignment('double d = 7', context);
+    expect(context.variables.d).toBe(7);
+    expect(context.floatVars.has('d')).toBe(true);
+
+    SafeEvaluator.evaluateAssignment('float f = 4', context);
+    expect(context.variables.f).toBe(4);
+    expect(context.floatVars.has('f')).toBe(true);
   });
 
   it('should throw safe errors on division by zero', () => {

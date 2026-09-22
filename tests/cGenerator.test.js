@@ -236,4 +236,18 @@ describe('CGenerator - Phase 3: Recursive C Code Generator', () => {
     expect(cCode).toContain('delta = pow(b, 2) - 4 * a * c;');
     expect(cCode).toContain('x1 = (-b + sqrt(delta)) / (2 * a);');
   });
+
+  it('should infer double type when input node has explicit type prefix', () => {
+    const nodes = new Map([
+      ['1', new StartNode('1', '2')],
+      ['2', new InputNode('2', { variableName: 'double r, h', nextNodeId: '3' })],
+      ['3', new AssignmentNode('3', { expression: 'area = 3.14 * r * r', nextNodeId: '4' })],
+      ['4', new EndNode('4')]
+    ]);
+
+    const { symbolTable, cCode } = CGenerator.generateCProgram('1', nodes);
+    expect(symbolTable.get('r').type).toBe('double');
+    expect(symbolTable.get('h').type).toBe('int');
+    expect(cCode).toContain('scanf("%lf %d", &r, &h);');
+  });
 });

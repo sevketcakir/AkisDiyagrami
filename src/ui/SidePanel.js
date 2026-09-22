@@ -284,13 +284,17 @@ export class SidePanel {
         cType = 'char[]';
       }
 
+      const displayVal = (cType === 'double' && typeof val === 'number' && Number.isInteger(val))
+        ? val.toFixed(1)
+        : JSON.stringify(val);
+
       rowsHtml += `
         <tr class="${isChanged ? 'variable-row-changed' : ''}">
           <td class="var-name"><code>${escapeHtml(key)}</code></td>
           <td class="var-type"><code>${cType}</code></td>
           <td class="var-value" data-var="${escapeHtml(key)}" title="${I18n.t('variables.editHint')}">
             <div class="var-value-wrapper">
-              <code class="var-val-text">${escapeHtml(JSON.stringify(val))}</code>
+              <code class="var-val-text">${escapeHtml(displayVal)}</code>
               <button type="button" class="btn-edit-var" data-var="${escapeHtml(key)}" title="${I18n.t('variables.editHint')}">✏️</button>
             </div>
           </td>
@@ -317,7 +321,10 @@ export class SidePanel {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'inline-var-input';
-    input.value = typeof currentVal === 'string' ? `"${currentVal}"` : String(currentVal ?? '');
+    const isDouble = this.currentFloatVars?.has(varName) || (typeof currentVal === 'number' && !Number.isInteger(currentVal));
+    input.value = (isDouble && typeof currentVal === 'number' && Number.isInteger(currentVal))
+      ? currentVal.toFixed(1)
+      : (typeof currentVal === 'string' ? `"${currentVal}"` : String(currentVal ?? ''));
 
     const saveBtn = document.createElement('button');
     saveBtn.type = 'button';

@@ -294,6 +294,70 @@ describe('InputNode handling', () => {
     expect(interpreter.context.variables.b).toBe(20);
     expect(interpreter.context.variables.c).toBe(30);
   });
+
+  it('should recognize float inputs like 3.0 as double and propagate to expressions', () => {
+    // Test the exact scenario reported by the user:
+    // radius is input as '3.0', height as '5', pi is 3 (integer).
+    // Because radius is '3.0' (double), volume must also be recognized as double!
+    const context = new InterpreterContext({
+      inputQueue: ['3.0', '5']
+    });
+    const initPi = new AssignmentNode('init_pi', { expression: 'pi = 3', nextNodeId: 'in_1' });
+    const inNode = new InputNode('in_1', { variableName: 'r, h', nextNodeId: 'calc' });
+    const calcNode = new AssignmentNode('calc', {
+      expression: 'V = pi * r * r * h',
+      nextNodeId: 'end',
+      evaluator: SafeEvaluator.hook
+    });
+    const end = new EndNode('end');
+
+    const interpreter = new FlowchartInterpreter({
+      nodes: { init_pi: initPi, in_1: inNode, calc: calcNode, end },
+      startNodeId: 'init_pi',
+      context,
+      evaluator: SafeEvaluator.hook
+    });
+
+    // Step 0: init_pi executes (pi = 3)
+    interpreter.step();
+    expect(interpreter.context.variables.pi).toBe(3);
+    expect(interpreter.context.floatVars.has('pi')).toBe(false); // pi is integer
+
+    // Step 1: Input node executes (r = '3.0', h = '5')
+    interpreter.step();
+    expect(interpreter.context.variables.r).toBe(3);
+    expect(interpreter.context.floatVars.has('r')).toBe(true); // Must be double!
+    expect(interpreter.context.variables.h).toBe(5);
+    expect(interpreter.context.floatVars.has('h')).toBe(false); // Integer
+
+    // Step 2: Calculation executes
+    interpreter.step();
+    expect(interpreter.context.variables.V).toBe(135);
+    expect(interpreter.context.floatVars.has('V')).toBe(true); // Must be double due to r!
+
+    // Verify division with r uses floating point division instead of integer truncation
+    const divResult = SafeEvaluator.evaluate('r / 2', {
+      ...interpreter.context.variables,
+      __floatVars: interpreter.context.floatVars
+    });
+    expect(divResult).toBe(1.5); // 3.0 / 2 = 1.5, not 1!
+  });
+
+  it('should support explicit type prefix in InputNode e.g. double r', () => {
+    const context = new InterpreterContext({ inputQueue: ['3'] });
+    const inNode = new InputNode('in_1', { variableName: 'double r', nextNodeId: 'end' });
+    const end = new EndNode('end');
+
+    const interpreter = new FlowchartInterpreter({
+      nodes: { in_1: inNode, end },
+      startNodeId: 'in_1',
+      context
+    });
+
+    interpreter.step();
+    expect(interpreter.context.variables.r).toBe(3);
+    expect(interpreter.context.floatVars.has('r')).toBe(true);
+  });
 });
 
 describe('Multi-Statement Nodes (Compact Flowchart Blocks)', () => {

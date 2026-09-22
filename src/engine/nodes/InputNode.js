@@ -25,12 +25,21 @@ export class InputNode extends FlowchartNode {
    * @param {import('../InterpreterContext.js').InterpreterContext} context
    */
   execute(context) {
-    const varNames = SafeEvaluator.splitStatements(this.variableName).map(s => s.trim()).filter(Boolean);
-    if (varNames.length === 0) {
-      varNames.push('x');
+    const rawDeclarations = SafeEvaluator.splitStatements(this.variableName).map(s => s.trim()).filter(Boolean);
+    if (rawDeclarations.length === 0) {
+      rawDeclarations.push('x');
     }
 
-    for (const varName of varNames) {
+    for (const decl of rawDeclarations) {
+      // Check if variable declaration has an optional type prefix, e.g. "double r", "float height", "int count"
+      let varName = decl;
+      let explicitType = null;
+      const typeMatch = decl.match(/^(int|float|double|char|string)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)$/i);
+      if (typeMatch) {
+        explicitType = typeMatch[1].toLowerCase();
+        varName = typeMatch[2];
+      }
+
       let rawValue = null;
 
       if (context.inputQueue && context.inputQueue.length > 0) {
@@ -44,14 +53,25 @@ export class InputNode extends FlowchartNode {
 
       // Automatically convert numeric inputs to numbers (standard for C-like introductory logic)
       let parsedValue = rawValue;
-      if (typeof rawValue === 'string') {
+      let isFloat = explicitType === 'double' || explicitType === 'float';
+
+      if (typeof rawValue === 'number') {
+        isFloat = isFloat || !Number.isInteger(rawValue);
+      } else if (typeof rawValue === 'string') {
         const trimmed = rawValue.trim();
-        if (trimmed !== '' && !isNaN(Number(trimmed))) {
-          parsedValue = Number(trimmed);
+        // Support European/Turkish comma decimals if matching pure float e.g. "3,0" or "3,14"
+        const normalized = (/^[+-]?\d+,\d+$/.test(trimmed)) ? trimmed.replace(',', '.') : trimmed;
+
+        if (normalized !== '' && !isNaN(Number(normalized))) {
+          parsedValue = Number(normalized);
+          // If input explicitly contains a decimal dot or exponent (e.g. "3.0", "2.", ".5", "1e-3"), treat as float/double
+          if (normalized.includes('.') || normalized.toLowerCase().includes('e')) {
+            isFloat = true;
+          }
         }
       }
 
-      context.setVariable(varName, parsedValue);
+      context.setVariable(varName, parsedValue, isFloat);
     }
 
     if (!this.nextNodeId) {
