@@ -379,28 +379,116 @@ class App {
 
   bindSidebarDrag() {
     const dragItems = document.querySelectorAll('.drag-item');
+    const drawflowEl = document.getElementById('drawflow');
+    let tapOffsetCounter = 0;
+
     dragItems.forEach((item) => {
+      const nodeType = item.dataset.node;
+      if (!nodeType) return;
+
+      // 1. Desktop HTML5 Drag & Drop
       item.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('node-type', item.dataset.node);
+        e.dataTransfer.setData('node-type', nodeType);
+      });
+
+      // 2. Touch Drag & Drop (Tablets & Mobile)
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let isDragging = false;
+      let ghost = null;
+      let touchJustEnded = false;
+
+      item.addEventListener('touchstart', (e) => {
+        if (!e.touches?.[0]) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isDragging = false;
+        touchJustEnded = false;
+      }, { passive: true });
+
+      item.addEventListener('touchmove', (e) => {
+        if (!e.touches?.[0]) return;
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const dist = Math.hypot(currentX - touchStartX, currentY - touchStartY);
+
+        if (!isDragging && dist > 10) {
+          isDragging = true;
+          ghost = document.createElement('div');
+          ghost.className = 'touch-drag-ghost';
+          ghost.innerHTML = item.innerHTML;
+          document.body.appendChild(ghost);
+        }
+
+        if (isDragging && ghost) {
+          e.preventDefault(); // Prevent scrolling while dragging a node
+          ghost.style.left = `${currentX}px`;
+          ghost.style.top = `${currentY}px`;
+        }
+      }, { passive: false });
+
+      item.addEventListener('touchend', (e) => {
+        if (isDragging && ghost) {
+          e.preventDefault();
+          ghost.remove();
+          ghost = null;
+          touchJustEnded = true;
+          setTimeout(() => { touchJustEnded = false; }, 300);
+
+          const touch = e.changedTouches?.[0];
+          if (touch && drawflowEl) {
+            const rect = drawflowEl.getBoundingClientRect();
+            if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+              const zoom = this.canvasManager.editor.zoom || 1;
+              const canvasX = this.canvasManager.editor.canvas_x || 0;
+              const canvasY = this.canvasManager.editor.canvas_y || 0;
+              const posX = Math.max(20, Math.round((touch.clientX - rect.left - canvasX) / zoom - 90));
+              const posY = Math.max(20, Math.round((touch.clientY - rect.top - canvasY) / zoom - 40));
+              this.canvasManager.addNode(nodeType, posX, posY);
+            }
+          }
+          isDragging = false;
+        }
+      });
+
+      item.addEventListener('touchcancel', () => {
+        if (ghost) {
+          ghost.remove();
+          ghost = null;
+        }
+        isDragging = false;
+      });
+
+      // 3. Tap / Click to Add: Instantly adds node at visible canvas center
+      item.addEventListener('click', () => {
+        if (isDragging || touchJustEnded) return;
+        const center = this.canvasManager.getVisibleCanvasCenter();
+        const offset = (tapOffsetCounter++ % 6) * 16;
+        this.canvasManager.addNode(nodeType, center.x + offset, center.y + offset);
       });
     });
 
-    const drawflowEl = document.getElementById('drawflow');
-    drawflowEl.addEventListener('dragover', (e) => {
-      e.preventDefault();
-    });
+    if (drawflowEl) {
+      drawflowEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
 
-    drawflowEl.addEventListener('drop', (e) => {
-      e.preventDefault();
-      const nodeType = e.dataTransfer.getData('node-type');
-      if (!nodeType) return;
+      drawflowEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const nodeType = e.dataTransfer.getData('node-type');
+        if (!nodeType) return;
 
-      const rect = drawflowEl.getBoundingClientRect();
-      const posX = Math.max(20, e.clientX - rect.left - 90);
-      const posY = Math.max(20, e.clientY - rect.top - 40);
+        const rect = drawflowEl.getBoundingClientRect();
+        const zoom = this.canvasManager.editor.zoom || 1;
+        const canvasX = this.canvasManager.editor.canvas_x || 0;
+        const canvasY = this.canvasManager.editor.canvas_y || 0;
+        const posX = Math.max(20, Math.round((e.clientX - rect.left - canvasX) / zoom - 90));
+        const posY = Math.max(20, Math.round((e.clientY - rect.top - canvasY) / zoom - 40));
 
-      this.canvasManager.addNode(nodeType, posX, posY);
-    });
+        this.canvasManager.addNode(nodeType, posX, posY);
+      });
+    }
   }
 
   bindHeaderActions() {
@@ -466,14 +554,29 @@ class App {
     });
 
     // Zoom Controls
-    document.getElementById('btn-zoom-in').addEventListener('click', () => {
+    document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
       this.canvasManager.zoomIn();
     });
-    document.getElementById('btn-zoom-out').addEventListener('click', () => {
+    document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
       this.canvasManager.zoomOut();
     });
-    document.getElementById('btn-zoom-reset').addEventListener('click', () => {
+    document.getElementById('btn-zoom-reset')?.addEventListener('click', () => {
       this.canvasManager.zoomReset();
+    });
+    document.getElementById('btn-zoom-fit')?.addEventListener('click', () => {
+      this.canvasManager.zoomToFit();
+    });
+
+    // Global keyboard shortcut: Shift + F to Zoom to Fit
+    document.addEventListener('keydown', (e) => {
+      if (e.shiftKey && (e.key === 'F' || e.key === 'f')) {
+        const tag = e.target?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || e.target?.isContentEditable) {
+          return;
+        }
+        e.preventDefault();
+        this.canvasManager.zoomToFit();
+      }
     });
   }
 

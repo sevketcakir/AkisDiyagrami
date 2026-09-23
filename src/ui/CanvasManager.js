@@ -2,6 +2,7 @@ import Drawflow from 'drawflow';
 import 'drawflow/dist/drawflow.min.css';
 import { AutoLayout } from './AutoLayout.js';
 import { I18n } from '../i18n/I18n.js';
+import { InputNode } from '../engine/nodes/InputNode.js';
 
 /**
  * Generates paper-standard flowchart node HTML using embedded SVG shapes.
@@ -87,14 +88,19 @@ export function renderNodeHtml(type, customData = {}) {
       const varName = customData.variableName ?? customData.variablename ?? customData.variable ?? customData.name ?? customData.text ?? 'x';
       const lines = String(varName).split('\n').length;
       const rows = Math.min(3, Math.max(1, lines));
+      const validation = InputNode.validateVariableName(varName);
+      const isInvalid = !validation.isValid;
+      const tooltip = isInvalid
+        ? `${escapeHtml(varName)}\n⚠️ ${I18n.t('nodes.inputInvalidWarning')}`
+        : escapeHtml(varName);
       return `
-        <div class="flowchart-node-content node-parallelogram shape-input">
+        <div class="flowchart-node-content node-parallelogram shape-input ${isInvalid ? 'node-input-invalid' : ''}">
           <svg class="shape-svg" viewBox="0 0 190 80" preserveAspectRatio="none">
             <polygon points="26,5 185,5 164,75 5,75" class="svg-shape-path svg-input" />
           </svg>
           <div class="node-inner-content">
             <div class="node-header">${I18n.t('nodes.inputHeader')}</div>
-            <textarea df-variablename class="node-textarea" rows="${rows}" placeholder="${I18n.t('nodes.inputPlaceholder')}" title="${escapeHtml(varName)}">${escapeHtml(varName)}</textarea>
+            <textarea df-variablename class="node-textarea" rows="${rows}" placeholder="${I18n.t('nodes.inputPlaceholder')}" title="${tooltip}">${escapeHtml(varName)}</textarea>
           </div>
         </div>
       `;
@@ -816,6 +822,16 @@ export class CanvasManager {
       // Update hover tooltip with full expression text
       target.title = target.value;
 
+      // Real-time Input node validation feedback
+      const shapeInput = target.closest('.shape-input');
+      if (shapeInput) {
+        const validation = InputNode.validateVariableName(target.value);
+        shapeInput.classList.toggle('node-input-invalid', !validation.isValid);
+        if (!validation.isValid) {
+          target.title = `${target.value}\n⚠️ ${I18n.t('nodes.inputInvalidWarning')}`;
+        }
+      }
+
       const nodeElement = target.closest('.drawflow-node');
       if (!nodeElement) return;
 
@@ -1254,6 +1270,7 @@ export class CanvasManager {
     const rawData = this.exportData();
     const organizedData = AutoLayout.layout(rawData);
     this.loadData(organizedData);
+    setTimeout(() => this.zoomToFit(), 60);
   }
 
   zoomIn() {
@@ -1266,6 +1283,118 @@ export class CanvasManager {
 
   zoomReset() {
     this.editor.zoom_reset();
+  }
+
+  /**
+   * Calculates canvas coordinates corresponding to the center of the visible viewport.
+   * Useful for tap-to-add on mobile/tablets or keyboard node placement.
+   * @returns {{ x: number, y: number }}
+   */
+  getVisibleCanvasCenter() {
+    const rect = this.container.getBoundingClientRect();
+    const viewW = rect.width || this.container.clientWidth || 800;
+    const viewH = rect.height || this.container.clientHeight || 600;
+    const zoom = this.editor.zoom || 1;
+    const canvasX = this.editor.canvas_x || 0;
+    const canvasY = this.editor.canvas_y || 0;
+
+    const screenCenterX = viewW / 2;
+    const screenCenterY = viewH / 2;
+
+    const posX = Math.round((screenCenterX - canvasX) / zoom - 90);
+    const posY = Math.round((screenCenterY - canvasY) / zoom - 40);
+
+    return { x: Math.max(20, posX), y: Math.max(20, posY) };
+  }
+
+  /**
+   * Centers and scales all diagram nodes within the visible viewport.
+   * Capped at 100% zoom (1.0) so small diagrams don't blow up.
+   * @param {Object} [options]
+   * @param {number} [options.padding=70] - Padding around bounding box in pixels
+   * @param {boolean} [options.animate=true] - Whether to animate smoothly
+   */
+  zoomToFit(options = {}) {
+    const rawNodes = this.editor.drawflow?.drawflow?.[this.editor.module]?.data || {};
+    const nodeIds = Object.keys(rawNodes);
+
+    if (nodeIds.length === 0) {
+      this.zoomReset();
+      return;
+    }
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const id of nodeIds) {
+      const node = rawNodes[id];
+      const posX = Number(node.pos_x) || 0;
+      const posY = Number(node.pos_y) || 0;
+
+      const el = this.container.querySelector(`#node-${id}`);
+      const width = el ? (el.offsetWidth || 180) : 180;
+      const height = el ? (el.offsetHeight || 80) : 80;
+
+      if (posX < minX) minX = posX;
+      if (posY < minY) minY = posY;
+      if (posX + width > maxX) maxX = posX + width;
+      if (posY + height > maxY) maxY = posY + height;
+    }
+
+    if (!isFinite(minX) || !isFinite(minY)) {
+      this.zoomReset();
+      return;
+    }
+
+    const rect = this.container.getBoundingClientRect();
+    const viewW = rect.width || this.container.clientWidth || 800;
+    const viewH = rect.height || this.container.clientHeight || 600;
+
+    const padding = options.padding ?? 70;
+    const availW = Math.max(100, viewW - padding * 2);
+    const availH = Math.max(100, viewH - padding * 2);
+
+    const contentW = Math.max(50, maxX - minX);
+    const contentH = Math.max(50, maxY - minY);
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    let targetZoom = Math.min(availW / contentW, availH / contentH);
+    targetZoom = Math.min(1.0, Math.max(0.2, targetZoom));
+    targetZoom = Math.round(targetZoom * 100) / 100;
+
+    const targetCanvasX = Math.round((viewW / 2) - (centerX * targetZoom));
+    const targetCanvasY = Math.round((viewH / 2) - (centerY * targetZoom));
+
+    const animate = options.animate !== false;
+    const precanvas = this.container.querySelector('.drawflow');
+
+    if (animate && precanvas) {
+      precanvas.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)';
+    }
+
+    this.editor.zoom = targetZoom;
+    this.editor.zoom_last_value = targetZoom;
+    this.editor.canvas_x = targetCanvasX;
+    this.editor.canvas_y = targetCanvasY;
+
+    if (precanvas) {
+      precanvas.style.transform = `translate(${targetCanvasX}px, ${targetCanvasY}px) scale(${targetZoom})`;
+    }
+
+    this.editor.dispatch('zoom', targetZoom);
+    this.editor.dispatch('translate', { x: targetCanvasX, y: targetCanvasY });
+
+    if (animate && precanvas) {
+      setTimeout(() => {
+        precanvas.style.transition = '';
+        this.routeAllNodeConnections();
+      }, 260);
+    } else {
+      this.routeAllNodeConnections();
+    }
   }
 
   /**

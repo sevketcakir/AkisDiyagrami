@@ -226,4 +226,27 @@ describe('GraphParser', () => {
     expect(errors.some(e => e.includes('Exit') || e.includes('Çıkış'))).toBe(true);
     expect(errorNodeId).toBe('2');
   });
+
+  it('should detect assignment expressions in Input nodes and return validation error', () => {
+    const dataInputWithAssignment = {
+      drawflow: {
+        Home: {
+          data: {
+            '1': { id: 1, name: 'start', outputs: { output_1: { connections: [{ node: '2', output: 'input_1' }] } } },
+            '2': {
+              id: 2,
+              name: 'input',
+              data: { variableName: 'T=0' },
+              outputs: { output_1: { connections: [{ node: '3', output: 'input_1' }] } }
+            },
+            '3': { id: 3, name: 'end', outputs: {} }
+          }
+        }
+      }
+    };
+
+    const { errors, errorNodeId } = GraphParser.parseDrawflow(dataInputWithAssignment);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errorNodeId).toBe('2');
+  });
 });

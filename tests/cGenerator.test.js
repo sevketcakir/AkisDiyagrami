@@ -250,4 +250,14 @@ describe('CGenerator - Phase 3: Recursive C Code Generator', () => {
     expect(symbolTable.get('h').type).toBe('int');
     expect(cCode).toContain('scanf("%lf %d", &r, &h);');
   });
+
+  it('should reject input node with assignment expression during C code generation', () => {
+    const nodes = new Map([
+      ['1', new StartNode('1', '2')],
+      ['2', new InputNode('2', { variableName: 'T=0', nextNodeId: '3' })],
+      ['3', new EndNode('3')]
+    ]);
+
+    expect(() => CGenerator.generateCProgram('1', nodes)).toThrow(CGeneratorError);
+  });
 });

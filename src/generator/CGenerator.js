@@ -397,7 +397,15 @@ export class CGenerator {
         }
       } else if (node.type === 'input') {
         const inputNode = /** @type {import('../engine/nodes/InputNode.js').InputNode} */ (node);
-        const varNames = (inputNode.variableName || 'x').split(',').map(s => s.trim());
+        const rawVarStr = inputNode.variableName || 'x';
+        if (rawVarStr.includes('=')) {
+          throw new CGeneratorError(
+            `Girdi bloğunda [${currentId}] atama ("${rawVarStr}") yapılamaz. Yalnızca okunacak değişken adını yazınız.`,
+            currentId,
+            'GRAPH_ERROR'
+          );
+        }
+        const varNames = rawVarStr.split(',').map(s => s.trim()).filter(Boolean);
         for (const v of varNames) {
           const typeMatch = v.match(/^(int|float|double|char|string)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)$/i);
           if (typeMatch) {
@@ -409,8 +417,14 @@ export class CGenerator {
                 ? 'char[]'
                 : 'int';
             registerVar(actualName, targetType);
-          } else {
+          } else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(v)) {
             registerVar(v, 'int'); // Default input variable to int
+          } else {
+            throw new CGeneratorError(
+              `Girdi bloğunda [${currentId}] geçersiz değişken adı: "${v}".`,
+              currentId,
+              'GRAPH_ERROR'
+            );
           }
         }
       } else if (node.type === 'loop') {

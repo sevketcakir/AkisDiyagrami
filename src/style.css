@@ -214,8 +214,10 @@ body {
   border-radius: 8px;
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px dashed var(--border-color);
-  cursor: grab;
+  cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
   transition: all 0.2s ease;
   font-size: 0.85rem;
 }
@@ -224,6 +226,11 @@ body {
   background-color: rgba(59, 130, 246, 0.1);
   border-color: var(--primary);
   transform: translateY(-1px);
+}
+
+.drag-item:active {
+  cursor: grabbing;
+  transform: scale(0.97);
 }
 
 .drag-item .item-icon {
@@ -238,6 +245,30 @@ body {
 .drag-item .item-desc {
   font-size: 0.7rem;
   color: var(--text-muted);
+}
+
+/* Touch Drag Ghost Preview for Tablets and Mobile */
+.touch-drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background-color: #1e293b;
+  border: 2px solid #3b82f6;
+  color: #f8fafc;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(0, 0, 0, 0.4);
+  opacity: 0.94;
+}
+
+.touch-drag-ghost .item-icon {
+  font-size: 1.2rem;
 }
 
 /* Canvas Area */
@@ -1025,6 +1056,27 @@ body {
 .svg-loop { stroke: #06b6d4; }
 .svg-input { stroke: #a855f7; }
 .svg-output { stroke: #f97316; }
+
+/* Real-time Invalid Input Node Warning Indicator */
+.flowchart-node-content.node-input-invalid .svg-input {
+  stroke: #ef4444 !important;
+  stroke-dasharray: 5 3;
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.75));
+  animation: inputInvalidPulse 1.2s ease-in-out infinite alternate;
+}
+
+.flowchart-node-content.node-input-invalid textarea {
+  color: #fca5a5 !important;
+}
+
+@keyframes inputInvalidPulse {
+  from {
+    filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.5));
+  }
+  to {
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 1));
+  }
+}
 
 /* 1. Oval / Capsule for Start & End */
 .shape-oval {

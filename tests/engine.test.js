@@ -358,6 +358,31 @@ describe('InputNode handling', () => {
     expect(interpreter.context.variables.r).toBe(3);
     expect(interpreter.context.floatVars.has('r')).toBe(true);
   });
+
+  it('validateVariableName should accept valid variable names and type annotations', () => {
+    expect(InputNode.validateVariableName('x').isValid).toBe(true);
+    expect(InputNode.validateVariableName('a, b, c').isValid).toBe(true);
+    expect(InputNode.validateVariableName('double r').isValid).toBe(true);
+    expect(InputNode.validateVariableName('int count, float rate').isValid).toBe(true);
+  });
+
+  it('validateVariableName should reject assignment expressions like T=0', () => {
+    const res = InputNode.validateVariableName('T=0');
+    expect(res.isValid).toBe(false);
+    expect(res.errorType).toBe('ASSIGNMENT');
+  });
+
+  it('validateVariableName should reject invalid identifiers', () => {
+    const res = InputNode.validateVariableName('123abc');
+    expect(res.isValid).toBe(false);
+    expect(res.errorType).toBe('INVALID_IDENTIFIER');
+  });
+
+  it('execute should throw educational error when InputNode contains assignment', () => {
+    const context = new InterpreterContext({ inputQueue: ['0'] });
+    const inNode = new InputNode('in_bad', { variableName: 'T = 0', nextNodeId: 'end' });
+    expect(() => inNode.execute(context)).toThrow(/atama/i);
+  });
 });
 
 describe('Multi-Statement Nodes (Compact Flowchart Blocks)', () => {

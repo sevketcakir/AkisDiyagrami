@@ -90,6 +90,13 @@ export class GraphParser {
           });
         } else if (name.includes('input')) {
           const variableName = String(nodeData.variableName ?? nodeData.variablename ?? nodeData.variable ?? nodeData.name ?? nodeData.text ?? 'x').trim();
+          const validation = InputNode.validateVariableName(variableName);
+          if (!validation.isValid) {
+            const errKey = validation.errorType === 'ASSIGNMENT' ? 'errors.inputHasAssignment' : 'errors.invalidIdentifier';
+            const msg = I18n.t(errKey, { id, expr: variableName, name: variableName }) || validation.error;
+            errors.push(msg);
+            if (!errorNodeId) errorNodeId = id;
+          }
           const prompt = `Enter value for ${variableName}:`;
           nodeInstance = new InputNode(id, {
             variableName,

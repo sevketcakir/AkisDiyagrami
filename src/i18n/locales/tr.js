@@ -144,13 +144,15 @@ export default {
     portExit: 'Çıkış (↓)',
     inputHeader: 'Girdi (scanf)',
     inputPlaceholder: 'ör. a, b, c',
+    inputInvalidWarning: 'Girdi bloğunda atama ("=") yapılamaz. Yalnızca değişken adı yazınız.',
     outputHeader: 'Çıktı (printf)',
     outputPlaceholder: 'ör. "Sonuç: " + toplam'
   },
   zoom: {
     in: 'Yakınlaştır',
     out: 'Uzaklaştır',
-    reset: 'Sıfırla'
+    reset: 'Sıfırla',
+    fit: 'Tümünü Göster / Ortala'
   },
   help: {
     title: 'Kullanım Kılavuzu & C Referansı',
@@ -292,7 +294,8 @@ export default {
     ctrlSaveLoad: '<strong>Kaydet & Yükle</strong>: Hazırladığınız akış şemasını .json formatında dışa aktarabilir veya daha önce kaydettiğiniz dosyayı yükleyebilirsiniz.',
     ctrlWatches: '<strong>İzlenenler (Watches)</strong>: Canlı olarak izlemek istediğiniz ifadeleri (ör. <code>i &lt; N</code>, <code>sqrt(delta)</code>) ekleyebilir, her adımda değerlerinin değişimini gözlemleyebilirsiniz.',
     ctrlDebug: '<strong>Hata Ayıklama (Debug REPL)</strong>: Herhangi bir ifadeyi anlık hesaplayabilir ve çalışma esnasında değişken değerlerini dinamik değiştirebilirsiniz (ör. <code>x = 50</code>, <code>a += 10</code>).',
-    ctrlEditVar: '<strong>Değişken Düzenleme</strong>: Bellek tablosundaki bir değişkenin değerine çift tıklayarak değerini doğrudan değiştirebilirsiniz.'
+    ctrlEditVar: '<strong>Değişken Düzenleme</strong>: Bellek tablosundaki bir değişkenin değerine çift tıklayarak değerini doğrudan değiştirebilirsiniz.',
+    ctrlZoomFit: '<strong>Tümünü Göster / Ortala (🎯 veya Shift + F)</strong>: Tuvaldeki tüm blokları otomatik olarak ekrana sığdırır ve ortalar.'
   },
   errors: {
     emptyCanvas: 'Akış diyagramı tuvali boş. Lütfen soldaki paletten blokları tuvale sürükleyin.',
@@ -305,7 +308,9 @@ export default {
     missingLoopExitConnection: 'Döngü (Loop) bloğunun [{{id}}] "Çıkış (Exit)" çıkışı herhangi bir bloğa bağlı değil.',
     missingOutgoingConnection: '{{type}} bloğunun [{{id}}] çıkış oku herhangi bir bloğa bağlı değil.',
     divisionByZero: 'Sıfıra bölme hatası (Division by zero).',
-    unreachableNode: '[{{id}}] numaralı blok ({{type}}) Başla bloğundan ulaşılamıyor.'
+    unreachableNode: '[{{id}}] numaralı blok ({{type}}) Başla bloğundan ulaşılamıyor.',
+    inputHasAssignment: 'Girdi bloğunda [{{id}}] atama ("{{expr}}") kullanılamaz! Yalnızca okunacak değişken adını (örn: "T") girmelisiniz. Atama yapmak için "İşlem" bloğunu kullanın.',
+    invalidIdentifier: 'Girdi bloğunda [{{id}}] geçersiz değişken adı: "{{name}}". Değişken adları bir harfle başlamalı ve boşluk/özel karakter içermemelidir.'
   },
   cCodeModal: {
     title: '💻 Oluşturulan C Kodu',

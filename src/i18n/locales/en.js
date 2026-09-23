@@ -144,13 +144,15 @@ export default {
     portExit: 'Exit (↓)',
     inputHeader: 'Input (scanf)',
     inputPlaceholder: 'e.g. a, b, c',
+    inputInvalidWarning: 'Cannot assign ("=") in Input block. Enter only variable name(s).',
     outputHeader: 'Output (printf)',
     outputPlaceholder: 'e.g. "Result: " + sum'
   },
   zoom: {
     in: 'Zoom In',
     out: 'Zoom Out',
-    reset: 'Reset Zoom'
+    reset: 'Reset Zoom',
+    fit: 'Fit to View / Center'
   },
   help: {
     title: 'User Guide & C Reference',
@@ -292,7 +294,8 @@ export default {
     ctrlSaveLoad: '<strong>Save & Load</strong>: Export diagrams as .json files or reload previously saved flowcharts.',
     ctrlWatches: '<strong>Watch Expressions</strong>: Add expressions (e.g. <code>i &lt; N</code>, <code>sqrt(delta)</code>) to track how their values evolve step by step.',
     ctrlDebug: '<strong>Debug REPL</strong>: Evaluate any expression in real-time or mutate variable values on the fly (e.g. <code>x = 50</code>, <code>a += 10</code>).',
-    ctrlEditVar: '<strong>Edit Variables</strong>: Double-click any variable value in the memory table to modify it directly.'
+    ctrlEditVar: '<strong>Edit Variables</strong>: Double-click any variable value in the memory table to modify it directly.',
+    ctrlZoomFit: '<strong>Fit to View / Center (🎯 or Shift + F)</strong>: Automatically fits and centers all diagram blocks within the viewport.'
   },
   errors: {
     emptyCanvas: 'The flowchart canvas is empty. Drag symbols from the left palette to build a program.',
@@ -305,7 +308,9 @@ export default {
     missingLoopExitConnection: 'Loop node [{{id}}] is missing an "Exit" outgoing connection.',
     missingOutgoingConnection: '{{type}} node [{{id}}] has no outgoing connection.',
     divisionByZero: 'Division by zero error.',
-    unreachableNode: 'Node [{{id}}] ({{type}}) is not reachable from the Start node.'
+    unreachableNode: 'Node [{{id}}] ({{type}}) is not reachable from the Start node.',
+    inputHasAssignment: 'Cannot use assignment ("{{expr}}") in Input block [{{id}}]! Enter only the variable name (e.g. "T"). Use a "Process" block for assignments.',
+    invalidIdentifier: 'Invalid variable identifier in Input block [{{id}}]: "{{name}}". Variable names must start with a letter and contain no spaces or operators.'
   },
   cCodeModal: {
     title: '💻 Generated C Code',
