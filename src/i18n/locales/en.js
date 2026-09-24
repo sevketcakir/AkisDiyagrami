@@ -20,6 +20,19 @@ export default {
     viewCCodeTitle: 'Translate the flowchart into standard structured C99 code',
     langSwitch: 'Language / Dil'
   },
+  theme: {
+    selectTitle: 'UI Theme',
+    dark: '🌙 Dark (Slate)',
+    light: '📽️ Projector / Light',
+    midnight: '🌌 Midnight (OLED)',
+    sepia: '📜 Sepia (Warm Paper)'
+  },
+  panes: {
+    toggleLeft: 'Toggle Block Palette (Alt+[)',
+    toggleRight: 'Toggle Controls & Memory (Alt+])',
+    close: 'Close',
+    open: 'Open'
+  },
   samples: {
     rectangleArea: '1. Rectangle Area (Sequential Flow)',
     evenOrOdd: '2. Even / Odd (If-Else Decision)',
@@ -295,7 +308,9 @@ export default {
     ctrlWatches: '<strong>Watch Expressions</strong>: Add expressions (e.g. <code>i &lt; N</code>, <code>sqrt(delta)</code>) to track how their values evolve step by step.',
     ctrlDebug: '<strong>Debug REPL</strong>: Evaluate any expression in real-time or mutate variable values on the fly (e.g. <code>x = 50</code>, <code>a += 10</code>).',
     ctrlEditVar: '<strong>Edit Variables</strong>: Double-click any variable value in the memory table to modify it directly.',
-    ctrlZoomFit: '<strong>Fit to View / Center (🎯 or Shift + F)</strong>: Automatically fits and centers all diagram blocks within the viewport.'
+    ctrlZoomFit: '<strong>Fit to View / Center (🎯 or Shift + F)</strong>: Automatically fits and centers all diagram blocks within the viewport.',
+    ctrlPanes: '<strong>Collapsible Panes (Alt + [ / Alt + ])</strong>: Toggle the left block palette and right controls panel to maximize canvas workspace.',
+    ctrlTheme: '<strong>Theme Switching (Alt + T)</strong>: Quickly switch between high-contrast Projector Light mode and Dark/OLED/Sepia themes.'
   },
   errors: {
     emptyCanvas: 'The flowchart canvas is empty. Drag symbols from the left palette to build a program.',

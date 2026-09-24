@@ -723,27 +723,27 @@ export class CanvasManager {
       <defs>
         <!-- Default Linear Arrow -->
         <marker id="flowchart-arrow-default" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M 1 1 L 9 5 L 1 9 z" fill="#38bdf8" />
+          <path class="arrow-marker-path" d="M 1 1 L 9 5 L 1 9 z" />
         </marker>
         <!-- True Branch Arrow (Green) -->
         <marker id="flowchart-arrow-true" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M 1 1 L 9 5 L 1 9 z" fill="#22c55e" />
+          <path class="arrow-marker-path" d="M 1 1 L 9 5 L 1 9 z" />
         </marker>
         <!-- False Branch Arrow (Red) -->
         <marker id="flowchart-arrow-false" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M 1 1 L 9 5 L 1 9 z" fill="#f43f5e" />
+          <path class="arrow-marker-path" d="M 1 1 L 9 5 L 1 9 z" />
         </marker>
         <!-- Loop Body Arrow (Cyan) -->
         <marker id="flowchart-arrow-body" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M 1 1 L 9 5 L 1 9 z" fill="#06b6d4" />
+          <path class="arrow-marker-path" d="M 1 1 L 9 5 L 1 9 z" />
         </marker>
         <!-- Loopback Return Arrow (Purple) -->
         <marker id="flowchart-arrow-loopback" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M 1 1 L 9 5 L 1 9 z" fill="#a855f7" />
+          <path class="arrow-marker-path" d="M 1 1 L 9 5 L 1 9 z" />
         </marker>
         <!-- Active Executing Glow Arrow (Gold) -->
         <marker id="flowchart-arrow-active" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-          <path d="M 1 1 L 9 5 L 1 9 z" fill="#eab308" />
+          <path class="arrow-marker-path" d="M 1 1 L 9 5 L 1 9 z" />
         </marker>
       </defs>
     `;

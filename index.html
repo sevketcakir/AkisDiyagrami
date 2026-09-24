@@ -8,6 +8,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('app-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <!-- App Header -->
@@ -64,6 +72,22 @@
         <button id="btn-lang-tr" class="btn-lang active" title="Türkçe">🇹🇷 TR</button>
         <button id="btn-lang-en" class="btn-lang" title="English">🇬🇧 EN</button>
       </div>
+
+      <!-- Theme Switcher -->
+      <div class="theme-switcher" role="group" aria-label="Theme Selector">
+        <select id="theme-select" class="select-input select-theme" data-i18n-title="theme.selectTitle" title="Arayüz Teması">
+          <option value="dark" data-i18n="theme.dark">🌙 Koyu (Slate)</option>
+          <option value="light" data-i18n="theme.light">📽️ Projeksiyon / Açık</option>
+          <option value="midnight" data-i18n="theme.midnight">🌌 Gece Yarısı (OLED)</option>
+          <option value="sepia" data-i18n="theme.sepia">📜 Sıcak Kağıt</option>
+        </select>
+      </div>
+
+      <!-- Pane Header Quick Toggles -->
+      <div class="pane-header-toggles" role="group" aria-label="Panes Toggle">
+        <button id="btn-header-toggle-left" class="btn btn-icon active" data-i18n-title="panes.toggleLeft" title="Blok Paleti (Alt+[)">📐</button>
+        <button id="btn-header-toggle-right" class="btn btn-icon active" data-i18n-title="panes.toggleRight" title="Kontroller & Bellek (Alt+])">⚙️</button>
+      </div>
     </div>
   </header>
 
@@ -72,7 +96,10 @@
     <!-- Left Sidebar: Palette -->
     <aside class="palette-sidebar">
       <div class="palette-section">
-        <h3 data-i18n="palette.title">Akış Diyagramı Blokları</h3>
+        <div class="palette-header-row">
+          <h3 data-i18n="palette.title" style="margin-bottom: 0;">Akış Diyagramı Blokları</h3>
+          <button id="btn-close-palette" class="btn btn-icon btn-sm btn-pane-close" data-i18n-title="panes.close" title="Kapat">◀</button>
+        </div>
         <div class="palette-items">
           <div class="drag-item" draggable="true" data-node="start">
             <span class="item-icon">🟢</span>
@@ -144,6 +171,14 @@
     <section class="canvas-wrapper">
       <div id="drawflow"></div>
 
+      <!-- Docked Edge Toggle Tabs -->
+      <button id="btn-edge-toggle-left" class="pane-edge-tab left-edge-tab" data-i18n-title="panes.toggleLeft" title="Blok Paletini Aç/Kapat (Alt+[)">
+        <span class="edge-tab-arrow">◀</span>
+      </button>
+      <button id="btn-edge-toggle-right" class="pane-edge-tab right-edge-tab" data-i18n-title="panes.toggleRight" title="Kontroller & Bellek Panelini Aç/Kapat (Alt+])">
+        <span class="edge-tab-arrow">▶</span>
+      </button>
+
       <div class="canvas-toolbar">
         <button id="btn-zoom-in" class="btn btn-icon" data-i18n-title="zoom.in" title="Yakınlaştır">➕</button>
         <button id="btn-zoom-reset" class="btn btn-icon" data-i18n-title="zoom.reset" title="Sıfırla">🔍 100%</button>
@@ -157,7 +192,10 @@
       <!-- Controls Section -->
       <div class="panel-section">
         <div class="section-header">
-          <h2 data-i18n="controls.title">Çalıştırma Kontrolleri</h2>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button id="btn-close-sidepanel" class="btn btn-icon btn-sm btn-pane-close" data-i18n-title="panes.close" title="Kapat">▶</button>
+            <h2 data-i18n="controls.title">Çalıştırma Kontrolleri</h2>
+          </div>
           <span id="status-badge" class="status-badge status-ready" data-i18n="status.ready">Hazır</span>
         </div>
 

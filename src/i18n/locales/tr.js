@@ -20,6 +20,19 @@ export default {
     viewCCodeTitle: 'Akış diyagramını standart yapısal C kaynak koduna dönüştürür',
     langSwitch: 'Dil / Language'
   },
+  theme: {
+    selectTitle: 'Arayüz Teması',
+    dark: '🌙 Koyu (Slate)',
+    light: '📽️ Projeksiyon / Açık',
+    midnight: '🌌 Gece Yarısı (OLED)',
+    sepia: '📜 Sıcak Kağıt (Sepya)'
+  },
+  panes: {
+    toggleLeft: 'Blok Paletini Aç/Kapat (Alt+[)',
+    toggleRight: 'Kontroller & Bellek Panelini Aç/Kapat (Alt+])',
+    close: 'Kapat',
+    open: 'Aç'
+  },
   samples: {
     rectangleArea: '1. Dikdörtgen Alanı (Sıralı Akış)',
     evenOrOdd: '2. Tek / Çift Sayı (If-Else Koşulu)',
@@ -295,7 +308,9 @@ export default {
     ctrlWatches: '<strong>İzlenenler (Watches)</strong>: Canlı olarak izlemek istediğiniz ifadeleri (ör. <code>i &lt; N</code>, <code>sqrt(delta)</code>) ekleyebilir, her adımda değerlerinin değişimini gözlemleyebilirsiniz.',
     ctrlDebug: '<strong>Hata Ayıklama (Debug REPL)</strong>: Herhangi bir ifadeyi anlık hesaplayabilir ve çalışma esnasında değişken değerlerini dinamik değiştirebilirsiniz (ör. <code>x = 50</code>, <code>a += 10</code>).',
     ctrlEditVar: '<strong>Değişken Düzenleme</strong>: Bellek tablosundaki bir değişkenin değerine çift tıklayarak değerini doğrudan değiştirebilirsiniz.',
-    ctrlZoomFit: '<strong>Tümünü Göster / Ortala (🎯 veya Shift + F)</strong>: Tuvaldeki tüm blokları otomatik olarak ekrana sığdırır ve ortalar.'
+    ctrlZoomFit: '<strong>Tümünü Göster / Ortala (🎯 veya Shift + F)</strong>: Tuvaldeki tüm blokları otomatik olarak ekrana sığdırır ve ortalar.',
+    ctrlPanes: '<strong>Katlanabilir Paneller (Alt + [ / Alt + ])</strong>: Sol paleti ve sağ kontrol/bellek panelini gizleyip göstererek tuval alanını genişletebilirsiniz.',
+    ctrlTheme: '<strong>Tema Değiştirme (Alt + T)</strong>: Sınıf projeksiyonları için yüksek kontrastlı Açık mod veya Koyu/OLED/Sepya temaları arasında geçiş yapabilirsiniz.'
   },
   errors: {
     emptyCanvas: 'Akış diyagramı tuvali boş. Lütfen soldaki paletten blokları tuvale sürükleyin.',

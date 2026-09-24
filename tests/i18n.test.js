@@ -64,6 +64,20 @@ describe('I18n Internationalization Subsystem', () => {
     expect(I18n.t('help.tabOperators')).toBe('⚙️ Operators');
   });
 
+  it('should translate theme and panes keys correctly in both languages', () => {
+    I18n.setLanguage('tr');
+    expect(I18n.t('theme.dark')).toBe('🌙 Koyu (Slate)');
+    expect(I18n.t('theme.light')).toBe('📽️ Projeksiyon / Açık');
+    expect(I18n.t('panes.toggleLeft')).toBe('Blok Paletini Aç/Kapat (Alt+[)');
+    expect(I18n.t('panes.toggleRight')).toBe('Kontroller & Bellek Panelini Aç/Kapat (Alt+])');
+
+    I18n.setLanguage('en');
+    expect(I18n.t('theme.dark')).toBe('🌙 Dark (Slate)');
+    expect(I18n.t('theme.light')).toBe('📽️ Projector / Light');
+    expect(I18n.t('panes.toggleLeft')).toBe('Toggle Block Palette (Alt+[)');
+    expect(I18n.t('panes.toggleRight')).toBe('Toggle Controls & Memory (Alt+])');
+  });
+
   it('should have parity between Turkish and English translation structures', () => {
     const getKeys = (obj, prefix = '') => {
       let keys = [];

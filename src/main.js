@@ -9,6 +9,7 @@ import { SafeEvaluator } from './evaluator/Evaluator.js';
 import { I18n } from './i18n/I18n.js';
 import { CGenerator, CGeneratorError } from './generator/CGenerator.js';
 import { DebugManager } from './ui/DebugManager.js';
+import { ThemeManager } from './ui/ThemeManager.js';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-c.js';
 
@@ -126,9 +127,12 @@ class App {
       }
     };
 
+    ThemeManager.init();
     this.bindSidebarDrag();
     this.bindHeaderActions();
     this.bindExecutionEvents();
+    this.setupThemeSwitcher();
+    this.setupCollapsiblePanes();
     this.setupLanguageSwitcher();
     this.setupHelpModal();
     this.setupCCodeModal();
@@ -330,6 +334,124 @@ class App {
       if (e.key === 'Escape' && modal.style.display === 'flex') {
         closeModal();
       }
+    });
+  }
+
+  setupThemeSwitcher() {
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+      themeSelect.value = ThemeManager.getTheme();
+
+      themeSelect.addEventListener('change', (e) => {
+        ThemeManager.setTheme(e.target.value);
+      });
+
+      ThemeManager.onThemeChange((theme) => {
+        themeSelect.value = theme;
+      });
+    }
+
+    // Keyboard shortcut: Alt + T cycles through themes
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 't' || e.key === 'T' || e.code === 'KeyT')) {
+        const tag = e.target?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || e.target?.isContentEditable) {
+          return;
+        }
+        e.preventDefault();
+        ThemeManager.cycleTheme();
+      }
+    });
+  }
+
+  setupCollapsiblePanes() {
+    const container = document.querySelector('.app-container');
+    if (!container) return;
+
+    const btnHeaderLeft = document.getElementById('btn-header-toggle-left');
+    const btnHeaderRight = document.getElementById('btn-header-toggle-right');
+    const btnEdgeLeft = document.getElementById('btn-edge-toggle-left');
+    const btnEdgeRight = document.getElementById('btn-edge-toggle-right');
+    const btnCloseLeft = document.getElementById('btn-close-palette');
+    const btnCloseRight = document.getElementById('btn-close-sidepanel');
+
+    const updateUIState = () => {
+      const isLeftOpen = !container.classList.contains('left-collapsed');
+      const isRightOpen = !container.classList.contains('right-collapsed');
+
+      btnHeaderLeft?.classList.toggle('active', isLeftOpen);
+      btnHeaderRight?.classList.toggle('active', isRightOpen);
+
+      // Re-route connection lines after transition completes to ensure accurate coordinates
+      setTimeout(() => {
+        this.canvasManager?.routeAllNodeConnections();
+      }, 260);
+    };
+
+    const toggleLeft = (forceState) => {
+      const shouldCollapse = forceState !== undefined ? !forceState : !container.classList.contains('left-collapsed');
+      container.classList.toggle('left-collapsed', shouldCollapse);
+      try {
+        localStorage.setItem('flowchart_left_collapsed', String(shouldCollapse));
+      } catch {}
+      updateUIState();
+    };
+
+    const toggleRight = (forceState) => {
+      const shouldCollapse = forceState !== undefined ? !forceState : !container.classList.contains('right-collapsed');
+      container.classList.toggle('right-collapsed', shouldCollapse);
+      try {
+        localStorage.setItem('flowchart_right_collapsed', String(shouldCollapse));
+      } catch {}
+      updateUIState();
+    };
+
+    // Restore saved pane states from localStorage
+    try {
+      const savedLeftCollapsed = localStorage.getItem('flowchart_left_collapsed');
+      const savedRightCollapsed = localStorage.getItem('flowchart_right_collapsed');
+
+      if (savedLeftCollapsed !== null) {
+        container.classList.toggle('left-collapsed', savedLeftCollapsed === 'true');
+      } else if (window.innerWidth <= 768) {
+        // Default to collapsed on mobile to preserve canvas space
+        container.classList.add('left-collapsed');
+      }
+
+      if (savedRightCollapsed !== null) {
+        container.classList.toggle('right-collapsed', savedRightCollapsed === 'true');
+      } else if (window.innerWidth <= 768) {
+        container.classList.add('right-collapsed');
+      }
+    } catch {}
+
+    updateUIState();
+
+    // Event listeners
+    btnHeaderLeft?.addEventListener('click', () => toggleLeft());
+    btnHeaderRight?.addEventListener('click', () => toggleRight());
+    btnEdgeLeft?.addEventListener('click', () => toggleLeft());
+    btnEdgeRight?.addEventListener('click', () => toggleRight());
+    btnCloseLeft?.addEventListener('click', () => toggleLeft(false));
+    btnCloseRight?.addEventListener('click', () => toggleRight(false));
+
+    // Keyboard shortcuts: Alt + [ (Left Palette) and Alt + ] (Right Side Panel)
+    document.addEventListener('keydown', (e) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey) return;
+      const tag = e.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || e.target?.isContentEditable) return;
+
+      if (e.key === '[' || e.code === 'BracketLeft') {
+        e.preventDefault();
+        toggleLeft();
+      } else if (e.key === ']' || e.code === 'BracketRight') {
+        e.preventDefault();
+        toggleRight();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      this.canvasManager?.routeAllNodeConnections();
     });
   }
 
