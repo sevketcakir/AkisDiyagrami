@@ -37,13 +37,15 @@ export function renderNodeHtml(type, customData = {}) {
 
     case 'assignment': {
       const expr = customData.expression ?? customData.text ?? 'x = 0';
-      const lines = String(expr).split('\n').length;
-      const rows = Math.min(4, Math.max(1, lines));
+      const lines = String(expr).split('\n');
+      const rows = Math.min(4, Math.max(1, lines.length));
+      const maxLineLen = Math.max(...lines.map(l => l.length));
+      const dynamicWidth = Math.min(460, Math.max(270, Math.round(maxLineLen * 8.6 + 48)));
       return `
-        <div class="flowchart-node-content shape-rectangle">
+        <div class="flowchart-node-content shape-rectangle" style="width: ${dynamicWidth}px;">
           <div class="node-header">${I18n.t('nodes.processHeader')}</div>
           <div class="node-body">
-            <textarea df-expression class="node-textarea" rows="${rows}" placeholder="${I18n.t('nodes.processPlaceholder')}" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
+            <textarea df-expression class="node-textarea" style="max-width: ${dynamicWidth - 20}px;" rows="${rows}" placeholder="${I18n.t('nodes.processPlaceholder')}" title="${escapeHtml(expr)}">${escapeHtml(expr)}</textarea>
           </div>
         </div>
       `;
@@ -837,10 +839,21 @@ export class CanvasManager {
 
       const nodeId = nodeElement.id.replace('node-', '');
 
-      // Dynamically adjust textarea height based on line count
+      // Dynamically adjust textarea height and width based on content
       if (target.tagName === 'TEXTAREA') {
-        const lineCount = target.value.split('\n').length;
+        const lines = target.value.split('\n');
+        const lineCount = lines.length;
         target.rows = Math.min(6, Math.max(1, lineCount));
+
+        // Auto-expand process rectangle width for long lines
+        const shapeRect = target.closest('.shape-rectangle');
+        if (shapeRect) {
+          const maxLineLen = Math.max(...lines.map(l => l.length));
+          const dynamicWidth = Math.min(460, Math.max(270, Math.round(maxLineLen * 8.6 + 48)));
+          shapeRect.style.width = `${dynamicWidth}px`;
+          target.style.maxWidth = `${dynamicWidth - 20}px`;
+        }
+
         this.routeAllNodeConnections(nodeId);
       }
 
